@@ -140,6 +140,7 @@ export default {
             </el-form-item>
         </el-form>
 
+        <el-link href="/login" type="primary">已有账户，前去登录</el-link>
       </el-main>
     </el-container>
   </div>
