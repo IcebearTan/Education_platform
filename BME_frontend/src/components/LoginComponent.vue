@@ -78,6 +78,7 @@ export default {
             </el-form-item>
         </el-form>
 
+        <el-link href="/register" type="primary">没有账户，前去注册</el-link>
       </el-main>
     </el-container>
   </div>
