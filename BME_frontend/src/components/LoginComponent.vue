@@ -1,4 +1,7 @@
 <script>
+
+import api from '../api';
+
 export default {
     data() {
         return {
@@ -38,52 +41,52 @@ export default {
                 return;
             }
 
+            // 向后端请求用户信息，结果先返回到控制台
+            api({
+                url: "/auth/login",
+                method: "post",
+                data: {
+                    User_Email: this.loginForm.email,
+                    User_Password: this.loginForm.password
+                },
+            }).then((res) => {
+                console.log(res, '返回的数据')
+            })
             alert('登录成功');
+
+            // alert('登录成功');
         }
     }
 };
 </script>
 
 <template>
-  <div>
-    <el-container>
-      <el-header>
-        <h1>登录</h1>
-      </el-header>
-      <el-main>
-        <el-form
-            ref="loginForm"
-            style="max-width: 600px"
-            :model="loginForm"
-            status-icon
-            :rules="rules"
-            label-width="auto"
-            class="demo-ruleForm"
-        >
-            
-            <el-form-item label="邮箱" prop="email">
-                <el-input v-model="loginForm.email" type="email" autocomplete="off"/>
-            </el-form-item>
-            <el-form-item label="密码" prop="password">
-                <el-input
-                    v-model="loginForm.password"
-                    type="password"
-                    autocomplete="off"
-                />
-            </el-form-item>
-            <el-form-item>
-                <el-button type="primary" @click="submitForm(loginForm)">
-                    登录
-                </el-button>
-            </el-form-item>
-        </el-form>
+    <div>
+        <el-container>
+            <el-header>
+                <h1>登录</h1>
+            </el-header>
+            <el-main>
+                <el-form ref="loginForm" style="max-width: 600px" :model="loginForm" status-icon :rules="rules"
+                    label-width="auto" class="demo-ruleForm">
 
-        <el-link href="/register" type="primary">没有账户，前去注册</el-link>
-      </el-main>
-    </el-container>
-  </div>
+                    <el-form-item label="邮箱" prop="email">
+                        <el-input v-model="loginForm.email" type="email" autocomplete="off" />
+                    </el-form-item>
+                    <el-form-item label="密码" prop="password">
+                        <el-input v-model="loginForm.password" type="password" autocomplete="off" />
+                    </el-form-item>
+                    <el-form-item>
+                        <el-button type="primary" @click="submitForm(loginForm)">
+                            登录
+                        </el-button>
+                    </el-form-item>
+                </el-form>
+
+                <el-link href="/register" type="primary">没有账户，前去注册</el-link>
+            </el-main>
+        </el-container>
+    </div>
 </template>
 
-<style scoped>
-
-</style>
+<style scoped></style>

@@ -1,5 +1,8 @@
 <script>
+import api from '../api';
+
 export default {
+
     data() {
         return {
             registerForm: {
@@ -74,6 +77,17 @@ export default {
                 return;
             }
 
+            // 向后端请求验证码发送
+            api({
+                url: "/auth/captcha/email",
+                method: "post",
+                data: {
+                    User_Email:this.registerForm.email,
+                },
+            }).then((res) => {
+                console.log(res, '返回的数据')
+            })
+
             alert('验证码已发送到您的邮箱，请查收');
         },
 
@@ -81,6 +95,20 @@ export default {
             if (!this.validateForm()) {
                 return;
             }
+
+            // 向后端发送注册信息，暂时打印至控制台
+            api({
+                url: "/auth/register",
+                method: "post",
+                data: {
+                    User_Name:this.registerForm.username,
+                    User_Password:this.registerForm.password,
+                    User_Email:this.registerForm.email,
+                    User_Captcha:this.registerForm.code,
+                },
+            }).then((res) => {
+                console.log(res, '返回的数据')
+            })
 
             alert('注册成功');
         }
