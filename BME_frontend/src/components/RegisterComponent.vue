@@ -82,10 +82,14 @@ export default {
                 url: "/auth/captcha/email",
                 method: "post",
                 data: {
-                    User_Email:this.registerForm.email,
+                    User_Email: this.registerForm.email,
                 },
             }).then((res) => {
-                console.log(res, '返回的数据')
+                if (res.data.code == 200) {
+                    console.log(res.data.token, 'token')
+                    // 将数据存入浏览器
+                    localStorage.setItem("token", res.data.token)
+                }
             })
 
             alert('验证码已发送到您的邮箱，请查收');
@@ -101,10 +105,10 @@ export default {
                 url: "/auth/register",
                 method: "post",
                 data: {
-                    User_Name:this.registerForm.username,
-                    User_Password:this.registerForm.password,
-                    User_Email:this.registerForm.email,
-                    User_Captcha:this.registerForm.code,
+                    User_Name: this.registerForm.username,
+                    User_Password: this.registerForm.password,
+                    User_Email: this.registerForm.email,
+                    User_Captcha: this.registerForm.code,
                 },
             }).then((res) => {
                 console.log(res, '返回的数据')
@@ -117,63 +121,46 @@ export default {
 </script>
 
 <template>
-  <div>
-    <el-container>
-      <el-header>
-        <h1>注册账号</h1>
-      </el-header>
-      <el-main>
-        <el-form
-            ref="registerForm"
-            style="max-width: 600px"
-            :model="registerForm"
-            status-icon
-            :rules="rules"
-            label-width="auto"
-            class="demo-ruleForm"
-        >
-            <el-form-item label="账号" prop="username">
-                <el-input v-model="registerForm.username" type="text" autocomplete="off" />
-            </el-form-item>
-            <el-form-item label="密码" prop="password">
-                <el-input
-                    v-model="registerForm.password"
-                    type="password"
-                    autocomplete="off"
-                />
-            </el-form-item>
-            <el-form-item label="确认密码" prop="confirmPassword">
-                <el-input
-                    v-model="registerForm.confirmPassword"
-                    type="password"
-                    autocomplete="off"
-                />
-            </el-form-item>
-            <el-form-item label="邮箱" prop="email">
-                <el-input v-model="registerForm.email" type="email" autocomplete="off"/>
-            </el-form-item>
-            <el-form-item label="验证码" prop="code">
-                <div style="display: flex;">
-                    <el-input v-model="registerForm.code" type="text" autocomplete="off"/>
-                    <el-button type="primary" @click="submitEmail(registerForm.email)">
-                        获取验证码
-                    </el-button>
-                </div>
-                
-            </el-form-item>
-            <el-form-item>
-                <el-button type="primary" @click="submitForm(registerForm)">
-                    注册
-                </el-button>
-            </el-form-item>
-        </el-form>
+    <div>
+        <el-container>
+            <el-header>
+                <h1>注册账号</h1>
+            </el-header>
+            <el-main>
+                <el-form ref="registerForm" style="max-width: 600px" :model="registerForm" status-icon :rules="rules"
+                    label-width="auto" class="demo-ruleForm">
+                    <el-form-item label="账号" prop="username">
+                        <el-input v-model="registerForm.username" type="text" autocomplete="off" />
+                    </el-form-item>
+                    <el-form-item label="密码" prop="password">
+                        <el-input v-model="registerForm.password" type="password" autocomplete="off" />
+                    </el-form-item>
+                    <el-form-item label="确认密码" prop="confirmPassword">
+                        <el-input v-model="registerForm.confirmPassword" type="password" autocomplete="off" />
+                    </el-form-item>
+                    <el-form-item label="邮箱" prop="email">
+                        <el-input v-model="registerForm.email" type="email" autocomplete="off" />
+                    </el-form-item>
+                    <el-form-item label="验证码" prop="code">
+                        <div style="display: flex;">
+                            <el-input v-model="registerForm.code" type="text" autocomplete="off" />
+                            <el-button type="primary" @click="submitEmail(registerForm.email)">
+                                获取验证码
+                            </el-button>
+                        </div>
 
-        <el-link href="/login" type="primary">已有账户，前去登录</el-link>
-      </el-main>
-    </el-container>
-  </div>
+                    </el-form-item>
+                    <el-form-item>
+                        <el-button type="primary" @click="submitForm(registerForm)">
+                            注册
+                        </el-button>
+                    </el-form-item>
+                </el-form>
+
+                <el-link href="/login" type="primary">已有账户，前去登录</el-link>
+            </el-main>
+        </el-container>
+    </div>
 </template>
 
-<style scoped>
-
-</style>
+<style scoped></style>
