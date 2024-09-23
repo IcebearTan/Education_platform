@@ -41,7 +41,7 @@ export default {
                 return;
             }
 
-            // 向后端请求用户信息，结果先返回到控制台
+            // 向后端请求用户信息
             api({
                 url: "/auth/login",
                 method: "post",
@@ -50,7 +50,11 @@ export default {
                     User_Password: this.loginForm.password
                 },
             }).then((res) => {
-                console.log(res, '返回的数据')
+                if (res.data.code == 200) {
+                    console.log(res.data.token, 'token')
+                    // 将数据存入浏览器
+                    localStorage.setItem("token", res.data.token)
+                }
             })
             alert('登录成功');
 
