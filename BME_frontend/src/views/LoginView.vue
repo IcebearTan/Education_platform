@@ -2,10 +2,10 @@
 import Login from '../components/LoginComponent.vue';
 
 export default {
-    name: 'LoginView',
-    components: {
-        Login
-    },
+  name: 'LoginView',
+  components: {
+    Login
+  },
 };
 </script>
 
@@ -15,6 +15,4 @@ export default {
   </div>
 </template>
 
-<style scoped>
-
-</style>
+<style scoped></style>
