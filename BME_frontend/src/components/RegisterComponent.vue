@@ -10,8 +10,16 @@ export default {
                 password: "",
                 confirmPassword: "",
                 email: "",
-                code: "",
+                code: ""
             },
+
+            // 验证码倒数模块
+            getCode: '获取验证码',
+            isGeting: false,
+            count: 60,
+            disable: false,
+
+
             rules: {
                 username: [
                     { required: true, message: "请输入用户名", trigger: "blur" },
@@ -92,6 +100,22 @@ export default {
                 }
             })
 
+            // 按钮倒数
+            var countDown = setInterval(() => {
+                if (this.count < 1) {
+                    this.isGeting = false
+                    this.disable = false
+                    this.getCode = '获取验证码'
+                    this.count = 60
+                    clearInterval(countDown)
+                } else {
+                    this.isGeting = true
+                    this.disable = true
+                    this.getCode = this.count-- + 's后重发'
+                }
+            }, 1000)
+
+
             alert('验证码已发送到您的邮箱，请查收');
         },
 
@@ -144,9 +168,11 @@ export default {
                     <el-form-item label="验证码" prop="code">
                         <div style="display: flex;">
                             <el-input v-model="registerForm.code" type="text" autocomplete="off" />
-                            <el-button type="primary" @click="submitEmail(registerForm.email)">
-                                获取验证码
-                            </el-button>
+                            <!-- <el-button type="primary" @click="submitEmail(registerForm.email)">
+                                获取邮箱验证码
+                            </el-button> -->
+                            <el-button type="primary" :disabled="disable" :class="{ codeGeting: isGeting }"
+                                @click="submitEmail">{{ getCode }}</el-button>
                         </div>
 
                     </el-form-item>
