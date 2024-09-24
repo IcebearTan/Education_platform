@@ -3,7 +3,7 @@ import CommonHeader from "@/components/CommonHeader.vue";
 
 export default {
   name: "HomeView",
-    components: { CommonHeader }
+  components: { CommonHeader }
 };
 </script>
 
@@ -19,6 +19,4 @@ export default {
   </div>
 </template>
 
-<style scoped>
-
-</style>
+<style scoped></style>

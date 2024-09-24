@@ -2,10 +2,10 @@
 import Register from '../components/RegisterComponent.vue';
 
 export default {
-    name: 'RegisterView',
-    components: {
-        Register
-    },
+  name: 'RegisterView',
+  components: {
+    Register
+  },
 };
 </script>
 
@@ -15,6 +15,4 @@ export default {
   </div>
 </template>
 
-<style scoped>
-
-</style>
+<style scoped></style>
