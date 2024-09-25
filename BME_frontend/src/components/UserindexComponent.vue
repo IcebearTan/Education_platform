@@ -3,19 +3,32 @@
 import api from '../api';
 import { onMounted } from 'vue'
 import { ref } from 'vue'
+import { ElMessage } from 'element-plus'
+import { useRouter } from 'vue-router'
 
 const User_Medal = ref()
 const User_Email = ref()
 const User_Name = ref()
 const User_Stage = ref()
 
+const router = useRouter()
 
 // 将获取到的用户数据打印到控制台
 onMounted(() => {
   api({
     url: "/user/user_index",
     method: "get",
+  }).catch((error) => {
+    if (error.response.status == 422){
+      ElMessage.error('登录失效，请重新登录')
+      router.push('/login')
+    }
+
   }).then((res) => {
+    // if (res.response.status == 422) {
+    //   ElMessage.error('Oops, this is a error message.')
+    // }
+
     if (res.data.code == 200) {
       console.log(res)
       User_Email.value = res.data.User_Email
@@ -24,7 +37,8 @@ onMounted(() => {
       User_Stage.value = res.data.User_Stage
 
     }
-  })
+  }
+)
 })
 
 </script>
