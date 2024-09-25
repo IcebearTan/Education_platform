@@ -3,6 +3,7 @@
 import api from '../api';
 
 export default {
+
     data() {
         return {
             loginForm: {
@@ -23,6 +24,7 @@ export default {
     },
 
     methods: {
+
         validateForm() {
             if (!this.loginForm.email) {
                 alert('请填写邮箱');
@@ -54,9 +56,15 @@ export default {
                     console.log(res.data.token, 'token')
                     // 将数据存入浏览器
                     localStorage.setItem("token", res.data.token)
+                    this.$router.push('/user')
                 }
             })
-            alert('登录成功');
+
+            this.$message({
+                message: '登录成功',
+                type: 'success'
+            });
+
 
             // alert('登录成功');
         }
