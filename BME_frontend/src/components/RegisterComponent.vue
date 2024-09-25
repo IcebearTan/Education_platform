@@ -106,7 +106,7 @@ export default {
                     this.isGeting = false
                     this.disable = false
                     this.getCode = '获取验证码'
-                    this.count = 60
+                    this.count = 61
                     clearInterval(countDown)
                 } else {
                     this.isGeting = true
@@ -116,7 +116,10 @@ export default {
             }, 1000)
 
 
-            alert('验证码已发送到您的邮箱，请查收');
+            this.$message({
+                message: '验证码已发送到您的邮箱，请查收',
+                type: 'success'
+            });
         },
 
         async submitForm() {
@@ -135,10 +138,18 @@ export default {
                     User_Captcha: this.registerForm.code,
                 },
             }).then((res) => {
-                console.log(res, '返回的数据')
+                if (res.data.code == 200) {
+                    console.log(res.data.token, 'token')
+                    // 将数据存入浏览器
+                    localStorage.setItem("token", res.data.token)
+                    this.$router.push('/user')
+                }
             })
 
-            alert('注册成功');
+            this.$message({
+                message: '注册成功',
+                type: 'success'
+            });
         }
     }
 };
