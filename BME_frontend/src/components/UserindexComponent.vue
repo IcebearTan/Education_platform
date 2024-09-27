@@ -19,10 +19,10 @@ onMounted(() => {
     url: "/user/user_index",
     method: "get",
   }).catch((error) => {
-    if (error.response.status == 422){
-      ElMessage.error('登录失效，请重新登录')
-      router.push('/login')
-    }
+    // if (error.response.status == 422){
+    ElMessage.error('登录失效，请重新登录')
+    router.push('/login')
+    // }
 
   }).then((res) => {
     // if (res.response.status == 422) {
@@ -38,7 +38,7 @@ onMounted(() => {
 
     }
   }
-)
+  )
 })
 
 </script>
@@ -57,7 +57,6 @@ onMounted(() => {
         <div class="registe-info">
           <span class="registe-info">
             注册时间：
-            <li class="fa-clock-o"></li>
             XXXXXXXXX
           </span>
         </div>
