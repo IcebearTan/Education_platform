@@ -1,6 +1,7 @@
 <script>
 
 import api from '../api';
+import md5 from 'js-md5'
 
 export default {
 
@@ -43,27 +44,35 @@ export default {
                 return;
             }
 
+            const User_Password = md5(this.loginForm.password)
+
             // 向后端请求用户信息
             api({
                 url: "/auth/login",
                 method: "post",
                 data: {
                     User_Email: this.loginForm.email,
-                    User_Password: this.loginForm.password
+                    User_Password: User_Password
                 },
             }).then((res) => {
                 if (res.data.code == 200) {
-                    console.log(res.data.token, 'token')
+                    console.log(res)
                     // 将数据存入浏览器
                     localStorage.setItem("token", res.data.token)
+                    this.$message({
+                        message: '登录成功',
+                        type: 'success'
+                    });
                     this.$router.push('/user')
+                }
+                if (res.data.code == 400) {
+                    console.log(res)
+                    console.log(User_Password)
+                    this.$message.error('密码错误或邮箱不存在');
                 }
             })
 
-            this.$message({
-                message: '登录成功',
-                type: 'success'
-            });
+
 
 
             // alert('登录成功');

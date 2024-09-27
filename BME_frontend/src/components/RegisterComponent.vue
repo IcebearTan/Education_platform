@@ -1,5 +1,6 @@
 <script>
 import api from '../api';
+import md5 from 'js-md5'
 
 export default {
 
@@ -127,13 +128,15 @@ export default {
                 return;
             }
 
+            const User_Password = md5(this.registerForm.password)
+
             // 向后端发送注册信息，暂时打印至控制台
             api({
                 url: "/auth/register",
                 method: "post",
                 data: {
                     User_Name: this.registerForm.username,
-                    User_Password: this.registerForm.password,
+                    User_Password: User_Password,
                     User_Email: this.registerForm.email,
                     User_Captcha: this.registerForm.code,
                 },
