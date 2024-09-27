@@ -10,6 +10,7 @@ const User_Medal = ref()
 const User_Email = ref()
 const User_Name = ref()
 const User_Stage = ref()
+const join_time = ref()
 
 const router = useRouter()
 
@@ -35,7 +36,7 @@ onMounted(() => {
       User_Medal.value = res.data.User_Medal
       User_Name.value = res.data.User_Name
       User_Stage.value = res.data.User_Stage
-
+      join_time.value = res.data.join_time
     }
   }
   )
@@ -57,7 +58,7 @@ onMounted(() => {
         <div class="registe-info">
           <span class="registe-info">
             注册时间：
-            XXXXXXXXX
+            {{ join_time }}
           </span>
         </div>
         <el-divider></el-divider>
