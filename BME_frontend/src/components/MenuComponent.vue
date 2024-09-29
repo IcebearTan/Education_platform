@@ -26,11 +26,24 @@ export default {
 <script setup>
 import { ref, unref } from 'vue'
 import { ClickOutside as vClickOutside } from 'element-plus'
+import { useStore } from 'vuex'
+import { useRouter } from 'vue-router'
 
 const buttonRef = ref()
 const popoverRef = ref()
+const store = useStore()
+const router = useRouter()
+
+
 const onClickOutside = () => {
   unref(popoverRef).popperRef?.delayHide?.()
+}
+
+const logOut = () => {
+    store.commit('logout')
+
+    localStorage.removeItem('token')
+    router.push('/login')
 }
 </script>
 
@@ -66,7 +79,7 @@ const onClickOutside = () => {
                                 src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png"
                                 :size="50"
                             />
-                            <div style="position: relative; top: 0; font-size: 25px; margin-left: 10px">username</div>
+                            <div style="position: relative; top: 0; font-size: 25px; margin-left: 10px">{{ store.state.user.User_Name }}</div>
                         </div>
                         <ul style="list-style: none; padding: 0; margin-bottom: 0;" role="none">
                             <li class="popli" role="none">
@@ -80,7 +93,7 @@ const onClickOutside = () => {
                                 <el-icon>
                                     <Close />
                                 </el-icon>
-                                <span style="margin-left: 10px;">退出·</span>
+                                <span style="margin-left: 10px;" @click="logOut()">退出·</span>
                             </li>
                         </ul>
                     </div>

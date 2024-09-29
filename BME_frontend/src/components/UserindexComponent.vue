@@ -5,6 +5,7 @@ import { onMounted } from 'vue'
 import { ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useRouter } from 'vue-router'
+import { useStore } from 'vuex';
 
 const User_Medal = ref()
 const User_Email = ref()
@@ -13,7 +14,7 @@ const User_Stage = ref()
 const join_time = ref()
 
 const router = useRouter()
-
+const store = useStore()
 // 将获取到的用户数据打印到控制台
 onMounted(() => {
   api({
