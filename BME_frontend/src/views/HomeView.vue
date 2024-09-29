@@ -1,11 +1,10 @@
 <script>
-import CommomHeader from "../components/CommonHeader.vue"
+import { RouterView } from "vue-router";
 import MenuComponent from "../components/MenuComponent.vue";
 
 export default {
   name: "HomeView",
   components: { 
-    CommomHeader,
     MenuComponent
   }
 };
@@ -18,7 +17,7 @@ export default {
         <MenuComponent />
       </el-header>
       <el-main>
-        <CommomHeader />
+        <RouterView />
       </el-main>
       <el-footer>Footer</el-footer>
     </el-container>

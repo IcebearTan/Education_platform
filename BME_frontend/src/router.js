@@ -2,7 +2,8 @@ import { createRouter, createWebHistory } from 'vue-router';
 import HomeView from './views/HomeView.vue'
 import LoginView from './views/LoginView.vue'
 import RegisterView from './views/RegisterView.vue'
-import UserindexComponent from './views/UserIndex.vue';
+import UserindexComponent from './components/UserindexComponent.vue';
+import HomePage from './components/HomePage.vue';
 
 const router = createRouter({
     history: createWebHistory(),
@@ -11,6 +12,18 @@ const router = createRouter({
             path: '/',
             name: 'home',
             component: HomeView,
+            children: [
+                {
+                    path: 'user',
+                    name: 'user',
+                    component: UserindexComponent,
+                },
+                {
+                    path: '',
+                    name: 'home_default',
+                    component: HomePage,
+                }
+            ]
         },
         {
             path: '/login',
@@ -21,11 +34,6 @@ const router = createRouter({
             path: '/register',
             name: 'register',
             component: RegisterView
-        },
-        {
-            path: '/user',
-            name: 'user',
-            component: UserindexComponent
         },
     ]
 })
