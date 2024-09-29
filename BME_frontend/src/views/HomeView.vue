@@ -13,10 +13,10 @@ export default {
 <template>
   <div class="common-layout">
     <el-container>
-      <el-header>
+      <el-header style="padding-rignt: 20px;">
         <MenuComponent />
       </el-header>
-      <el-main>
+      <el-main style="padding-left: 20px;">
         <RouterView />
       </el-main>
       <el-footer>Footer</el-footer>

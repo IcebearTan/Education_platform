@@ -5,6 +5,7 @@ export default new Vuex.Store({
     state: {
         user: null,
         token: localStorage.getItem('token') || null,
+        isLogin: false,
     },
     mutations: {
         setToken(state, token) {
@@ -13,6 +14,7 @@ export default new Vuex.Store({
         clearToken(state) {
             state.token = null;
         },
+
     },
     actions: {
         async login({ commit }, credentials) {
@@ -26,7 +28,7 @@ export default new Vuex.Store({
         },
     },
     getters: {
-
+        isLogin: (state) => !!state.token,
     },
     plugins: [
         VuexPersist({
