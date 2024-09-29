@@ -4,6 +4,7 @@ import LoginView from './views/LoginView.vue'
 import RegisterView from './views/RegisterView.vue'
 import UserindexComponent from './components/UserindexComponent.vue';
 import HomePage from './components/HomePage.vue';
+import ArticleView from './views/ArticleView.vue';
 
 const router = createRouter({
     history: createWebHistory(),
@@ -34,6 +35,11 @@ const router = createRouter({
             path: '/register',
             name: 'register',
             component: RegisterView
+        },
+        {
+            path: '/article',
+            name: 'article',
+            component: ArticleView
         },
     ]
 })
