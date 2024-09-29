@@ -63,7 +63,7 @@ export default {
                         message: '登录成功',
                         type: 'success'
                     });
-                    this.$router.push('/user')
+                    this.$router.push('/')
                 }
                 if (res.data.code == 400) {
                     console.log(res)
