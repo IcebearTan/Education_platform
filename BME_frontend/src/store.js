@@ -1,5 +1,7 @@
 import Vuex from 'vuex';
 import VuexPersist from 'vuex-persistedstate';
+import { useRouter } from 'vue-router';
+
 
 export default new Vuex.Store({
     state: {
@@ -14,6 +16,12 @@ export default new Vuex.Store({
         clearToken(state) {
             state.token = null;
         },
+        setUser(state, user) {
+            state.user = user
+        },
+        clearUser(state) {
+            state.user = null
+        }
 
     },
     actions: {
@@ -26,6 +34,12 @@ export default new Vuex.Store({
                 console.error('Login failed:', error);
             }
         },
+        setUser({ commit }, user) {
+            commit('setUser', user)
+        },
+        logout({ commit }) {
+            commit('clearUser');
+        }
     },
     getters: {
         isLogin: (state) => !!state.token,

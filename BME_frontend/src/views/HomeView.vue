@@ -10,6 +10,43 @@ export default {
 };
 </script>
 
+<script setup>
+import api from '../api';
+import { onMounted } from 'vue'
+import { ref } from 'vue'
+import { ElMessage } from 'element-plus'
+import { useRouter } from 'vue-router'
+import { useStore } from 'vuex'
+
+const router = useRouter()
+const store = useStore()
+
+// 将获取到的用户数据打印到控制台
+onMounted(() => {
+  api({
+    url: "/user/user_index",
+    method: "get",
+  }).catch((error) => {
+    // if (error.response.status == 422){
+    ElMessage.error('登录失效，请重新登录')
+    router.push('/login')
+    // }
+
+  }).then((res) => {
+    // if (res.response.status == 422) {
+    //   ElMessage.error('Oops, this is a error message.')
+    // }
+
+    if (res.data.code == 200) {
+      console.log(res)
+      store.commit('setUser', res.data)
+    }
+  }
+  )
+})
+
+</script>
+
 
 
 <template>
@@ -43,7 +80,8 @@ export default {
 }
 
 .footer {
-  
+  font-size: 15px;
+
   display: flex;
   padding: 10px;
   background-color: #f5f5f5;
