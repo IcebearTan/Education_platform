@@ -1,11 +1,41 @@
 <script>
 import { RouterView } from "vue-router";
 import MenuComponent from "../components/MenuComponent.vue";
+import { useStore } from 'vuex'
 
 export default {
   name: "HomeView",
   components: { 
     MenuComponent
+  },
+
+  data() {
+    return {
+      store: useStore(),
+    };
+  },
+
+  created() {
+    api({
+      url: "/user/user_index",
+      method: "get",
+    }).catch((error) => {
+      // if (error.response.status == 422){
+      ElMessage.error('登录失效，请重新登录')
+      router.push('/login')
+      // }
+
+    }).then((res) => {
+        // if (res.response.status == 422) {
+        //   ElMessage.error('Oops, this is a error message.')
+        // }
+
+        if (res.data.code == 200) {
+          console.log(res)
+          this.store.dispatch('setUser', res.data)
+        }
+      }
+    )
   }
 };
 </script>
@@ -22,28 +52,6 @@ const router = useRouter()
 const store = useStore()
 
 // 将获取到的用户数据打印到控制台
-onMounted(() => {
-  api({
-    url: "/user/user_index",
-    method: "get",
-  }).catch((error) => {
-    // if (error.response.status == 422){
-    ElMessage.error('登录失效，请重新登录')
-    router.push('/login')
-    // }
-
-  }).then((res) => {
-    // if (res.response.status == 422) {
-    //   ElMessage.error('Oops, this is a error message.')
-    // }
-
-    if (res.data.code == 200) {
-      console.log(res)
-      store.commit('setUser', res.data)
-    }
-  }
-  )
-})
 
 </script>
 
