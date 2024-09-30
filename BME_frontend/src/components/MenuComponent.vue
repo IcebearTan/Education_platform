@@ -67,7 +67,7 @@ const logOut = () => {
         <el-menu-item v-else>
             <div class="user-avatar">
                 <el-popover
-                    show-arrow="none"
+                    :showArrow=false
                     trigger="click"
                     width="300px"
                     height="500px"
