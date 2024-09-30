@@ -1,5 +1,5 @@
 <script>
-
+import { useStore } from 'vuex';
 import api from '../api';
 import md5 from 'js-md5'
 
@@ -20,7 +20,8 @@ export default {
                     { required: true, message: "请输入邮箱", trigger: "blur" },
                     { type: "email", message: "请输入正确的邮箱格式", trigger: ["blur", "change"] },
                 ],
-            }
+            },
+            store: useStore(),
         }
     },
 
@@ -59,6 +60,7 @@ export default {
                     console.log(res)
                     // 将数据存入浏览器
                     localStorage.setItem("token", res.data.token)
+                    this.store.commit('setUser', res.data)
                     this.$message({
                         message: '登录成功',
                         type: 'success'
