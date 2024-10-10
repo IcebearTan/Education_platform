@@ -5,6 +5,7 @@ import RegisterView from './views/RegisterView.vue'
 import UserindexComponent from './components/UserindexComponent.vue';
 import HomePage from './components/HomePage.vue';
 import ArticleView from './views/ArticleView.vue';
+import StudyView from './views/StudyView.vue'
 
 const router = createRouter({
     history: createWebHistory(),
@@ -40,6 +41,24 @@ const router = createRouter({
             path: '/article',
             name: 'article',
             component: ArticleView
+        },
+
+        {
+            path: '/study',
+            name: 'study',
+            component: StudyView,
+            children: [
+                {
+                    path: '/study/C-yu-yan-cheng-xu-she-ji/',
+                    name: 'study_home',
+                    component: HomePage,
+                },
+                {
+                    path: 'user',
+                    name: 'study_user',
+                    component: UserindexComponent,
+                }
+            ]
         },
     ]
 })
