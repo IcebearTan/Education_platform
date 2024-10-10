@@ -145,7 +145,7 @@ export default {
                     console.log(res.data.token, 'token')
                     // 将数据存入浏览器
                     localStorage.setItem("token", res.data.token)
-                    this.$router.push('/user')
+                    this.$router.push('/login')
                 }
             })
 

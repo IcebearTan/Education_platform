@@ -58,7 +58,7 @@ const logOut = () => {
             <img style="width: 50px" src="../assets/vue.svg" />
         </el-menu-item>
 
-        <el-menu-item index="2">
+        <el-menu-item index="/study">
             学习
         </el-menu-item>
         <el-menu-item index="3">
@@ -83,18 +83,18 @@ const logOut = () => {
                             <div style="position: relative; top: 0; font-size: 25px; margin-left: 10px">{{ this.$store.state.user.User_Name }}</div>
                         </div>
                         <ul style="list-style: none; padding: 0; margin-bottom: 0;" role="none">
-                            <li class="popli" role="none">
+                            <li class="popli" role="none" @click="$router.push('/user')">
                                 <el-icon>
                                     <user />
                                 </el-icon>
-                                <span style="margin-left: 10px;" @click="$router.push('/user')">个人中心</span>
+                                <span style="margin-left: 10px;" >个人中心</span>
                                 
                             </li>
-                            <li class="popli" role="none">
+                            <li class="popli" role="none" @click="logOut()">
                                 <el-icon>
                                     <Close />
                                 </el-icon>
-                                <span style="margin-left: 10px;" @click="logOut()">退出·</span>
+                                <span style="margin-left: 10px;" >退出·</span>
                             </li>
                         </ul>
                     </div>
