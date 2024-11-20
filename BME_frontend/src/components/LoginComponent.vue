@@ -97,7 +97,7 @@ export default {
                         <el-input v-model="loginForm.email" type="email" autocomplete="off" />
                     </el-form-item>
                     <el-form-item label="密码" prop="password">
-                        <el-input v-model="loginForm.password" type="password" autocomplete="off" />
+                        <el-input v-model="loginForm.password" type="password" autocomplete="off" show-password/>
                     </el-form-item>
                     <el-form-item>
                         <el-button type="primary" @click="submitForm(loginForm)">

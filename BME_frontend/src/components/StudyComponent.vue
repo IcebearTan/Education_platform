@@ -8,7 +8,7 @@
         <div class="headGraph">学习路径</div>
     </div>
     <div class="mainContainer">
-        <el-card class="boxCard" @click="$router.push('/study/C-yu-yan-cheng-xu-she-ji/')">
+        <el-card class="boxCard" @click="$router.push('/study/details')">
             <el-row>
                 <el-col :span="4">
                     暂无图片
@@ -82,6 +82,8 @@
     display: -webkit-box; /* 使用 WebKit 箱模型 */
     -webkit-box-orient: vertical; /* 设置为垂直排列 */
     -webkit-line-clamp: 2; /* 设置显示的行数 */
+
+    cursor: pointer;
 }
 .cardTitle {
     flex: 1;
