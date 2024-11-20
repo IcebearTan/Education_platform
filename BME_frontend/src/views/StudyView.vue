@@ -61,7 +61,7 @@ import { useStore } from 'vuex'
         <MenuComponent />
       </el-header>
       <el-main style="padding: 0px; min-height: 100vh;">
-        <StudyComponent />
+        <RouterView />
       </el-main>
       <el-footer class="footer">备案编号：1145141919810 没有版权和免责声明 千万别申诉版权 出版物许可证也没有 ©2024-2024深圳中大BME草台班子无限公司
         服务冷线：4008-123-123 客服邮箱：thisIsAfakeEmail@bme.com
@@ -70,7 +70,7 @@ import { useStore } from 'vuex'
   </div>
 </template>
 
-<style scoped>
+<style scope>
 .el-menu--horizontal>.el-menu-item:nth-child(1) {
     margin-right: auto;
 }

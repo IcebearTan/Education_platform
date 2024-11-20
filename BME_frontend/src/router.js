@@ -6,6 +6,8 @@ import UserindexComponent from './components/UserindexComponent.vue';
 import HomePage from './components/HomePage.vue';
 import ArticleView from './views/ArticleView.vue';
 import StudyView from './views/StudyView.vue'
+import StudyDetailsComponent from './components/StudyDetailsComponent.vue'
+import StudyComponent from './components/StudyComponent.vue'
 
 const router = createRouter({
     history: createWebHistory(),
@@ -49,16 +51,26 @@ const router = createRouter({
             component: StudyView,
             children: [
                 {
-                    path: '/study/C-yu-yan-cheng-xu-she-ji/',
-                    name: 'study_home',
-                    component: HomePage,
+                    path: '/study/details',
+                    name: 'study_details',
+                    component: StudyDetailsComponent,
                 },
                 {
-                    path: 'user',
-                    name: 'study_user',
-                    component: UserindexComponent,
+                    path: '',
+                    name: 'study_default',
+                    component: StudyComponent,
                 }
             ]
+        },
+        {
+            path: '/order',
+            name: 'order',
+            component: StudyDetailsComponent,
+        },
+        {
+            path: '/discuss',
+            name: 'discuss',
+            component: StudyDetailsComponent,
         },
     ]
 })

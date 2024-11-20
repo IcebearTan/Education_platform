@@ -1,5 +1,29 @@
 <script>
+import api from '../api';
 
+export default {
+  name: 'HomePage',
+  data() {
+    return {
+      articles: [], // 存储课程数据
+    };
+  },
+  created() {
+    this.fetchCourses();
+  },
+  methods: {
+    async fetchCourses() {
+      // 模拟API请求，替换为实际API
+      api({
+        url: '/article/list',
+        method: 'get',
+      }).then((response) => {
+        console.log(response.data);
+        this.articles = response.data;
+      })
+    },
+  },
+};
 </script>
 
 <template>
@@ -9,12 +33,12 @@
     
     
   </div>
-  <div style="display: flex; justify-content: center; align-items: center; color: grey;">中山大学生物医学工程医工融合创新学习平台</div>
+  <div style="display: flex; justify-content: center; align-items: center; color: grey;">中山大学生物医学工程医工融合科创协会在线教育平台</div>
   
   <div style="display: flex; justify-content: center; align-items: center; flex-wrap: wrap;">
     <h2 style="width: 100%; text-align: center; margin-bottom: 20px;">最新资讯</h2>
     <div>
-      <el-card class="box-card" @click="$router.push('/article')">
+      <!-- <el-card class="box-card" @click="$router.push('/article')">
         <template #header>
           <div class="card-header">
             <span>震惊！中山大学BME卓越工程师训练营竟然...🔥</span>
@@ -22,25 +46,17 @@
         </template>
         <p style="margin: 0;">这里应该有一些内容...</p>
         <template #footer>2024-09-29</template>
-      </el-card>
-      <el-card class="box-card" @click="$router.push('/article')">
+      </el-card> -->
+      <el-card v-for="article in articles" :key="article.Article_Id" class="box-card" @click="$router.push('/article')">
         <template #header>
           <div class="card-header">
-            <span>震惊！中山大学BME卓越工程师训练营竟然...🔥</span>
+            <span>{{ article.Article_Title }}</span>
           </div>
         </template>
-        <p style="margin: 0;">这里应该有一些内容...</p>
-        <template #footer>2024-09-29</template>
+        <p style="margin: 0;">{{ article.Article_Introduction }}</p>
+        <template #footer>{{ article.Article_Time }}</template>
       </el-card>
-      <el-card class="box-card" @click="$router.push('/article')">
-        <template #header>
-          <div class="card-header">
-            <span>震惊！中山大学BME卓越工程师训练营竟然...🔥</span>
-          </div>
-        </template>
-        <p style="margin: 0;">这里应该有一些内容...</p>
-        <template #footer>2024-09-29</template>
-      </el-card>
+      
     </div>
   </div>
 </template>
