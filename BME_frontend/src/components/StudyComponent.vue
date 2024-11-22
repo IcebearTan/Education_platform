@@ -74,7 +74,7 @@
     flex-wrap: wrap;
 }
 .boxCard{
-    width: 350px;
+    width: 30%;
     height: 85px;
 
     margin: 10px;

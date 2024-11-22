@@ -1,13 +1,17 @@
 import { createRouter, createWebHistory } from 'vue-router';
+
+import UserindexComponent from './components/UserindexComponent.vue';
+import HomePage from './components/HomePage.vue';
+import StudyDetailsComponent from './components/StudyDetailsComponent.vue'
+import StudyComponent from './components/StudyComponent.vue'
+import ExamListComponent from './components/ExamListComponent.vue'
+
 import HomeView from './views/HomeView.vue'
 import LoginView from './views/LoginView.vue'
 import RegisterView from './views/RegisterView.vue'
-import UserindexComponent from './components/UserindexComponent.vue';
-import HomePage from './components/HomePage.vue';
 import ArticleView from './views/ArticleView.vue';
 import StudyView from './views/StudyView.vue'
-import StudyDetailsComponent from './components/StudyDetailsComponent.vue'
-import StudyComponent from './components/StudyComponent.vue'
+import ExamView from './views/ExamView.vue'
 
 const router = createRouter({
     history: createWebHistory(),
@@ -59,6 +63,23 @@ const router = createRouter({
                     path: '',
                     name: 'study_default',
                     component: StudyComponent,
+                }
+            ]
+        },
+        {
+            path: '/exam',
+            name: 'exam',
+            component: ExamView,
+            children: [
+                {
+                    path: '/exam/details',
+                    name: 'exam/details',
+                    component: ExamListComponent,
+                },
+                {
+                    path: '',
+                    name: 'exma_list',
+                    component: ExamListComponent,
                 }
             ]
         },

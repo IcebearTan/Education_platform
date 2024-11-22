@@ -100,6 +100,31 @@ import { useStore } from 'vuex'
                     <div style="display: flex; justify-content: space-between;">《C程序设计》第一章<span>未解锁</span></div>
                     <div style="display: flex; justify-content: space-between;">菜鸟：C语言教程-基础语法<span>未解锁</span></div>
                   </div>
+                  <div class="course-content-item">
+                    <div>认识C语言及环境配置</div>
+                    <div style="display: flex; justify-content: space-between;">《C程序设计》第一章<span>未解锁</span></div>
+                    <div style="display: flex; justify-content: space-between;">菜鸟：C语言教程-基础语法<span>未解锁</span></div>
+                  </div>
+                  <div class="course-content-item">
+                    <div>认识C语言及环境配置</div>
+                    <div style="display: flex; justify-content: space-between;">《C程序设计》第一章<span>未解锁</span></div>
+                    <div style="display: flex; justify-content: space-between;">菜鸟：C语言教程-基础语法<span>未解锁</span></div>
+                  </div>
+                  <div class="course-content-item">
+                    <div>认识C语言及环境配置</div>
+                    <div style="display: flex; justify-content: space-between;">《C程序设计》第一章<span>未解锁</span></div>
+                    <div style="display: flex; justify-content: space-between;">菜鸟：C语言教程-基础语法<span>未解锁</span></div>
+                  </div>
+                  <div class="course-content-item">
+                    <div>认识C语言及环境配置</div>
+                    <div style="display: flex; justify-content: space-between;">《C程序设计》第一章<span>未解锁</span></div>
+                    <div style="display: flex; justify-content: space-between;">菜鸟：C语言教程-基础语法<span>未解锁</span></div>
+                  </div>
+                  <div class="course-content-item">
+                    <div>认识C语言及环境配置</div>
+                    <div style="display: flex; justify-content: space-between;">《C程序设计》第一章<span>未解锁</span></div>
+                    <div style="display: flex; justify-content: space-between;">菜鸟：C语言教程-基础语法<span>未解锁</span></div>
+                  </div>
                 </div>
               </div>
             </el-col>
@@ -187,5 +212,27 @@ import { useStore } from 'vuex'
   -webkit-line-clamp: 3;       /* 显示的行数 */
   -webkit-box-orient: vertical;/* 设置为垂直布局 */
   overflow: hidden;            /* 超出隐藏 */
+}
+
+.left-col {
+  background-color: #f5f5f5;
+  text-align: center;
+  padding: 10px;
+
+  height: 400px;
+
+  font-size: 100px;
+  font-weight: 900;
+}
+
+.right-col {
+  background-color: #f5f5f5;
+  text-align: center;
+  padding: 10px;
+
+  height: 400px;
+
+  font-size: 100px;
+  font-weight: 900;
 }
 </style>
