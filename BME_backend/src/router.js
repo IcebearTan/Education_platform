@@ -4,6 +4,8 @@ import HomeView from './views/HomeView.vue'
 import LoginView from './views/LoginView.vue'
 import RegisterView from './views/RegisterView.vue'
 
+import UserManage from './components/UserManage.vue'
+
 
 
 const router = createRouter({
@@ -13,6 +15,18 @@ const router = createRouter({
             path: '/',
             name: 'home',
             component: HomeView,
+            children: [
+                {
+                    path: '/user-manage',
+                    name: 'user_manage',
+                    component: UserManage
+                },
+                {
+                    path: '',
+                    name: 'home_default',
+                    component: UserManage
+                }
+            ]
         },
         {
             path: '/login',
