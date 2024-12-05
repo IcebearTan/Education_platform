@@ -124,6 +124,7 @@ export default {
         },
 
         async submitForm() {
+
             if (!this.validateForm()) {
                 return;
             }
@@ -145,14 +146,27 @@ export default {
                     console.log(res.data.token, 'token')
                     // 将数据存入浏览器
                     localStorage.setItem("token", res.data.token)
+
                     this.$router.push('/login')
+                    
+                    this.$message({
+                        message: '注册成功',
+                        type: 'success'
+                    });
+                }
+                else {
+                    this.$message({
+                        message: res.data.message,
+                        type: 'error'
+                    })
                 }
             })
 
-            this.$message({
-                message: '注册成功',
-                type: 'success'
-            });
+            
+
+            
+
+
         }
     }
 };
@@ -186,7 +200,7 @@ export default {
                                 获取邮箱验证码
                             </el-button> -->
                             <el-button type="primary" :disabled="disable" :class="{ codeGeting: isGeting }"
-                                @click="submitEmail">{{ getCode }}</el-button>
+                                @click="submitEmail" style="margin-left: 10px;">{{ getCode }}</el-button>
                         </div>
 
                     </el-form-item>

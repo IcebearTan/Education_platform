@@ -12,6 +12,7 @@ import RegisterView from './views/RegisterView.vue'
 import ArticleView from './views/ArticleView.vue';
 import StudyView from './views/StudyView.vue'
 import ExamView from './views/ExamView.vue'
+import UserIndex from './views/UserIndex.vue';
 
 const router = createRouter({
     history: createWebHistory(),
@@ -21,11 +22,6 @@ const router = createRouter({
             name: 'home',
             component: HomeView,
             children: [
-                {
-                    path: 'user',
-                    name: 'user',
-                    component: UserindexComponent,
-                },
                 {
                     path: '',
                     name: 'home_default',
@@ -42,6 +38,11 @@ const router = createRouter({
             path: '/register',
             name: 'register',
             component: RegisterView
+        },
+        {
+            path: '/user',
+            name: 'user',
+            component: UserIndex
         },
         {
             path: '/article',
