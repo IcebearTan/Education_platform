@@ -75,7 +75,7 @@
 }
 .boxCard{
     width: 30%;
-    height: 85px;
+    height: 100px;
 
     margin: 10px;
     overflow: hidden; /* 隐藏溢出内容 */

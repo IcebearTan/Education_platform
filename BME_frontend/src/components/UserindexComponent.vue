@@ -46,42 +46,97 @@ onMounted(() => {
 </script>
 
 <template>
-  <el-col :span="12">
-    <div class="grid-content bg-purple">
-      <el-card class="box-card">
-        <div slot="header" class="clearfix">
-          <span>个人信息</span>
-        </div>
-        <el-divider></el-divider>
-        <div class="name-role">
-          <span class="sender">{{ User_Name }}</span>
-        </div>
-        <div class="registe-info">
-          <span class="registe-info">
-            注册时间：
-            {{ join_time }}
-          </span>
-        </div>
-        <el-divider></el-divider>
-        <div class="personal-relation">
-          <div class="relation-item">邮箱: {{ User_Email }}<div style="float: right; padding-right:20px;"></div>
+  <el-row>
+    <el-col :span="6">
+      <!-- <div class="grid-content bg-purple">
+        <el-card class="box-card">
+          <div slot="header" class="clearfix">
+            <span>个人简介</span>
           </div>
-        </div>
-        <div class="personal-relation">
-          <div class="relation-item">勋章: {{ User_Medal }}<div style="float: right; padding-right:20px;"></div>
+          <el-divider></el-divider>
+          <div class="name-role">
+            <span class="sender">{{ User_Name }}</span>
           </div>
-        </div>
-        <div class="personal-relation">
-          <div class="relation-item">学习阶段: {{ User_Stage }}<div style="float: right; padding-right:20px;"></div>
+          <div class="registe-info">
+            <span class="registe-info">
+              注册时间：
+              {{ join_time }}
+            </span>
           </div>
+          <el-divider></el-divider>
+          <div class="personal-relation">
+            <div class="relation-item">邮箱: {{ User_Email }}<div style="float: right; padding-right:20px;"></div>
+            </div>
+          </div>
+          <div class="personal-relation">
+            <div class="relation-item">勋章: {{ User_Medal }}<div style="float: right; padding-right:20px;"></div>
+            </div>
+          </div>
+          <div class="personal-relation">
+            <div class="relation-item">学习阶段: {{ User_Stage }}<div style="float: right; padding-right:20px;"></div>
+            </div>
+          </div>
+        </el-card>
+      </div> -->
+
+      <div class="left-side">
+        <div>
+          <div style="padding: 20px; display: flex; align-items: center; font-size: large; font-weight: bold;">个人简介</div>
+          
         </div>
-      </el-card>
-    </div>
-  </el-col>
+      </div>
+    </el-col>
+
+    <el-col :span="18">
+      <div style="display: flex;">
+        <div class="right-side" style="margin-left: 0;">
+
+        </div>
+        <div class="right-side">
+          <div style="padding: 20px; display: flex; align-items: center; font-size: large; font-weight: bold; padding-bottom: 0;">
+            勋章: {{ User_Medal }}
+          </div>
+          <img src="../assets/image.png" style="width: 100px; height: 100px; margin: 10px; box-shadow: #a3dce6 0px 0px 22px 0px; display: block; border-radius: 50%; border: solid #729bd4 5px; display: inline-block;" />
+          <img src="../assets/image.png" style="width: 100px; height: 100px; margin: 10px; box-shadow: #a3dce6 0px 0px 22px 0px; display: block; border-radius: 50%; border: solid #bb3e51 5px; display: inline-block;" />
+          <img src="../assets/image.png" style="width: 100px; height: 100px; margin: 10px; box-shadow: #a3dce6 0px 0px 22px 0px; display: block; border-radius: 50%; display: inline-block;" />
+
+          
+          
+        </div>
+        
+      </div>
+      
+    </el-col>
+  </el-row>
+  
 
 </template>
 
 <style scoped>
+.right-side{
+  border-radius: 5px;
+
+  box-shadow: #d3dce6 0px 0px 10px 0px;
+
+  color: #729bd4;
+
+  height: 200px;
+  width: 50%;
+
+  margin: 10px;
+}
+
+.left-side{
+  border-radius: 5px;
+
+  box-shadow: #d3dce6 0px 0px 10px 0px;
+
+  height: 100vh;
+  width: 90%;
+
+  margin-top: 10px;
+}
+
 .text {
   font-size: 14px;
 }
