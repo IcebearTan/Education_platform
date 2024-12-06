@@ -1,6 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router';
 
 import UserindexComponent from './components/UserindexComponent.vue';
+import AdminindexComponent from "./components/AdminindexComponent.vue";
+
 import HomePage from './components/HomePage.vue';
 import StudyDetailsComponent from './components/StudyDetailsComponent.vue'
 import StudyComponent from './components/StudyComponent.vue'
@@ -13,6 +15,8 @@ import ArticleView from './views/ArticleView.vue';
 import StudyView from './views/StudyView.vue'
 import ExamView from './views/ExamView.vue'
 import UserIndex from './views/UserIndex.vue';
+import UserCenter from './views/UserCenter.vue';
+
 
 const router = createRouter({
     history: createWebHistory(),
@@ -42,7 +46,24 @@ const router = createRouter({
         {
             path: '/user',
             name: 'user',
-            component: UserIndex
+            component: UserIndex,
+        },
+        {
+            path: '/user-center',
+            name: 'user-center',
+            component: UserCenter,
+            children: [
+                {
+                    path: '/user-center/articles',
+                    name: 'user-center-articles',
+                    component: UserindexComponent,
+                },
+                {
+                    path: '',
+                    name: 'user-center-default',
+                    component: UserindexComponent,
+                }
+            ]
         },
         {
             path: '/article',
