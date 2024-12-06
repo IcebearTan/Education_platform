@@ -1,5 +1,5 @@
 <script>
-import UserindexComponent from "../components/UserindexComponent.vue";
+import UserCenterComponent from "../components/UserCenterComponent.vue";
 import AdminindexComponent from "../components/AdminindexComponent.vue";
 
 import MenuComponent from "../components/MenuComponent.vue";
@@ -25,7 +25,7 @@ export default {
 
     name: 'UserIndex',
     components: {
-        UserindexComponent,
+        UserCenterComponent,
         MenuComponent
     },
 
@@ -73,17 +73,7 @@ export default {
                 <el-row>
                     <el-col :span="3"></el-col>
                     <el-col :span="18">
-                        <div style="position: relative;">
-                            <el-avatar @click="visible = !visible"
-                                shape="square"
-                                size="large"
-                                class="avatar"
-                                src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png"
-                            />
-
-                            <span style="position: absolute; top: 0; align-items: center; font-size: large; font-weight: bold; padding: 10px; font-size: larger;">{{ username }}</span>
-                        </div>
-                        <UserindexComponent />
+                        <UserCenterComponent />
                     </el-col>
                     <el-col :span="3"></el-col>
                 </el-row>

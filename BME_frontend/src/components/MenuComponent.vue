@@ -90,7 +90,7 @@ const logOut = () => {
                             <div style="position: relative; top: 0; font-size: 25px; margin-left: 10px">{{ $store.state.user.User_Name }}</div>
                         </div>
                         <ul style="list-style: none; padding: 0; margin-bottom: 0;" role="none">
-                            <li class="popli" role="none" @click="$router.push('/user')">
+                            <li class="popli" role="none" @click="$router.push('/user-center')">
                                 <el-icon>
                                     <user />
                                 </el-icon>
