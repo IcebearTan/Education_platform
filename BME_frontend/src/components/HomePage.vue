@@ -1,4 +1,5 @@
 <script>
+import { RouterLink } from 'vue-router';
 import api from '../api';
 
 export default {
@@ -47,14 +48,17 @@ export default {
         <p style="margin: 0;">这里应该有一些内容...</p>
         <template #footer>2024-09-29</template>
       </el-card> -->
-      <el-card v-for="article in articles" :key="article.Article_Id" class="box-card" @click="$router.push('/article')">
-        <template #header>
-          <div class="card-header">
-            <span>{{ article.Article_Title }}</span>
-          </div>
-        </template>
-        <p style="margin: 0;">{{ article.Article_Introduction }}</p>
-        <template #footer>{{ article.Article_Time }}</template>
+      
+      <el-card v-for="article in articles" :key="article.Article_Id" class="box-card">
+        <RouterLink :to="{ path: '/article', query: { Article_Id: article.Article_Id } }">
+          <template #header>
+            <div class="card-header">
+              <span>{{ article.Article_Title }}</span>
+            </div>
+          </template>
+          <p style="margin: 0;">{{ article.Article_Introduction }}</p>
+          <template #footer>{{ article.Article_Time }}</template>
+        </RouterLink>
       </el-card>
       
     </div>
