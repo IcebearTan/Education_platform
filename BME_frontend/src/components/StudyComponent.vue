@@ -1,5 +1,30 @@
 <script>
+import { RouterLink } from 'vue-router';
+import api from '../api';
 
+export default {
+    data() {
+        return {
+            courseList: []
+        }
+    },
+    methods: {
+        async getCourseList() {
+            await api({
+                url: '/course/list',
+                method: 'get',
+            }).then(res => {
+                this.courseList = res.data;
+                console.log(this.courseList);
+            }).catch(err => {
+                console.log(err);
+            })
+        }
+    },
+    mounted() {
+        this.getCourseList();
+    },
+}
 </script>
 
 <template>
@@ -8,25 +33,22 @@
         <div class="headGraph">学习路径</div>
     </div>
     <div class="mainContainer">
-        <el-card class="boxCard" @click="$router.push('/study/details')">
-            <el-row>
-                <el-col :span="4">
-                    暂无图片
-                </el-col>
-                <el-col :span="20">
-                    <div class="cardTitle">C语言程序设计</div>
-                    <div class="cardText">C语言程序设计C语言程序设计C语言程序设计C语言程序设计C语言程序设计</div>
-                    <div class="null"></div>
-                    <div class="cardFooter">114章·514节</div>
-                </el-col>
-            </el-row>
-        </el-card>
-        <el-card class="boxCard"></el-card>
-        <el-card class="boxCard"></el-card>
-        <el-card class="boxCard"></el-card>
-        <el-card class="boxCard"></el-card>
-        <el-card class="boxCard"></el-card>
-        
+        <h2 style="margin-left: 10px;font-weight: 500;">最新课程</h2>
+        <div class="columnContainer">
+            <el-card class="boxCard" v-for="course in courseList" :key="course.Course_Id" @click="$router.push('/study/details')">
+                <el-row>
+                    <el-col :span="6">
+                        暂无图片
+                    </el-col>
+                    <el-col :span="18">
+                        <div class="cardTitle">{{ course.Course_title }}</div>
+                        <div class="cardText">{{ course.Course_Introduction }}</div>
+                        <div class="cardFooter">共 {{ course.Course_Chapters }} 章</div>
+                    </el-col>
+                </el-row>
+            </el-card>
+        </div>
+        <!-- <el-card class="boxCard"></el-card> -->
     </div>
 </template>
 
@@ -68,8 +90,12 @@
     margin-top: 20px;
     margin-bottom: 20px;
 
+    /* display: flex;
+    align-items: center;
+    flex-wrap: wrap; */
+}
+.columnContainer {
     display: flex;
-    justify-content: center;
     align-items: center;
     flex-wrap: wrap;
 }
@@ -78,32 +104,44 @@
     height: 100px;
 
     margin: 10px;
-    overflow: hidden; /* 隐藏溢出内容 */
-    display: -webkit-box; /* 使用 WebKit 箱模型 */
-    -webkit-box-orient: vertical; /* 设置为垂直排列 */
-    -webkit-line-clamp: 2; /* 设置显示的行数 */
+    /* overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2; */
+
+    box-shadow: 0 2px 10px 0 rgba(53, 53, 53, 0.1);
+    transition: all 0.3s ease;
 
     cursor: pointer;
 }
+.boxCard:hover {
+    transform: translateY(-5px);
+
+    box-shadow: 0 5px 10px 0 rgba(0, 0, 0, 0.1);
+
+}
 .cardTitle {
-    flex: 1;
-    font-size: 12px;
+    font-size: 15px;
+    font-weight: bold;
+    height: 25%;
 }
 .cardText {
-    flex: 1;
-    
     font-size: 12px;
+    height: 3em; /* 限制高度为两行的高度 */
+    line-height: 1.5em; /* 设置行高 */
+    overflow: hidden; /* 超出部分隐藏 */
+    display: -webkit-box; /* 必须要用 webkit-box 才能支持 line-clamp */
+    -webkit-line-clamp: 2; /* 限制为两行 */
+    -webkit-box-orient: vertical; /* 垂直排列 */
+    text-overflow: ellipsis; /* 添加省略号（可选） */
 
-}
-.null {
-    flex: 1;
-    
+    margin-bottom: 20px;
 }
 .cardFooter {
-    flex: 1;
+    position: relative;
     
     font-size: 12px;
-
+    height: 25%;
 }
 .boxCard :deep(.el-card__body) {
     padding: 0px;

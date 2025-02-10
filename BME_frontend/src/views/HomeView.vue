@@ -59,7 +59,7 @@ import { useStore } from 'vuex'
       <el-header>
         <MenuComponent />
       </el-header>
-      <el-main style="padding-left: 20px; min-height: 100vh;">
+      <el-main class="homeMainContainer">
         <RouterView />
       </el-main>
       <el-footer class="footer">备案编号：1145141919810 没有版权和免责声明 千万别申诉版权 出版物许可证也没有 ©2024-2024深圳中大BME草台班子无限公司
@@ -95,5 +95,11 @@ import { useStore } from 'vuex'
   width: 100%;
   
   color: #bababa;
+}
+
+.homeMainContainer{
+  padding-left: 20px;
+  min-height: 100vh;
+  background-color: rgba(129, 51, 33, 0.898);
 }
 </style>

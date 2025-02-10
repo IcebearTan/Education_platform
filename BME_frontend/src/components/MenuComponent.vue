@@ -55,7 +55,7 @@ const logOut = () => {
     <el-menu :default-active="activeIndex" class="el-menu-demo" mode="horizontal" :ellipsis="false"
         @select="handleSelect" router>
         <el-menu-item index="/">
-            <img style="width: 50px" src="../assets/vue.svg" />
+            <img style="width: 50px" src="../assets/Logo_NewYear.png" />
         </el-menu-item>
 
         
