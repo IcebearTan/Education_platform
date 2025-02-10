@@ -10,11 +10,10 @@ export default {
     };
   },
   created() {
-    this.fetchCourses();
+    this.fetchArticles();
   },
   methods: {
-    async fetchCourses() {
-      // 模拟API请求，替换为实际API
+    async fetchArticles() {
       api({
         url: '/article/list',
         method: 'get',
@@ -23,21 +22,24 @@ export default {
         this.articles = response.data;
       })
     },
+    goToArticle(articleId) {
+      this.$router.push({ path: '/article', query: { Article_Id: articleId } });
+    }
   },
 };
 </script>
 
-<template>
+<template style="background-color: brown;">
   <div style="display: flex; justify-content: center; align-items: center;">
-    <img src="../assets/Vue.svg" alt="BME Logo" width="100px"/>
-    <h1 style="display: inline-block; font-size: 80px;">卓越工程师训练营</h1>
+    <img src="../assets/Logo_NewYear.png" alt="BME Logo" width="250px" class="largeLogo"/>
+    <h1 class="largeTitle">卓越工程师训练营</h1>
     
     
   </div>
-  <div style="display: flex; justify-content: center; align-items: center; color: grey;">中山大学生物医学工程医工融合科创协会在线教育平台</div>
+  <div style="display: flex; justify-content: center; align-items: center; color: whitesmoke; font-size: 20px;">中山大学生物医学工程医工融合科创协会在线教育平台</div>
   
   <div style="display: flex; justify-content: center; align-items: center; flex-wrap: wrap;">
-    <h2 style="width: 100%; text-align: center; margin-bottom: 20px;">最新资讯</h2>
+    <h1 class="secondTitle">最新资讯</h1>
     <div>
       <!-- <el-card class="box-card" @click="$router.push('/article')">
         <template #header>
@@ -49,16 +51,15 @@ export default {
         <template #footer>2024-09-29</template>
       </el-card> -->
       
-      <el-card v-for="article in articles" :key="article.Article_Id" class="box-card">
-        <RouterLink :to="{ path: '/article', query: { Article_Id: article.Article_Id } }">
-          <template #header>
-            <div class="card-header">
-              <span>{{ article.Article_Title }}</span>
-            </div>
-          </template>
-          <p style="margin: 0;">{{ article.Article_Introduction }}</p>
-          <template #footer>{{ article.Article_Time }}</template>
-        </RouterLink>
+      <el-card v-for="article in articles" :key="article.Article_Id" class="box-card" @click="goToArticle(article.Article_Id)">
+        <template #header>
+          <div class="card-header">
+            <span>{{ article.Article_Title }}</span>
+          </div>
+        </template>
+        <p style="margin: 0;">{{ article.Article_Introduction }}</p>
+        <!-- <RouterLink :to="{ path: '/article', query: { Article_Id: article.Article_Id } }"></RouterLink> -->
+        <template #footer>{{ article.Article_Time }}</template>
       </el-card>
       
     </div>
@@ -71,6 +72,31 @@ export default {
   transform: translateY(-3px);
   box-shadow: #cbcbcb 0px 0px 10px;
 }
+
+.largeTitle {
+  display: inline-block;
+  font-size: 100px;
+
+  color: rgb(244, 203, 138);
+}
+.secondTitle {
+  width: 100%;
+  text-align: center;
+  margin: 30px;
+  font-size: 30px;
+
+  color: rgb(244, 203, 138);
+}
+
+.largeLogo{
+  cursor: pointer;
+  transition: transform 1s ease-in-out;
+
+  border-radius: 50%;
+}
+.largeLogo:hover {
+  transform: rotate(360deg);
+}
 </style>
 
 <style>
@@ -81,8 +107,6 @@ export default {
 
   cursor: pointer;
 }
-
-
 
 .el-card :deep(.el-card__body) {
   padding: 10px !important;
