@@ -1,12 +1,41 @@
 <script>
 import { RouterView } from "vue-router";
 import MenuComponent from "../components/MenuComponent.vue";
+import api from '../api';
 
 export default {
   name: "HomeView",
   components: { 
     MenuComponent
-  }
+  },
+  async mounted() {
+    console.log(this.$route.query.Article_Id);
+    await this.getArticle();
+  },
+  data() {
+    return {
+      article: {}
+    }
+  },
+  methods: {
+    async getArticle() {
+      try {
+        const response = await api({
+          method: 'get',
+          url: `/article`,
+          params: {
+            Article_Id: this.$route.query.Article_Id
+          }
+        })
+        console.log(response.data);
+        this.article = response.data
+      } catch (error) {
+        console.error(error);
+      }
+    }
+  },
+  
+  
 };
 </script>
 
@@ -28,8 +57,7 @@ export default {
                   </h1>
                 </el-header>
                 <el-main>
-                  <div class="content">
-                      
+                  <div class="content" v-html="this.article">
                   </div>
                 </el-main>
                 <el-footer>Footer</el-footer>

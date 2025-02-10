@@ -5,6 +5,10 @@ import LoginView from './views/LoginView.vue'
 import RegisterView from './views/RegisterView.vue'
 
 import UserManage from './components/UserManage.vue'
+import ArticleManage from './components/ArticleManage.vue'
+import ArticleCreate from './components/ArticleCreate.vue'
+
+
 
 
 
@@ -25,7 +29,17 @@ const router = createRouter({
                     path: '',
                     name: 'home_default',
                     component: UserManage
-                }
+                },
+                {
+                    path: '/article/manage',
+                    name: 'article_manage',
+                    component: ArticleManage
+                },
+                {
+                    path: '/article/create',
+                    name: 'article_create',
+                    component: ArticleCreate
+                },
             ]
         },
         {

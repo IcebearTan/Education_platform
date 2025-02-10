@@ -76,9 +76,9 @@ import { useStore } from 'vuex'
                 <el-icon>
                   <location />
                 </el-icon>
-                <span>文章管理</span>
+                <span>用户管理</span>
               </template>
-              <el-menu-item index="/user-manage" @click="router.push('/user-manage')">管理文章</el-menu-item>
+              <el-menu-item index="/user-manage" @click="router.push('/user-manage')">管理用户</el-menu-item>
             </el-sub-menu>
             <el-sub-menu index="2">
               <template #title>
@@ -87,20 +87,20 @@ import { useStore } from 'vuex'
                 </el-icon>
                 <span>文章管理</span>
               </template>
-              <el-menu-item index="2-1">编辑文章</el-menu-item>
-              <el-menu-item index="2-2">管理文章</el-menu-item>
+              <el-menu-item index="/article/manage" @click="router.push('/article/manage')">管理文章</el-menu-item>
+              <el-menu-item index="/article/create" @click="router.push('/article/create')">草稿箱</el-menu-item>
             </el-sub-menu>
             <el-sub-menu index="3">
               <template #title>
                 <el-icon>
                   <location />
                 </el-icon>
-                <span>文章管理</span>
+                <span>课程管理</span>
               </template>
               <el-menu-item index="3-1">编辑文章</el-menu-item>
               <el-menu-item index="3-2">管理文章</el-menu-item>
             </el-sub-menu>
-            <el-sub-menu index="4">
+            <!-- <el-sub-menu index="4">
               <template #title>
                 <el-icon>
                   <location />
@@ -129,7 +129,7 @@ import { useStore } from 'vuex'
               </template>
               <el-menu-item index="6-1">编辑文章</el-menu-item>
               <el-menu-item index="6-2">管理文章</el-menu-item>
-            </el-sub-menu>
+            </el-sub-menu> -->
 
             <el-menu-item index="7" style="position: absolute; bottom: 0;">
               <el-icon>
