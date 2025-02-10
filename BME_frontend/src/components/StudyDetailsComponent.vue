@@ -38,6 +38,12 @@ export default {
         }
       }
     )
+  },
+
+  methods: {
+    caution() {
+      ElMessage.error('前面的内容以后再来探索吧！')
+    }
   }
 };
 </script>
@@ -56,75 +62,111 @@ import { useStore } from 'vuex'
 <template>
   <div class="course-wrapper">
       <el-row style="width: 100%;">
-        <el-col :span="4" class="left-col">广告招租</el-col>
+        <el-col :span="4" class="left-col"></el-col>
         <el-col :span="16" class="main-col">
           <el-row>
             <el-col :span="16">
               <div class="course-details">
-                <el-row style="width: 100%;">
-                  <el-col :span="6">
-                    <div style="height: 100%; display: flex; align-items: center; justify-content: center; background-color: #b6b6b6;">
+                <el-row style="width: 90%; margin: 0 auto;">
+                  <el-col :span="7">
+                    <div style="height: 100%; display: flex; align-items: center; justify-content: center; font-size: 30px; background-color: #eee; margin-right: 35px; border-radius: 10px;">
                       暂无图片
                     </div>
                   </el-col>
-                  <el-col :span="18">
-                    <div style="height: 20%;">
+                  <el-col :span="17">
+                    <h2 style="height: 20%;margin-bottom: 0;">
                       C语言程序设计
-                    </div>
+                    </h2>
                     <div class="course-description">
                       C语言是许多现代编程语言的基础，掌握C语言可以帮助理解其他语言。同时C语言强调对计算机底层的控制，能增强逻辑思维和问题解决能力。在生物医疗电子中，许多系统和应用程序是用C语言编写的，学习它能够为未来的开发打下坚实的基础。总之，学习C语言，是走进编程世界的重要一步。
                       学习资料：这一部分采用课内外结合的学习方式，依照课内进度，以《C程序设计》为基础，结合卓越工程师训练营系列的《C语言程序设计与应用》和课外题目进行，内容以大纲为基础，以分组汇报的方式进行灵活安排和考查，同时提供学员交流空间。
                     </div>
-                    <button>加入学习</button>
+                    <div class="course-bottom">
+                      <el-button type="primary" size="large" @click="this.caution()">加入学习</el-button>
+                    </div>
+                    
                   </el-col>
                 </el-row>
               </div>
               <div class="course-contents">
-                <div style="height: 50px;background-color: #c5c5c5;width: 100%;">
-                  目录
+                <div style="height: 50px;width: 90%; padding-bottom: 20px; border-bottom: solid 1px #ddd; margin-bottom: 10px;">
+                  <span style="font-size: 25px; font-weight: bold; padding-bottom: 19px; border-bottom: solid 3px #000;">目录</span>
                 </div>
                 <div class="course-content-card">
                   <div class="course-content-item">
-                    <div>认识C语言及环境配置</div>
-                    <div style="display: flex; justify-content: space-between;">《C程序设计》第一章<span>未解锁</span></div>
-                    <div style="display: flex; justify-content: space-between;">菜鸟：C语言教程-基础语法<span>未解锁</span></div>
-                  </div>
-                  <div class="course-content-item">
-                    <div>认识C语言及环境配置</div>
-                    <div style="display: flex; justify-content: space-between;">《C程序设计》第一章<span>未解锁</span></div>
-                    <div style="display: flex; justify-content: space-between;">菜鸟：C语言教程-基础语法<span>未解锁</span></div>
-                  </div>
-                  <div class="course-content-item">
-                    <div>认识C语言及环境配置
+                    <div style="font-size: 20px; font-weight: 500; margin-bottom: 10px;">
+                      <span style="margin-right: 10px;">1</span>
+                      <span>认识C语言及环境配置</span>
                     </div>
-                    <div style="display: flex; justify-content: space-between;">《C程序设计》第一章<span>未解锁</span></div>
-                    <div style="display: flex; justify-content: space-between;">菜鸟：C语言教程-基础语法<span>未解锁</span></div>
+                    <div class="course-content-item-sub">《C程序设计》第一章<span>未解锁</span></div>
+                    <div class="course-content-item-sub">菜鸟：C语言教程-基础语法<span>未解锁</span></div>
                   </div>
                   <div class="course-content-item">
-                    <div>认识C语言及环境配置</div>
-                    <div style="display: flex; justify-content: space-between;">《C程序设计》第一章<span>未解锁</span></div>
-                    <div style="display: flex; justify-content: space-between;">菜鸟：C语言教程-基础语法<span>未解锁</span></div>
+                    <div style="font-size: 20px; font-weight: 500; margin-bottom: 10px;">
+                      <span style="margin-right: 10px;">1</span>
+                      <span>认识C语言及环境配置</span>
+                    </div>
+                    <div class="course-content-item-sub">《C程序设计》第一章<span>未解锁</span></div>
+                    <div class="course-content-item-sub">菜鸟：C语言教程-基础语法<span>未解锁</span></div>
                   </div>
                   <div class="course-content-item">
-                    <div>认识C语言及环境配置</div>
-                    <div style="display: flex; justify-content: space-between;">《C程序设计》第一章<span>未解锁</span></div>
-                    <div style="display: flex; justify-content: space-between;">菜鸟：C语言教程-基础语法<span>未解锁</span></div>
+                    <div style="font-size: 20px; font-weight: 500; margin-bottom: 10px;">
+                      <span style="margin-right: 10px;">1</span>
+                      <span>认识C语言及环境配置</span>
+                    </div>
+                    <div class="course-content-item-sub">《C程序设计》第一章<span>未解锁</span></div>
+                    <div class="course-content-item-sub">菜鸟：C语言教程-基础语法<span>未解锁</span></div>
                   </div>
                   <div class="course-content-item">
-                    <div>认识C语言及环境配置</div>
-                    <div style="display: flex; justify-content: space-between;">《C程序设计》第一章<span>未解锁</span></div>
-                    <div style="display: flex; justify-content: space-between;">菜鸟：C语言教程-基础语法<span>未解锁</span></div>
+                    <div style="font-size: 20px; font-weight: 500; margin-bottom: 10px;">
+                      <span style="margin-right: 10px;">1</span>
+                      <span>认识C语言及环境配置</span>
+                    </div>
+                    <div class="course-content-item-sub">《C程序设计》第一章<span>未解锁</span></div>
+                    <div class="course-content-item-sub">菜鸟：C语言教程-基础语法<span>未解锁</span></div>
                   </div>
                   <div class="course-content-item">
-                    <div>认识C语言及环境配置</div>
-                    <div style="display: flex; justify-content: space-between;">《C程序设计》第一章<span>未解锁</span></div>
-                    <div style="display: flex; justify-content: space-between;">菜鸟：C语言教程-基础语法<span>未解锁</span></div>
+                    <div style="font-size: 20px; font-weight: 500; margin-bottom: 10px;">
+                      <span style="margin-right: 10px;">1</span>
+                      <span>认识C语言及环境配置</span>
+                    </div>
+                    <div class="course-content-item-sub">《C程序设计》第一章<span>未解锁</span></div>
+                    <div class="course-content-item-sub">菜鸟：C语言教程-基础语法<span>未解锁</span></div>
                   </div>
                   <div class="course-content-item">
-                    <div>认识C语言及环境配置</div>
-                    <div style="display: flex; justify-content: space-between;">《C程序设计》第一章<span>未解锁</span></div>
-                    <div style="display: flex; justify-content: space-between;">菜鸟：C语言教程-基础语法<span>未解锁</span></div>
+                    <div style="font-size: 20px; font-weight: 500; margin-bottom: 10px;">
+                      <span style="margin-right: 10px;">1</span>
+                      <span>认识C语言及环境配置</span>
+                    </div>
+                    <div class="course-content-item-sub">《C程序设计》第一章<span>未解锁</span></div>
+                    <div class="course-content-item-sub">菜鸟：C语言教程-基础语法<span>未解锁</span></div>
                   </div>
+                  <div class="course-content-item">
+                    <div style="font-size: 20px; font-weight: 500; margin-bottom: 10px;">
+                      <span style="margin-right: 10px;">1</span>
+                      <span>认识C语言及环境配置</span>
+                    </div>
+                    <div class="course-content-item-sub">《C程序设计》第一章<span>未解锁</span></div>
+                    <div class="course-content-item-sub">菜鸟：C语言教程-基础语法<span>未解锁</span></div>
+                  </div>
+                  <div class="course-content-item">
+                    <div style="font-size: 20px; font-weight: 500; margin-bottom: 10px;">
+                      <span style="margin-right: 10px;">1</span>
+                      <span>认识C语言及环境配置</span>
+                    </div>
+                    <div class="course-content-item-sub">《C程序设计》第一章<span>未解锁</span></div>
+                    <div class="course-content-item-sub">菜鸟：C语言教程-基础语法<span>未解锁</span></div>
+                  </div>
+                  <div class="course-content-item">
+                    <div style="font-size: 20px; font-weight: 500; margin-bottom: 10px;">
+                      <span style="margin-right: 10px;">1</span>
+                      <span>认识C语言及环境配置</span>
+                    </div>
+                    <div class="course-content-item-sub">《C程序设计》第一章<span>未解锁</span></div>
+                    <div class="course-content-item-sub">菜鸟：C语言教程-基础语法<span>未解锁</span></div>
+                  </div>
+                  <div style="display: flex; justify-content: center; align-items: center; height: 50px; margin-bottom: 20px;">没有更多内容啦~</div>
+                  
                 </div>
               </div>
             </el-col>
@@ -142,7 +184,7 @@ import { useStore } from 'vuex'
           </el-row>
           
         </el-col>
-        <el-col :span="4" class="right-col">广告招租</el-col>
+        <el-col :span="4" class="right-col"></el-col>
       </el-row>
     </div>
 </template>
@@ -172,8 +214,11 @@ import { useStore } from 'vuex'
   /* justify-content: center;
   align-items: center; */
   width: 100%;
-  height: 200px;
-  background-color: #f5f5f5;
+  height: 250px;
+
+  margin-top: 20px;
+  margin-bottom: 20px;
+  /* background-color: #f5f5f5; */
 }
 
 .course-contents {
@@ -184,8 +229,12 @@ import { useStore } from 'vuex'
   flex-direction: column;
 }
 
-.course-process{
-  
+.course-bottom{
+  position: absolute;
+  bottom: 0;
+
+  margin: 10px;
+  margin-left: 0;
 }
 
 .main-col {
@@ -196,26 +245,45 @@ import { useStore } from 'vuex'
 }
 
 .course-content-card{
-  background-color: #f5f5f5;
+  background-color: #ffffff;
   width: 90%;
 
   border-radius: 5px;
-  box-shadow: #5c5c5c  0px 0px 5px;
+  box-shadow: #d1d1d1  0px 0px 12px 2px;
+
+  margin-top: 15px;
 }
 
 .course-content-item{
-  border-bottom: solid 2px #5c5c5c;
+  border-bottom: solid 1px #d1d1d1;
+  margin: 20px;
+
+  padding-bottom: 10px;
+}
+
+.course-content-item-sub{
+  display: flex;
+  justify-content: space-between;
+  font-size: 16px;
+  /* margin-bottom: 10px; */
+  padding: 10px;
+
+  border-radius: 5px;
+  cursor: pointer;
+}
+.course-content-item-sub:hover{
+  background-color: #ededed;
 }
 
 .course-description {
   display: -webkit-box;
-  -webkit-line-clamp: 3;       /* 显示的行数 */
-  -webkit-box-orient: vertical;/* 设置为垂直布局 */
-  overflow: hidden;            /* 超出隐藏 */
+  -webkit-line-clamp: 5;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .left-col {
-  background-color: #f5f5f5;
+  /* background-color: #f5f5f5; */
   text-align: center;
   padding: 10px;
 
@@ -226,7 +294,7 @@ import { useStore } from 'vuex'
 }
 
 .right-col {
-  background-color: #f5f5f5;
+  /* background-color: #f5f5f5; */
   text-align: center;
   padding: 10px;
 
