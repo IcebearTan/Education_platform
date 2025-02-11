@@ -159,39 +159,40 @@ export default {
 </script>
 
 <template>
-    <div>
+    <div class="login-container">
         <el-container>
             <el-header>
-                <h1>注册账号</h1>
+                <img style="width: 50px; position: relative; top: 15px;" src="../assets/Logo_NewYear.png" />
+                <span style="font-size: 25px; margin-bottom: 20px; font-weight: bold;">注册账号</span>
             </el-header>
             <el-main>
                 <el-form ref="registerForm" style="max-width: 600px" :model="registerForm" status-icon :rules="rules"
                     label-width="auto" class="demo-ruleForm">
-                    <el-form-item label="账号" prop="username">
-                        <el-input v-model="registerForm.username" type="text" autocomplete="off" />
+                    <el-form-item prop="username">
+                        <el-input v-model="registerForm.username" type="text" autocomplete="off" placeholder="输入用户名" class="input"/>
                     </el-form-item>
-                    <el-form-item label="密码" prop="password">
-                        <el-input v-model="registerForm.password" type="password" autocomplete="off" />
+                    <el-form-item prop="password">
+                        <el-input v-model="registerForm.password" type="password" autocomplete="off" placeholder="输入密码" class="input"/>
                     </el-form-item>
-                    <el-form-item label="确认密码" prop="confirmPassword">
-                        <el-input v-model="registerForm.confirmPassword" type="password" autocomplete="off" />
+                    <el-form-item prop="confirmPassword">
+                        <el-input v-model="registerForm.confirmPassword" type="password" autocomplete="off" placeholder="再次输入密码" class="input"/>
                     </el-form-item>
-                    <el-form-item label="邮箱" prop="email">
-                        <el-input v-model="registerForm.email" type="email" autocomplete="off" />
+                    <el-form-item prop="email">
+                        <el-input v-model="registerForm.email" type="email" autocomplete="off" placeholder="输入邮箱作为账号标识" class="input"/>
                     </el-form-item>
-                    <el-form-item label="验证码" prop="code">
+                    <el-form-item prop="code">
                         <div style="display: flex;">
-                            <el-input v-model="registerForm.code" type="text" autocomplete="off" />
+                            <el-input v-model="registerForm.code" type="text" autocomplete="off" placeholder="验证码" class="input"/>
                             <!-- <el-button type="primary" @click="submitEmail(registerForm.email)">
                                 获取邮箱验证码
                             </el-button> -->
-                            <el-button type="primary" :disabled="disable" :class="{ codeGeting: isGeting }"
-                                @click="submitEmail">{{ getCode }}</el-button>
+                            <el-button type="plain" :disabled="disable" :class="{ codeGeting: isGeting }"
+                                @click="submitEmail" class="confirm-button">{{ getCode }}</el-button>
                         </div>
 
                     </el-form-item>
                     <el-form-item>
-                        <el-button type="primary" @click="submitForm(registerForm)">
+                        <el-button type="primary" @click="submitForm(registerForm)" class="submit-button">
                             注册
                         </el-button>
                     </el-form-item>
@@ -199,8 +200,55 @@ export default {
 
                 <el-link href="/login" type="primary">已有账户，前去登录</el-link>
             </el-main>
+            <el-footer class="footer">
+                注册和登录什么也代表不了
+            </el-footer>
         </el-container>
     </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+.login-container {
+    width: 350px;
+    height: 550px;
+    display: flex;
+    justify-content: center;
+    margin: 20px;
+
+    border-radius: 20px;
+    box-shadow: 0 6px 15px 0px rgb(209, 209, 209);
+}
+
+.submit-button {
+    width: 100%;
+    height: 40px;
+
+    border-radius: 10px;
+}
+
+.confirm-button {
+    width: 120px;
+    height: 40px;
+
+    margin-left: 5px;
+
+    border-radius: 4px;
+}
+
+.input {
+    width: 100%;
+    height: 40px;
+
+    border-radius: 20px;
+}
+
+.footer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 12px;
+    color: #999999;
+    
+    margin-top: 10px;
+}
+</style>
