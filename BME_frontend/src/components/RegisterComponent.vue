@@ -25,6 +25,16 @@ export default {
                 username: [
                     { required: true, message: "请输入用户名", trigger: "blur" },
                     { min: 3, max: 15, message: "用户名长度需要在3-15个字符之间", trigger: "blur" },
+                    {
+                        validator: (rule, value, callback) => {
+                            if ('\u4000' <= value && value <= '\u9fa5') {
+                                callback(new Error('用户名不能包含中文'));
+                            } else {
+                                callback();
+                            }
+                        },
+                        trigger: 'blur'
+                    }
                 ],
                 password: [
                     { required: true, message: "请输入用户密码", trigger: "blur" },
@@ -145,14 +155,25 @@ export default {
                     console.log(res.data.token, 'token')
                     // 将数据存入浏览器
                     localStorage.setItem("token", res.data.token)
+                    this.$message({
+                        message: '注册成功',
+                        type: 'success'
+                    });
                     this.$router.push('/login')
+                } else {
+                    this.$message({
+                        message: '注册失败',
+                        type: 'error'
+                    });
                 }
+            }).catch((err) => {
+                this.$message({
+                    message: '注册失败',
+                    type: 'error'
+                });
             })
 
-            this.$message({
-                message: '注册成功',
-                type: 'success'
-            });
+            
         }
     }
 };
@@ -172,10 +193,10 @@ export default {
                         <el-input v-model="registerForm.username" type="text" autocomplete="off" placeholder="输入用户名" class="input"/>
                     </el-form-item>
                     <el-form-item prop="password">
-                        <el-input v-model="registerForm.password" type="password" autocomplete="off" placeholder="输入密码" class="input"/>
+                        <el-input v-model="registerForm.password" type="password" autocomplete="off" placeholder="输入密码" class="input" show-password/>
                     </el-form-item>
                     <el-form-item prop="confirmPassword">
-                        <el-input v-model="registerForm.confirmPassword" type="password" autocomplete="off" placeholder="再次输入密码" class="input"/>
+                        <el-input v-model="registerForm.confirmPassword" type="password" autocomplete="off" placeholder="再次输入密码" class="input" show-password/>
                     </el-form-item>
                     <el-form-item prop="email">
                         <el-input v-model="registerForm.email" type="email" autocomplete="off" placeholder="输入邮箱作为账号标识" class="input"/>
