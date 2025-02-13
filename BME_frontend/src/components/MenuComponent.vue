@@ -65,10 +65,10 @@ const logOut = () => {
         <el-menu-item index="/exam">
             考核
         </el-menu-item>
-        <el-menu-item index="/order">
+        <el-menu-item index="/order" disabled>
             接单
         </el-menu-item>
-        <el-menu-item index="/discuss">
+        <el-menu-item index="/discuss" disabled>
             讨论
         </el-menu-item>
         <el-menu-item v-if="$store.state.isLogin" index="/login">登录/注册</el-menu-item>
@@ -88,13 +88,15 @@ const logOut = () => {
                                 :size="50"
                             />
                             <div style="position: relative; top: 0; font-size: 25px; margin-left: 10px">{{ $store.state.user.User_Name }}</div>
+                            <div v-if="$store.state.user.User_Mode == 'admin'" class="user-type-instructor">导师</div>
+                            <div v-else class="user-type-student">学生</div>
                         </div>
                         <ul style="list-style: none; padding: 0; margin-bottom: 0;" role="none">
                             <li class="popli" role="none" @click="$router.push('/user-center')">
                                 <el-icon>
                                     <user />
                                 </el-icon>
-                                <span style="margin-left: 10px;" >个人中心</span>
+                                <span style="margin-left: 10px;" >账户设置</span>
                                 
                             </li>
                             <li class="popli" role="none" @click="logOut()">
@@ -152,6 +154,28 @@ const logOut = () => {
     cursor: pointer;
 }
 
+.user-type-instructor{
+    position: relative;
+    top: 0;
+    font-size: 20px;
+    margin-left: 10px;
+    font-weight: bold;
+    color: #DA6AFC;
+
+    text-shadow: 0px 0px 5px #ecadff;
+}
+
+.user-type-student{
+    position: relative;
+    top: 0;
+    font-size: 20px;
+    margin-left: 10px;
+    font-weight: bold;
+    color: #6AD5FC;
+
+    text-shadow: 0px 0px 5px #a5e7ff;
+
+}
 
 </style>
 
