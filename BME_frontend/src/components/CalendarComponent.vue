@@ -49,6 +49,8 @@ onMounted(() => {
   /* border-radius: 5px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   margin-right: 10px; */
+  /* margin-top: 10px; */
+  margin-bottom: 10px;
 }
 .calendarCard{
   /* width: 100%; */
@@ -74,7 +76,6 @@ onMounted(() => {
   height: 260px;
   display: flex;
   justify-content: space-evenly;
-  /* align-items: center; */
 }
 .calendars{
   width: 160px;

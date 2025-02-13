@@ -2,6 +2,7 @@
 <script setup>
 import api from '../api';
 import CalendarComponent from './CalendarComponent.vue';
+import UserActivityComponent from './UserActivityComponent.vue';
 import { onMounted } from 'vue'
 import { ref } from 'vue'
 import { ElMessage } from 'element-plus'
@@ -88,6 +89,7 @@ onMounted(() => {
         </div>
       </div>
       <calendar-component/>
+      <user-activity-component/>
     </el-col>
   </el-row>
   
