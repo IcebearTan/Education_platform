@@ -1,6 +1,7 @@
 <!-- 使用vue3语法 -->
 <script setup>
 import api from '../api';
+import CalendarComponent from './CalendarComponent.vue';
 import { onMounted } from 'vue'
 import { ref } from 'vue'
 import { ElMessage } from 'element-plus'
@@ -48,37 +49,6 @@ onMounted(() => {
 <template>
   <el-row>
     <el-col :span="6">
-      <!-- <div class="grid-content bg-purple">
-        <el-card class="box-card">
-          <div slot="header" class="clearfix">
-            <span>个人简介</span>
-          </div>
-          <el-divider></el-divider>
-          <div class="name-role">
-            <span class="sender">{{ User_Name }}</span>
-          </div>
-          <div class="registe-info">
-            <span class="registe-info">
-              注册时间：
-              {{ join_time }}
-            </span>
-          </div>
-          <el-divider></el-divider>
-          <div class="personal-relation">
-            <div class="relation-item">邮箱: {{ User_Email }}<div style="float: right; padding-right:20px;"></div>
-            </div>
-          </div>
-          <div class="personal-relation">
-            <div class="relation-item">勋章: {{ User_Medal }}<div style="float: right; padding-right:20px;"></div>
-            </div>
-          </div>
-          <div class="personal-relation">
-            <div class="relation-item">学习阶段: {{ User_Stage }}<div style="float: right; padding-right:20px;"></div>
-            </div>
-          </div>
-        </el-card>
-      </div> -->
-
       <div class="left-side">
         <div>
           <div style="padding: 20px; display: flex; align-items: center; font-size: large; font-weight: bold;">个人简介</div>
@@ -99,7 +69,7 @@ onMounted(() => {
     <el-col :span="18">
       <div style="display: flex;">
         <div class="right-side" style="margin-left: 0;">
-
+          班级模块
         </div>
         <div class="medal-card">
           <span style="height: 100%; width: 60%;">
@@ -115,17 +85,9 @@ onMounted(() => {
           <span style="display: flex; align-items: center; justify-content: center;">
             <img src="../assets/image.png" class="medal-image" />
           </span>
-          
-          <!-- <img src="../assets/image.png" style="width: 100px; height: 100px; margin: 10px; box-shadow: #a3dce6 0px 0px 22px 0px; display: block; border-radius: 50%; border: solid #bb3e51 5px; display: inline-block;" />
-          <img src="../assets/image.png" style="width: 100px; height: 100px; margin: 10px; box-shadow: #a3dce6 0px 0px 22px 0px; display: block; border-radius: 50%; display: inline-block;" /> -->
-
-
-          
-          
         </div>
-        
       </div>
-      
+      <calendar-component/>
     </el-col>
   </el-row>
   
