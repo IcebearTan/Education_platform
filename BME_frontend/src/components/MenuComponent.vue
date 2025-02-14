@@ -49,9 +49,6 @@ const logOut = () => {
 </script>
 
 <template>
-    <!-- <div class="common-layout">
-        <el-container>
-            <el-header> -->
     <el-menu :default-active="activeIndex" class="el-menu-demo" mode="horizontal" :ellipsis="false"
         @select="handleSelect" router>
         <el-menu-item index="/">
@@ -118,9 +115,6 @@ const logOut = () => {
             </div>
         </el-menu-item>
     </el-menu>
-    <!-- </el-header>
-        </el-container>
-    </div> -->
 </template>
 
 
