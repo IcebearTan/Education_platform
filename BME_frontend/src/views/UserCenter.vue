@@ -69,13 +69,13 @@ export default {
             <el-header>
                 <MenuComponent/>
             </el-header>
-            <el-main style="min-height: 100vh;">
+            <el-main style="min-height: 100vh; background-color: #fff;">
                 <el-row>
-                    <el-col :span="3"></el-col>
-                    <el-col :span="18">
+                    <el-col :span="4"></el-col>
+                    <el-col :span="16">
                         <UserCenterComponent />
                     </el-col>
-                    <el-col :span="3"></el-col>
+                    <el-col :span="4"></el-col>
                 </el-row>
             </el-main>
             <el-footer class="footer">备案编号：1145141919810 没有版权和免责声明 千万别申诉版权 出版物许可证也没有 ©2024-2024深圳中大BME草台班子无限公司

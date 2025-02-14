@@ -16,6 +16,7 @@ import StudyView from './views/StudyView.vue'
 import ExamView from './views/ExamView.vue'
 import UserIndex from './views/UserIndex.vue';
 import UserCenter from './views/UserCenter.vue';
+import UserInfoComponent from './components/UserInfoComponent.vue';
 
 
 const router = createRouter({
@@ -54,14 +55,9 @@ const router = createRouter({
             component: UserCenter,
             children: [
                 {
-                    path: '/user-center/articles',
-                    name: 'user-center-articles',
-                    component: UserindexComponent,
-                },
-                {
-                    path: '',
-                    name: 'user-center-default',
-                    component: UserindexComponent,
+                    path: '/user-center/user-info',
+                    name: 'user-info',
+                    component: UserInfoComponent,
                 }
             ]
         },

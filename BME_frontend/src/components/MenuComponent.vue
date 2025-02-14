@@ -89,7 +89,7 @@ const logOut = () => {
                             <div v-else class="user-type-student">学生</div>
                         </div>
                         <ul style="list-style: none; padding: 0; margin-bottom: 0;" role="none">
-                            <li class="popli" role="none" @click="$router.push('/user-center')">
+                            <li class="popli" role="none" @click="$router.push('/user-center/user-info')">
                                 <el-icon>
                                     <user />
                                 </el-icon>
