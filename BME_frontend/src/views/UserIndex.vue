@@ -7,22 +7,6 @@ import api from '../api';
 import { RouterLink } from "vue-router";
 
 export default {
-    // data() {
-    //     return {
-    //         activeIndex: "/"
-    //     }
-    // },
-
-    // methods: {
-    //   handleSelect(key, keyPath) {
-    //     console.log(key, keyPath);
-    //   }
-    // },
-
-    // created() {
-    //     this.activeIndex = this.$route.path
-    // },
-
     name: 'UserIndex',
     components: {
         UserindexComponent,
@@ -31,7 +15,9 @@ export default {
 
     data() {
         return {
-            username: ''
+            username: '',
+            user_email: '',
+            uid: '',
         }
     },
 
@@ -53,6 +39,8 @@ export default {
             if (res.data.code == 200) {
                 console.log(res)
                 this.username = res.data.User_Name
+                this.user_email = res.data.User_Email
+                this.uid = res.data.User_Id
             }
         }
         )
@@ -73,15 +61,21 @@ export default {
                 <el-row>
                     <el-col :span="3"></el-col>
                     <el-col :span="18">
-                        <div style="position: relative;">
-                            <el-avatar @click="visible = !visible"
-                                shape="square"
-                                size="large"
-                                class="avatar"
-                                src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png"
-                            />
+                        <div style="position: relative; display: flex;">
+                            <div>
+                                <el-avatar @click="visible = !visible"
+                                    shape="square"
+                                    size="large"
+                                    class="avatar"
+                                    src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png"
+                                />
+                            </div>
 
-                            <span style="position: absolute; top: 0; align-items: center; font-size: large; font-weight: bold; padding: 10px; font-size: larger;">{{ username }}</span>
+                            <div style="margin-left: 10px;">
+                                <div style="font-size: larger; font-weight: bold; margin-bottom: 5px;">{{ username }}</div>
+                                <div style="font-size: 15px; color: #666;">Email：{{ user_email }}</div>
+                                <div style="position: absolute; bottom: 5px; font-size: 15px; color: #666;">#uid：{{ uid }}</div>
+                            </div>
                         </div>
                         <UserindexComponent />
                     </el-col>

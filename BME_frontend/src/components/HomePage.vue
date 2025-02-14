@@ -6,7 +6,7 @@ export default {
   name: 'HomePage',
   data() {
     return {
-      articles: [], // 存储课程数据
+      articles: [], // 存储文章数据
     };
   },
   created() {
@@ -26,6 +26,11 @@ export default {
       this.$router.push({ path: '/article', query: { Article_Id: articleId } });
     }
   },
+  computed: {
+    reversedArticles() {
+      return this.articles.slice().reverse();
+    }
+  }
 };
 </script>
 
@@ -49,7 +54,7 @@ export default {
         <template #footer>2024-09-29</template>
       </el-card> -->
       
-      <el-card v-for="article in articles" :key="article.Article_Id" class="box-card" @click="goToArticle(article.Article_Id)">
+      <el-card v-for="article in reversedArticles" :key="article.Article_Id" class="box-card" @click="goToArticle(article.Article_Id)">
         <template #header>
           <div class="card-header">
             <span>{{ article.Article_Title }}</span>
