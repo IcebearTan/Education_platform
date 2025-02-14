@@ -9,11 +9,7 @@ import { ElMessage } from 'element-plus'
 import { useRouter } from 'vue-router'
 import { useStore } from 'vuex';
 
-const User_Medal = ref()
-const User_Email = ref()
-const User_Name = ref()
-const User_Stage = ref()
-const join_time = ref()
+const User_Info = ref({})
 
 const router = useRouter()
 const store = useStore()
@@ -34,12 +30,9 @@ onMounted(() => {
     // }
 
     if (res.data.code == 200) {
-      console.log(res)
-      User_Email.value = res.data.User_Email
-      User_Medal.value = res.data.User_Medal
-      User_Name.value = res.data.User_Name
-      User_Stage.value = res.data.User_Stage
-      join_time.value = res.data.join_time
+      // console.log(res)
+      User_Info.value = res.data
+      console.log(User_Info.value)
     }
   }
   )
@@ -53,14 +46,14 @@ onMounted(() => {
       <div class="left-side">
         <div>
           <div style="padding: 20px; display: flex; align-items: center; font-size: large; font-weight: bold;">个人简介</div>
-          <div style="padding-left: 20px; color: #aaa">这个人很懒什么都没写</div>
+          <div style="padding-left: 20px; color: #aaa">{{ User_Info.Introduction }}</div>
           <div style="color: #555;">
-            <div style="padding: 20px; padding-bottom: 0;">性别：武装直升机</div>
-            <div style="padding: 20px; padding-bottom: 0;">学院：生物医学工程学院</div>
-            <div style="padding: 20px; padding-bottom: 0;">专业：生物医学工程</div>
-            <div style="padding: 20px; padding-bottom: 0;">入营时间：2024-1-16</div>
-            <div style="padding: 20px; padding-bottom: 0;">GithubID：IcebearTan</div>
-            <div style="padding: 20px; padding-bottom: 0;">技能标签：无畏契约 英雄联盟 CSGO2 FC24</div>
+            <div style="padding: 20px; padding-bottom: 0;">性别：{{ User_Info.User_Sex }}</div>
+            <div style="padding: 20px; padding-bottom: 0;">学院：{{ User_Info.Institute }}</div>
+            <div style="padding: 20px; padding-bottom: 0;">专业：{{ User_Info.Major }}</div>
+            <div style="padding: 20px; padding-bottom: 0;">入营时间：{{ User_Info.join_time }}</div>
+            <div style="padding: 20px; padding-bottom: 0;">GithubID：{{ User_Info.Github_Id }}</div>
+            <div style="padding: 20px; padding-bottom: 0;">技能标签：{{ User_Info.Skill_Tags }}</div>
             <div style="padding-bottom: 20px; border-bottom: solid 1px #eee; height: 0; width: 85%; margin: 0 auto;"></div>
           </div>
         </div>
@@ -78,7 +71,7 @@ onMounted(() => {
               勋章成就: 
             </div>
             <div style="padding: 20px; display: flex; align-items: center; font-size: 25px; font-weight: bold; padding-bottom: 0;">
-              {{ User_Medal }}
+              {{ User_Info.User_Medal }}
             </div>
             <div style="padding: 20px; padding-bottom: 0;">最近获得：</div>
             <div style="padding: 20px; font-weight: bold;">VTK手术机器人</div>

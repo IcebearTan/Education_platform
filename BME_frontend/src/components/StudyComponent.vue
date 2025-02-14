@@ -101,9 +101,10 @@ export default {
 }
 .boxCard{
     width: 30%;
-    height: 100px;
+    height: 110px;
 
     margin: 10px;
+    border-radius: 6px;
     /* overflow: hidden;
     display: -webkit-box;
     -webkit-box-orient: vertical;
