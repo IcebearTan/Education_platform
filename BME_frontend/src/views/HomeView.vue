@@ -62,7 +62,7 @@ import TestComponent from '../components/TestComponent.vue';
       </el-header>
       <el-main class="homeMainContainer">
         <RouterView />
-        <TestComponent />
+        <!-- <TestComponent /> -->
       </el-main>
       <el-footer class="footer">备案编号：1145141919810 没有版权和免责声明 千万别申诉版权 出版物许可证也没有 ©2024-2024深圳中大BME草台班子无限公司
         服务冷线：4008-123-123 客服邮箱：thisIsAfakeEmail@bme.com
@@ -103,5 +103,11 @@ import TestComponent from '../components/TestComponent.vue';
   padding-left: 20px;
   min-height: 100vh;
   background-color: rgba(129, 51, 33, 0.898);
+}
+</style>
+
+<style>
+.el-header {
+  padding: 0;
 }
 </style>

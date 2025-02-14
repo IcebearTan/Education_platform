@@ -53,7 +53,7 @@ export default {
               <el-container>
                 <el-header>
                   <h1>
-                    震惊！中山大学BME卓越工程师训练营竟然是一个卓越工程师训练营
+                    <!-- 震惊！中山大学BME卓越工程师训练营竟然是一个卓越工程师训练营 -->
                   </h1>
                 </el-header>
                 <el-main>
