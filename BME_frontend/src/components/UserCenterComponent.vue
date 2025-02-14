@@ -13,6 +13,8 @@ const User_Name = ref()
 const User_Stage = ref()
 const join_time = ref()
 
+const activeIndex = ref('/')
+
 const router = useRouter()
 const store = useStore()
 // 将获取到的用户数据打印到控制台
@@ -39,8 +41,9 @@ onMounted(() => {
       User_Stage.value = res.data.User_Stage
       join_time.value = res.data.join_time
     }
-  }
-  )
+  });
+
+  activeIndex.value = router.currentRoute.value.path;
 })
 
 </script>
@@ -48,25 +51,71 @@ onMounted(() => {
 <template>
   <el-row>
     <el-col :span="6">
-
       <div class="left-side">
-        <div style="position: relative;">
+        <div class="NavHeader">
+          <div class="avatarContainer">
             <el-avatar
                 shape="square"
                 size="large"
                 class="avatar"
                 src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png"
             />
-            <div style="align-items: center; font-size: large; font-weight: bold; padding: 10px; font-size: larger;">{{ User_Name }}</div>
+          </div>
+          <div class="username">{{ User_Name }}</div>
+          <div v-if="$store.state.user.User_Mode == 'admin'" class="user-type-instructor">导师</div>
+          <div v-else class="user-type-student">学生</div>
         </div>
-        <div>
-          <hr>
-          <div>发布文章</div>
-          <hr>  
-        </div>
+        <el-menu
+          :default-active=activeIndex
+          class="el-menu-vertical-demo"
+          @open="handleOpen"
+          @close="handleClose"
+        >
+          <div class="functionSection">
+            <el-menu-item index="/user-info">
+              <el-icon><document /></el-icon>
+              <span>个人信息</span>
+            </el-menu-item>
+            <el-menu-item index="2">
+              <el-icon><document /></el-icon>
+              <span>个人简历</span>
+            </el-menu-item>
+            <el-menu-item index="3">
+              <el-icon><document /></el-icon>
+              <span>学过什么</span>
+            </el-menu-item>
+          </div>
+          <div class="functionSection">
+            <el-menu-item index="1">
+              <el-icon><document /></el-icon>
+              <span>个人信息</span>
+            </el-menu-item>
+            <el-menu-item index="2">
+              <el-icon><document /></el-icon>
+              <span>个人简历</span>
+            </el-menu-item>
+            <el-menu-item index="3">
+              <el-icon><document /></el-icon>
+              <span>学过什么</span>
+            </el-menu-item>
+          </div>
+          <div class="functionSection">
+            <el-menu-item index="1">
+              <el-icon><document /></el-icon>
+              <span>个人信息</span>
+            </el-menu-item>
+            <el-menu-item index="2">
+              <el-icon><document /></el-icon>
+              <span>个人简历</span>
+            </el-menu-item>
+            <el-menu-item index="3">
+              <el-icon><document /></el-icon>
+              <span>学过什么</span>
+            </el-menu-item>
+          </div>
+        </el-menu>
       </div>
     </el-col>
-
     <el-col :span="18">
       <router-view></router-view>
     </el-col>
@@ -78,7 +127,6 @@ onMounted(() => {
 <style scoped>
 .right-side{
   border-radius: 5px;
-
   box-shadow: #d3dce6 0px 0px 10px 0px;
 
   color: #729bd4;
@@ -91,100 +139,81 @@ onMounted(() => {
 
 .left-side{
   border-radius: 5px;
-
   box-shadow: #d3dce6 0px 0px 10px 0px;
 
-  height: 100vh;
-  width: 90%;
+  min-height: 100vh;
+  width: 100%;
 
   margin-top: 10px;
 }
 
-.text {
-  font-size: 14px;
+.NavHeader{
+  display: flex;
+  flex-wrap: wrap;
+
+  justify-content: center;
+  align-items: center;
+  padding: 10px;
 }
 
-.item {
-  margin-bottom: 18px;
-}
+.avatarContainer{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 10px;
 
-.clearfix:before,
-.clearfix:after {
-  display: table;
-  content: "";
-}
-
-.clearfix:after {
-  clear: both
-}
-
-.box-card {
   width: 100%;
 }
 
-.name-role {
-  font-size: 16px;
-  padding: 5px;
+.user-type-instructor{
+    position: relative;
+    top: 0;
+    font-size: 20px;
+    font-weight: bold;
+    color: #DA6AFC;
+
+    text-shadow: 0px 0px 5px #ecadff;
+}
+
+.user-type-student{
+    position: relative;
+    top: 0;
+    font-size: 20px;
+    font-weight: bold;
+    color: #6AD5FC;
+
+    text-shadow: 0px 0px 5px #a5e7ff;
+
+}
+
+.username{
   text-align: center;
+  align-items: center;
+  font-size: larger;
+  font-weight: normal;
+  margin-bottom: 0px;
+
+  width: 100%;
+
+  color: #666;
 }
 
-.sender {
-  text-align: center;
+.avatar{
+  width: 75px;
+  height: 75px;
+
+  border-radius: 10px;
 }
 
-.registe-info {
-  text-align: center;
-  padding-top: 10px;
+.functionSection{
+  border-top: 1px solid #d3dce6;
 }
 
-.personal-relation {
-  font-size: 16px;
-  padding: 0px 5px 15px;
-  margin-right: 1px;
-  width: 100%
-}
+.el-menu-vertical-demo{
+  border: none !important;
+  background-color: none !important;
 
-.relation-item {
-  padding: 12px;
-
-}
-
-.dialog-footer {
-  padding-top: 10px;
-  padding-left: 10%;
-}
-
-.el-row {
-  margin-bottom: 20px;
-
-  &:last-child {
-    margin-bottom: 0;
-  }
-}
-
-.el-col {
-  border-radius: 4px;
-}
-
-.bg-purple-dark {
-  background: #99a9bf;
-}
-
-.bg-purple {
-  background: #d3dce6;
-}
-
-.bg-purple-light {
-  background: #e5e9f2;
-}
-
-.grid-content {
-  border-radius: 4px;
-  min-height: 36px;
-}
-
-.row-bg {
-  padding: 10px 0;
-  background-color: #f9fafc;
+  width: 90%;
+  margin: auto;
 }
 </style>
