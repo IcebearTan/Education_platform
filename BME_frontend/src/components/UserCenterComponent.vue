@@ -8,7 +8,7 @@ import { useStore } from 'vuex';
 import { el } from 'element-plus/es/locales.mjs';
 
 const User_Info = ref({})
-const User_Avatar = ref('')
+const User_Avatar = ref('');
 
 const activeIndex = ref('/')
 
