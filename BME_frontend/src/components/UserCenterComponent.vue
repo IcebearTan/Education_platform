@@ -1,51 +1,44 @@
 <!-- 使用vue3语法 -->
 <script setup>
 import api from '../api';
-import { onMounted } from 'vue'
-import { ref } from 'vue'
+import { ref, onMounted, reactive } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useRouter } from 'vue-router'
 import { useStore } from 'vuex';
 
-const User_Medal = ref()
-const User_Email = ref()
-const User_Name = ref()
-const User_Stage = ref()
-const join_time = ref()
+const User_Info = ref({})
 
 const activeIndex = ref('/')
 
 const router = useRouter()
 const store = useStore()
-// 将获取到的用户数据打印到控制台
+
 onMounted(() => {
   api({
     url: "/user/user_index",
     method: "get",
   }).catch((error) => {
-    // if (error.response.status == 422){
     ElMessage.error('登录失效，请重新登录')
     router.push('/login')
-    // }
-
   }).then((res) => {
-    // if (res.response.status == 422) {
-    //   ElMessage.error('Oops, this is a error message.')
-    // }
-
     if (res.data.code == 200) {
-      console.log(res)
-      User_Email.value = res.data.User_Email
-      User_Medal.value = res.data.User_Medal
-      User_Name.value = res.data.User_Name
-      User_Stage.value = res.data.User_Stage
-      join_time.value = res.data.join_time
+      User_Info.value = res.data
+    }
+  });
+  api({
+    url: "/user/user_avatars",
+    method: "get",
+  }).catch((error) => {
+    ElMessage.error('登录失效，请重新登录')
+    router.push('/login')
+  }).then((res) => {
+    if (res.data.code == 200) {
+      User_Info.value = res.data
     }
   });
 
   activeIndex.value = router.currentRoute.value.path;
 })
-
 </script>
 
 <template>
@@ -61,7 +54,7 @@ onMounted(() => {
                 src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png"
             />
           </div>
-          <div class="username">{{ User_Name }}</div>
+          <div class="username">{{ User_Info.User_Name }}</div>
           <div v-if="$store.state.user.User_Mode == 'admin'" class="user-type-instructor">导师</div>
           <div v-else class="user-type-student">学生</div>
         </div>
@@ -115,7 +108,7 @@ onMounted(() => {
       </div>
     </el-col>
     <el-col :span="18">
-      <router-view></router-view>
+      <router-view :User_Info="User_Info"></router-view>
     </el-col>
   </el-row>
   
@@ -137,7 +130,7 @@ onMounted(() => {
 
 .left-side{
   border-radius: 5px;
-  box-shadow: #d3dce6 0px 0px 10px 0px;
+  /* box-shadow: #d3dce6 0px 0px 10px 0px; */
 
   min-height: 100vh;
   width: 100%;

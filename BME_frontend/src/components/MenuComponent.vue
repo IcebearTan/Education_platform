@@ -46,6 +46,14 @@ const logOut = () => {
     localStorage.removeItem('token')
     router.push('/login')
 }
+
+const handleUserInfo = () => {
+    if (router.currentRoute.value.path != '/user-center/user-info') {
+        router.push('/user-center/user-info')
+    }else {
+        window.location.reload()
+    }
+}
 </script>
 
 <template>
@@ -89,7 +97,7 @@ const logOut = () => {
                             <div v-else class="user-type-student">学生</div>
                         </div>
                         <ul style="list-style: none; padding: 0; margin-bottom: 0;" role="none">
-                            <li class="popli" role="none" @click="$router.push('/user-center/user-info')">
+                            <li class="popli" role="none" @click="handleUserInfo()">
                                 <el-icon>
                                     <user />
                                 </el-icon>

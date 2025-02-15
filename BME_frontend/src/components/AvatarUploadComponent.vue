@@ -53,27 +53,27 @@ const handleAvatarSuccess: UploadProps['onSuccess'] = (
   uploadFile
 ) => {
   imageUrl.value = URL.createObjectURL(uploadFile.raw!)
-//   ElMessage.success('Upload success!')
+  ElMessage.success('头像上传成功!')
   
 }
 
 const beforeAvatarUpload: UploadProps['beforeUpload'] = (rawFile) => {
   if (rawFile.type !== 'image/jpeg' && rawFile.type !== 'image/png' && rawFile.type !== 'image/jpg') {
-    ElMessage.error('Avatar picture must be in JPEG,PNG,JPG format!')
+    ElMessage.error('头像必须是JPEG,PNG,JPG格式中的一种!')
     return false
   } else if (rawFile.size / 1024 / 1024 > 2) {
-    ElMessage.error('Avatar picture size can not exceed 2MB!')
+    ElMessage.error('头像大小不能超过2MB!')
     return false
   }
-  ElMessage.success('Avatar vaild!')
+//   ElMessage.success('Avatar vaild!')
   return true
 }
 </script>
 
 <style scoped>
 .avatar-uploader .avatar {
-  width: 178px;
-  height: 178px;
+  width: 100px;
+  height: 100px;
   display: block;
 }
 </style>
@@ -95,8 +95,8 @@ const beforeAvatarUpload: UploadProps['beforeUpload'] = (rawFile) => {
 .el-icon.avatar-uploader-icon {
   font-size: 28px;
   color: #8c939d;
-  width: 178px;
-  height: 178px;
+  width: 100px;
+  height: 100px;
   text-align: center;
 }
 </style>
