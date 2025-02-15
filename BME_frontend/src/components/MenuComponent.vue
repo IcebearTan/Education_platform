@@ -36,7 +36,7 @@ const popoverRef = ref()
 const store = useStore()
 const router = useRouter()
 
-const User_Avatar = ref('')
+const User_Avatar = ref('');
 
 onMounted(() => {
     api({
@@ -47,7 +47,6 @@ onMounted(() => {
         if (avatarRes.data.code === 200) {
             User_Avatar.value = `data:image/png;base64,${avatarRes.data.User_Avatar}`;  // 假设头像URL存储在res.data.avatarUrl中
         } else {
-            User_Avatar.value = 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png';  // 默认头像URL
             ElMessage.error('获取头像失败');
         }  
     })
