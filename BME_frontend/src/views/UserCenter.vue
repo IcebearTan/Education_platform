@@ -59,17 +59,32 @@ export default {
     }
     
 };
+</script>
+<script setup>
+import { nextTick, ref } from 'vue'
 
+const loading = ref(false)
+
+nextTick(() => {
+    loading.value = true
+    setTimeout(() => {
+        loading.value = false
+    }, 500)
+})
 
 </script>
 
 <template>
     <div class="common-layout">
-        <el-container>
+        <el-container 
+        v-loading="loading" 
+        element-loading-background="rgba(255, 255, 255, 1)" 
+        :delay="0" 
+        element-loading-text="loading...">
             <el-header>
                 <MenuComponent/>
             </el-header>
-            <el-main style="min-height: 100vh; background-color: #fff;">
+            <el-main style="min-height: 100vh; background-color: #fff;" >
                 <el-row>
                     <el-col :span="4"></el-col>
                     <el-col :span="16">
@@ -108,5 +123,12 @@ export default {
   width: 100%;
   
   color: #bababa;
+}
+</style>
+<style>
+.example-showcase .el-loading-mask {
+  z-index: 9;
+  transition: none !important;
+  
 }
 </style>
