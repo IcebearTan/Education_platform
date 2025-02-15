@@ -42,13 +42,43 @@ export default {
                 this.user_email = res.data.User_Email
                 this.uid = res.data.User_Id
             }
-        }
-        )
+        })
     }
     
 };
+</script>
 
+<script setup>
+import api from "../api";
+import { onMounted, ref } from "vue";
+import { ElMessage } from "element-plus";
+import { useRouter } from "vue-router";
 
+const router = useRouter();
+
+const User_Avatar = ref('https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png');
+
+onMounted(() => {
+    api({
+      url: "/user/user_avatars", // 请求头像的URL
+      method: "get",
+    })
+    .then((avatarRes) => {
+        if (avatarRes.data.code === 200) {
+            User_Avatar.value = `data:image/png;base64,${avatarRes.data.User_Avatar}`;  // 假设头像URL存储在res.data.avatarUrl中
+        } else {
+            ElMessage.error('获取头像失败');
+        }  
+    })
+    .catch((error) => {
+        if (error.response.status === 401) {
+            ElMessage.error('登录失效，请重新登录');
+            router.push('/login');  //这里还没做完
+        } else {
+            ElMessage.error('未知的错误');
+        }
+    })
+})
 </script>
 
 <template>
@@ -67,7 +97,7 @@ export default {
                                     shape="square"
                                     size="large"
                                     class="avatar"
-                                    src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png"
+                                    :src="User_Avatar" alt="image"
                                 />
                             </div>
 
