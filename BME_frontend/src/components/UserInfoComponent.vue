@@ -7,6 +7,8 @@ import { ElMessage } from 'element-plus'
 import { useRouter } from 'vue-router'
 import { useStore } from 'vuex';
 
+import AvatarUploadComponent from './AvatarUploadComponent.vue';
+
 onMounted(() => {
   
 })
@@ -17,7 +19,7 @@ onMounted(() => {
   <div class="userInfoContainer">
     <div class="UserInfoCard">
       <div class="avatarContainer">
-        
+        <AvatarUploadComponent />
       </div>
       <div class="infoContainer"></div>
     </div>
