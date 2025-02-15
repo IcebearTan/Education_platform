@@ -26,15 +26,40 @@ export default {
 </script>
 
 <script setup>
-import { ref, unref } from 'vue'
+import { onMounted, ref, unref } from 'vue'
 import { ClickOutside as vClickOutside } from 'element-plus'
 import { useRouter } from 'vue-router'
+import api from '../api'
 
 const buttonRef = ref()
 const popoverRef = ref()
 const store = useStore()
 const router = useRouter()
 
+const User_Avatar = ref('')
+
+onMounted(() => {
+    api({
+      url: "/user/user_avatars", // 请求头像的URL
+      method: "get",
+    })
+    .then((avatarRes) => {
+        if (avatarRes.data.code === 200) {
+            User_Avatar.value = `data:image/png;base64,${avatarRes.data.User_Avatar}`;  // 假设头像URL存储在res.data.avatarUrl中
+        } else {
+            User_Avatar.value = 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png';  // 默认头像URL
+            ElMessage.error('获取头像失败');
+        }  
+    })
+    .catch((error) => {
+        if (error.response.status === 401) {
+            ElMessage.error('登录失效，请重新登录');
+            router.push('/login');  //这里还没做完
+        } else {
+            ElMessage.error('未知的错误');
+        }
+    })
+})
 
 const onClickOutside = () => {
   unref(popoverRef).popperRef?.delayHide?.()
@@ -89,7 +114,7 @@ const handleUserInfo = () => {
                     <div>
                         <div style="display: flex; align-items: center; cursor: pointer;" @click="$router.push('/user')">
                             <el-avatar @click="visible = !visible"
-                                src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png"
+                                :src="User_Avatar" alt="image"
                                 :size="50"
                             />
                             <div style="position: relative; top: 0; font-size: 25px; margin-left: 10px">{{ $store.state.user.User_Name }}</div>
@@ -115,7 +140,7 @@ const handleUserInfo = () => {
                     
                     <template #reference>
                         <el-avatar @click="visible = !visible"
-                            src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png"
+                            :src="User_Avatar" alt="image"
                         />
                     </template>
                 </el-popover>
