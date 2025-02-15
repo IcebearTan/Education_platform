@@ -44,26 +44,6 @@ export default {
   <div style="display: flex; justify-content: center; align-items: center; flex-wrap: wrap;">
     <h1 class="secondTitle">最新资讯</h1>
     <div>
-      <!-- <el-card class="box-card" @click="$router.push('/article')">
-        <template #header>
-          <div class="card-header">
-            <span>震惊！中山大学BME卓越工程师训练营竟然...🔥</span>
-          </div>
-        </template>
-        <p style="margin: 0;">这里应该有一些内容...</p>
-        <template #footer>2024-09-29</template>
-      </el-card> -->
-      
-      <!-- <el-card v-for="article in reversedArticles" :key="article.Article_Id" class="box-card" @click="goToArticle(article.Article_Id)">
-        <template #header>
-          <div class="card-header">
-            <span>{{ article.Article_Title }}</span>
-          </div>
-        </template>
-        <p style="margin: 0;">{{ article.Article_Introduction }}</p>
-        <template #footer>{{ article.Article_Time }}</template>
-      </el-card> -->
-
       <el-card v-for="article in reversedArticles" :key="article.Article_Id" @click="goToArticle(article.Article_Id)" class="article-card">
         <div slot="header" class="article-header">
           <h3 class="article-title">{{ article.Article_Title }}</h3>

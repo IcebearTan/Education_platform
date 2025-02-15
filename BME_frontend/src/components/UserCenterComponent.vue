@@ -68,11 +68,9 @@ onMounted(() => {
         <el-menu
           :default-active=activeIndex
           class="el-menu-vertical-demo"
-          @open="handleOpen"
-          @close="handleClose"
         >
           <div class="functionSection">
-            <el-menu-item index="/user-info">
+            <el-menu-item index="/user-center/user-info">
               <el-icon><document /></el-icon>
               <span>个人信息</span>
             </el-menu-item>

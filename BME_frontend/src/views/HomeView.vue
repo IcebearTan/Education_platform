@@ -28,10 +28,6 @@ export default {
       // }
 
     }).then((res) => {
-        // if (res.response.status == 422) {
-        //   ElMessage.error('Oops, this is a error message.')
-        // }
-
         if (res.data.code == 200) {
           console.log(res)
           this.store.dispatch('setUser', res.data)
