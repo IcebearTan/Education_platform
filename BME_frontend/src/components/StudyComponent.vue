@@ -1,30 +1,33 @@
-<script>
-import { RouterLink } from 'vue-router';
-import api from '../api';
+<script setup>
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import api from '../api'
 
-export default {
-    data() {
-        return {
-            courseList: []
-        }
-    },
-    methods: {
-        async getCourseList() {
-            await api({
-                url: '/course/list',
-                method: 'get',
-            }).then(res => {
-                this.courseList = res.data;
-                console.log(this.courseList);
-            }).catch(err => {
-                console.log(err);
-            })
-        }
-    },
-    mounted() {
-        this.getCourseList();
-    },
+const router = useRouter()
+
+const courseList = ref([])  // 使用 ref 来声明响应式数据
+
+const getCourseList = async () => {
+    try {
+        const res = await api({
+            url: '/course/list',
+            method: 'get',
+        })
+        courseList.value = res.data  // 将返回的数据赋值给响应式变量
+    } catch (err) {
+        console.error(err)
+    }
 }
+
+const handleCourseClick = (courseId) => {
+    console.log(courseId)
+    console.log(typeof courseId)
+    router.push({ path: '/study/details', query: { id: courseId } })
+}
+
+onMounted(() => {
+    getCourseList()  // 在组件挂载时调用获取课程列表的方法
+})
 </script>
 
 <template>
@@ -35,7 +38,7 @@ export default {
     <div class="mainContainer">
         <h2 style="margin-left: 10px;font-weight: 500;">最新课程</h2>
         <div class="columnContainer">
-            <el-card class="boxCard" v-for="course in courseList" :key="course.Course_Id" @click="$router.push('/study/details')">
+            <el-card class="boxCard" v-for="course in courseList" :key="course.Course_Id" @click="handleCourseClick(course.Course_Id)">
                 <el-row>
                     <el-col :span="6">
                         暂无图片

@@ -1,5 +1,4 @@
 <script>
-
 import { useStore } from 'vuex'
 
 export default {
@@ -12,7 +11,7 @@ export default {
 
     methods: {
         handleSelect(key, keyPath) {
-            console.log(key, keyPath);
+            // console.log(key, keyPath);
         }
     },
 
@@ -21,8 +20,6 @@ export default {
     },
 
 };
-
-
 </script>
 
 <script setup>

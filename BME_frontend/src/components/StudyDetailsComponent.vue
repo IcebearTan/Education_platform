@@ -1,63 +1,71 @@
-<script>
-import { RouterView } from "vue-router";
-import MenuComponent from "../components/MenuComponent.vue";
+<script setup>
+import { onMounted, ref } from 'vue'
 import { useStore } from 'vuex'
 import { useRouter } from 'vue-router'
-
-export default {
-  name: "HomeView",
-  components: { 
-    MenuComponent
-  },
-
-  data() {
-    return {
-      store: useStore(),
-      router: useRouter(),
-    };
-  },
-
-  created() {
-    api({
-      url: "/user/user_index",
-      method: "get",
-    }).catch((error) => {
-      // if (error.response.status == 422){
-      ElMessage.error('登录失效，请重新登录')
-      this.router.push('/login')
-      // }
-
-    }).then((res) => {
-        // if (res.response.status == 422) {
-        //   ElMessage.error('Oops, this is a error message.')
-        // }
-
-        if (res.data.code == 200) {
-          console.log(res)
-          this.store.dispatch('setUser', res.data)
-        }
-      }
-    )
-  },
-
-  methods: {
-    caution() {
-      ElMessage.error('前面的内容以后再来探索吧！')
-    }
-  }
-};
-</script>
-
-<script setup>
-import api from '../api';
-import { onMounted } from 'vue'
-import { ref } from 'vue'
 import { ElMessage } from 'element-plus'
-import { useStore } from 'vuex'
+import MenuComponent from '../components/MenuComponent.vue'
+import api from '../api'
 
+const store = useStore()  // 获取 Vuex store
+const router = useRouter()  // 获取 Vue Router 实例
+
+const courseDetails = ref(null)
+const courseId = ref(router.currentRoute.value.query.id)
+// Number(router.currentRoute.value.query.id)
+
+// 页面挂载时调用的函数，类似 Vue 2 中的 created()
+const fetchUserData = async () => {
+  try {
+    const res = await api({
+      url: '/user/user_index',
+      method: 'get',
+    })
+
+    if (res.data.code === 200) {
+      // console.log(res)
+      store.dispatch('setUser', res.data)  // 将用户信息保存到 Vuex
+    }
+  } catch (error) {
+    ElMessage.error('登录失效，请重新登录')
+    router.push('/login')  // 跳转到登录页面
+  }
+}
+
+const fetchCourseDetails = async () => {
+  console.log(typeof courseId.value)
+  try {
+    const res = await api({
+      url: '/course/chapter_list',
+      method: 'get',
+      params: {
+        Course_Id: courseId.value
+      }
+    })
+    courseDetails.value = res.data
+    console.log(courseDetails.value)
+
+    if (res.data.code === 200) {
+      //由于后端设计问题这里还需要修改
+      // console.log(courseDetails.value)
+    }
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+// 在组件挂载后执行
+onMounted(() => {
+  // courseId.value = router.value.quer.id
+
+  fetchUserData()
+  fetchCourseDetails()
+})
+
+// 方法：警告提示
+const caution = () => {
+  ElMessage.error('前面的内容以后再来探索吧！')
+}
 </script>
-
-
 
 <template>
   <div class="course-wrapper">
@@ -82,7 +90,7 @@ import { useStore } from 'vuex'
                       学习资料：这一部分采用课内外结合的学习方式，依照课内进度，以《C程序设计》为基础，结合卓越工程师训练营系列的《C语言程序设计与应用》和课外题目进行，内容以大纲为基础，以分组汇报的方式进行灵活安排和考查，同时提供学员交流空间。
                     </div>
                     <div class="course-bottom">
-                      <el-button type="primary" size="large" @click="this.caution()">加入学习</el-button>
+                      <el-button type="primary" size="large" @click="caution()">加入学习</el-button>
                     </div>
                     
                   </el-col>

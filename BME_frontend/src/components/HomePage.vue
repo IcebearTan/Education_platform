@@ -18,7 +18,7 @@ export default {
         url: '/article/list',
         method: 'get',
       }).then((response) => {
-        console.log(response.data);
+        // console.log(response.data);
         this.articles = response.data;
       })
     },
