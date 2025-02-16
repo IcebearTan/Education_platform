@@ -116,7 +116,7 @@ const onSubmit = () => {
           <el-row :gutter="20">
             <el-col :span="12">
               <el-form-item label="昵称" prop="username">
-                <el-input v-model="form.username" placeholder="输入你的昵称"/>
+                <el-input v-model="form.username" placeholder="输入你的昵称" clearable/>
               </el-form-item>
             </el-col>
             <el-col :span="12">
@@ -133,20 +133,27 @@ const onSubmit = () => {
           <el-row :gutter="20">
             <el-col :span="12">
               <el-form-item label="学院">
-                <el-input v-model="form.institution" placeholder="学院名称"/>
+                <el-input v-model="form.institution" placeholder="学院名称" clearable/>
               </el-form-item>
             </el-col>
             <el-col :span="12">
               <el-form-item label="专业">
-                <el-input v-model="form.major" placeholder="所在专业"/>
+                <el-input v-model="form.major" placeholder="所在专业" clearable/>
               </el-form-item>
             </el-col>
           </el-row>
           <el-form-item label="个人简介">
-            <el-input v-model="form.introduction" type="textarea" :autosize="{ minRows: 4, maxRows: 5 }" placeholder="简单介绍一下自己吧~" maxlength="100" show-word-limit/>
+            <el-input v-model="form.introduction" 
+            type="textarea" 
+            :autosize="{ minRows: 4, maxRows: 5 }" 
+            placeholder="简单介绍一下自己吧~" 
+            maxlength="100" 
+            show-word-limit 
+            clearable
+            />
           </el-form-item>
           <el-form-item label="GithubID">
-            <el-input v-model="form.GithubId" placeholder="你的Github用户名"/>
+            <el-input v-model="form.GithubId" placeholder="你的Github用户名" clearable/>
           </el-form-item>
           <el-form-item label="技能标签">
             <el-input-tag v-model="form.tags" placeholder="你所拥有的技能" trigger="Enter" clearable :max="10" show-word-limit>
