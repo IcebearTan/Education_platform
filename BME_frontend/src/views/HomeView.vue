@@ -3,6 +3,7 @@ import { RouterView } from "vue-router";
 import MenuComponent from "../components/MenuComponent.vue";
 import { useStore } from 'vuex'
 import { useRouter } from 'vue-router'
+import api from "../api";
 
 export default {
   name: "HomeView",
@@ -29,7 +30,7 @@ export default {
 
     }).then((res) => {
         if (res.data.code == 200) {
-          console.log(res)
+          // console.log(res)
           this.store.dispatch('setUser', res.data)
         }
       }
@@ -37,18 +38,6 @@ export default {
   }
 };
 </script>
-
-<script setup>
-import api from '../api';
-import { onMounted } from 'vue'
-import { ref } from 'vue'
-import { ElMessage } from 'element-plus'
-import { useStore } from 'vuex'
-import TestComponent from '../components/TestComponent.vue';
-
-</script>
-
-
 
 <template>
   <div>

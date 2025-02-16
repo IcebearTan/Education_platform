@@ -73,10 +73,6 @@ export default {
                     this.$message.error('密码错误或邮箱不存在');
                 }
             })
-
-
-
-
             // alert('登录成功');
         }
     }
