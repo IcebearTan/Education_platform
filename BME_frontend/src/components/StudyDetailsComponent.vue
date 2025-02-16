@@ -11,6 +11,8 @@ const router = useRouter()  // 获取 Vue Router 实例
 
 const courseDetails = ref(null)
 const courseId = ref(router.currentRoute.value.query.id)
+
+const formatedCourseDetails = ref([])
 // Number(router.currentRoute.value.query.id)
 
 // 页面挂载时调用的函数，类似 Vue 2 中的 created()
@@ -42,7 +44,8 @@ const fetchCourseDetails = async () => {
       }
     })
     courseDetails.value = res.data
-    console.log(courseDetails.value)
+    formatedCourseDetails.value = formatChapters(courseDetails.value)
+    console.log(formatedCourseDetails.value)
 
     if (res.data.code === 200) {
       //由于后端设计问题这里还需要修改
@@ -51,6 +54,32 @@ const fetchCourseDetails = async () => {
   } catch (error) {
     console.error(error)
   }
+}
+
+const formatChapters = (chapters) => {
+  const formattedData = [];
+  let currentTitle = null;
+  let titleId = 1;  // 用于给大标题添加 ID，从 1 开始
+
+  chapters.forEach(chapter => {
+    if (chapter.Chapter_Priority === 0) {
+      // 大标题，开始一个新的章节，并给大标题加上 ID
+      currentTitle = {
+        name: chapter.Chapter_Name,
+        order: chapter.Chapter_Order,
+        subChapters: []  // 存储小标题
+      };
+      formattedData.push(currentTitle);
+    } else if (chapter.Chapter_Priority === 1 && currentTitle) {
+      // 小标题，添加到最近的大标题下
+      currentTitle.subChapters.push({
+        name: chapter.Chapter_Name,
+        order: chapter.Chapter_Order
+      });
+    }
+  });
+
+  return formattedData;
 }
 
 // 在组件挂载后执行
@@ -101,77 +130,12 @@ const caution = () => {
                   <span style="font-size: 25px; font-weight: bold; padding-bottom: 19px; border-bottom: solid 3px #000;">目录</span>
                 </div>
                 <div class="course-content-card">
-                  <div class="course-content-item">
+                  <div class="course-content-item" v-for="(item, index) in formatedCourseDetails" :key="index">
                     <div style="font-size: 20px; font-weight: 500; margin-bottom: 10px;">
-                      <span style="margin-right: 10px;">1</span>
-                      <span>认识C语言及环境配置</span>
+                      <span style="margin-right: 10px;">{{ index + 1 }}</span>
+                      <span>{{ item.name }}</span>
                     </div>
-                    <div class="course-content-item-sub">《C程序设计》第一章<span>未解锁</span></div>
-                    <div class="course-content-item-sub">菜鸟：C语言教程-基础语法<span>未解锁</span></div>
-                  </div>
-                  <div class="course-content-item">
-                    <div style="font-size: 20px; font-weight: 500; margin-bottom: 10px;">
-                      <span style="margin-right: 10px;">1</span>
-                      <span>认识C语言及环境配置</span>
-                    </div>
-                    <div class="course-content-item-sub">《C程序设计》第一章<span>未解锁</span></div>
-                    <div class="course-content-item-sub">菜鸟：C语言教程-基础语法<span>未解锁</span></div>
-                  </div>
-                  <div class="course-content-item">
-                    <div style="font-size: 20px; font-weight: 500; margin-bottom: 10px;">
-                      <span style="margin-right: 10px;">1</span>
-                      <span>认识C语言及环境配置</span>
-                    </div>
-                    <div class="course-content-item-sub">《C程序设计》第一章<span>未解锁</span></div>
-                    <div class="course-content-item-sub">菜鸟：C语言教程-基础语法<span>未解锁</span></div>
-                  </div>
-                  <div class="course-content-item">
-                    <div style="font-size: 20px; font-weight: 500; margin-bottom: 10px;">
-                      <span style="margin-right: 10px;">1</span>
-                      <span>认识C语言及环境配置</span>
-                    </div>
-                    <div class="course-content-item-sub">《C程序设计》第一章<span>未解锁</span></div>
-                    <div class="course-content-item-sub">菜鸟：C语言教程-基础语法<span>未解锁</span></div>
-                  </div>
-                  <div class="course-content-item">
-                    <div style="font-size: 20px; font-weight: 500; margin-bottom: 10px;">
-                      <span style="margin-right: 10px;">1</span>
-                      <span>认识C语言及环境配置</span>
-                    </div>
-                    <div class="course-content-item-sub">《C程序设计》第一章<span>未解锁</span></div>
-                    <div class="course-content-item-sub">菜鸟：C语言教程-基础语法<span>未解锁</span></div>
-                  </div>
-                  <div class="course-content-item">
-                    <div style="font-size: 20px; font-weight: 500; margin-bottom: 10px;">
-                      <span style="margin-right: 10px;">1</span>
-                      <span>认识C语言及环境配置</span>
-                    </div>
-                    <div class="course-content-item-sub">《C程序设计》第一章<span>未解锁</span></div>
-                    <div class="course-content-item-sub">菜鸟：C语言教程-基础语法<span>未解锁</span></div>
-                  </div>
-                  <div class="course-content-item">
-                    <div style="font-size: 20px; font-weight: 500; margin-bottom: 10px;">
-                      <span style="margin-right: 10px;">1</span>
-                      <span>认识C语言及环境配置</span>
-                    </div>
-                    <div class="course-content-item-sub">《C程序设计》第一章<span>未解锁</span></div>
-                    <div class="course-content-item-sub">菜鸟：C语言教程-基础语法<span>未解锁</span></div>
-                  </div>
-                  <div class="course-content-item">
-                    <div style="font-size: 20px; font-weight: 500; margin-bottom: 10px;">
-                      <span style="margin-right: 10px;">1</span>
-                      <span>认识C语言及环境配置</span>
-                    </div>
-                    <div class="course-content-item-sub">《C程序设计》第一章<span>未解锁</span></div>
-                    <div class="course-content-item-sub">菜鸟：C语言教程-基础语法<span>未解锁</span></div>
-                  </div>
-                  <div class="course-content-item">
-                    <div style="font-size: 20px; font-weight: 500; margin-bottom: 10px;">
-                      <span style="margin-right: 10px;">1</span>
-                      <span>认识C语言及环境配置</span>
-                    </div>
-                    <div class="course-content-item-sub">《C程序设计》第一章<span>未解锁</span></div>
-                    <div class="course-content-item-sub">菜鸟：C语言教程-基础语法<span>未解锁</span></div>
+                    <div class="course-content-item-sub" v-for="(subItem, subIndex) in item.subChapters" :key="subIndex">{{ subItem.name }}<span>未解锁</span></div>
                   </div>
                   <div style="display: flex; justify-content: center; align-items: center; height: 50px; margin-bottom: 20px;">没有更多内容啦~</div>
                   
