@@ -1,41 +1,47 @@
 <script>
-import { RouterView } from "vue-router";
+import { ref, onMounted } from "vue";
+import { useRoute } from "vue-router"; // 用来获取当前路由
 import MenuComponent from "../components/MenuComponent.vue";
 import api from '../api';
 
 export default {
   name: "HomeView",
-  components: { 
+  components: {
     MenuComponent
   },
-  async mounted() {
-    console.log(this.$route.query.Article_Id);
-    await this.getArticle();
-  },
-  data() {
-    return {
-      article: {}
-    }
-  },
-  methods: {
-    async getArticle() {
+  setup() {
+    const route = useRoute(); // 获取当前路由
+    const article = ref(''); // 使用 ref 创建响应式数据
+
+    // 获取文章
+    const getArticle = async () => {
       try {
         const response = await api({
           method: 'get',
-          url: `/article`,
+          url: '/article',
           params: {
-            Article_Id: this.$route.query.Article_Id
+            Article_Id: route.query.Article_Id // 从路由查询参数获取Article_Id
           }
-        })
+        });
         console.log(response.data);
-        this.article = response.data
+        article.value = JSON.parse(response.data.html_content); // 更新响应式数据
+        // console.log(article.value.html_content);
       } catch (error) {
         console.error(error);
       }
-    }
-  },
-  
-  
+    };
+
+    // onMounted生命周期钩子
+    onMounted(async () => {
+      console.log(route.query.Article_Id); // 打印查询参数
+      await getArticle(); // 获取文章数据
+    });
+
+    // 返回响应式的变量
+    return {
+      article
+    };
+  }
 };
 </script>
 
@@ -53,12 +59,12 @@ export default {
               <el-container>
                 <el-header>
                   <h1>
-                    <!-- 震惊！中山大学BME卓越工程师训练营竟然是一个卓越工程师训练营 -->
+                    震惊！中山大学BME卓越工程师训练营竟然是一个卓越工程师训练营
                   </h1>
                 </el-header>
                 <el-main>
-                  <div class="content" v-html="this.article">
-                  </div>
+                  <div class="content" v-html="article"></div>
+                  
                 </el-main>
                 <el-footer>Footer</el-footer>
               </el-container>

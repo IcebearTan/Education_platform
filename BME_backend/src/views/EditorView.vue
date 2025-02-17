@@ -35,7 +35,7 @@ export default {
       // }
 
       if (res.data.code == 200) {
-        console.log(res)
+        // console.log(res)
         this.store.dispatch('setUser', res.data)
       }
     }
@@ -58,7 +58,19 @@ import { onMounted } from 'vue'
 import { ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useStore } from 'vuex'
+import { useRouter } from 'vue-router'
 
+const store = useStore()
+const router = useRouter()
+
+const Article_Id = ref(router.currentRoute.value.query.id)
+
+onMounted(() => {
+  // const id = this.$route.query.id
+  console.log('传过来咯')
+  // Article_Id.value = router.currentRoute.value.query.id
+  console.log(Article_Id.value)
+})
 
 const handleOpen = (key, keyPath) => {
   
@@ -74,7 +86,7 @@ const handleClose = (key, keyPath) => {
 <template>
   <div>
     <div class="common-layout">
-      <EditorComponent />
+      <EditorComponent :Article_Id="Article_Id" />
     </div>
   </div>
 </template>

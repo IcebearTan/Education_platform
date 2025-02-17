@@ -10,7 +10,7 @@ export default {
         key: ''
       },
       dialogFormVisible: false,
-      users: [
+      articles: [
         {
           id: 1,
           username: 'admin',
@@ -29,18 +29,18 @@ export default {
       ],
       tableLabel: [
         {
-          prop: 'id',
+          prop: 'Article_Id',
           label: '文章id',
           width: '200px',
         },
         {
-          prop: 'username',
+          prop: 'Article_Title',
           label: '文章标题',
           width: '300px',
         },
         {
-          prop: 'is_admin',
-          label: '管理员权限',
+          prop: 'Article_Introduction',
+          label: '文章简介',
           width: '300px',
         },
       ],
@@ -48,7 +48,7 @@ export default {
       pageSize: 10,
       totalItems: 0,
       username: null,
-      user_id: '',
+      Article_Id: '',
       form: {
         username: '',
         password: '',
@@ -66,53 +66,24 @@ export default {
   },
 
   async created() {
-    await this.fetchData();
+    await this.fetchArticles();
   },
 
   methods: {
-    async fetchData() {
+    async fetchArticles() {
+      console.log('Fetching articles...');
       try {
-        const response = await api.get(`/api/admin/users/`, {
-          params: {
-            page: this.currentPage,
-            size: this.pageSize,
-            username: this.username,
-          }
-        }
-        );
-        if (!response.data.users.length) {
-          ElMessage({
-            message: 'No user found',
-            type: 'warning'
-          });
-          return;
-        }
-        this.users = response.data.users;
-        this.totalItems = response.data.total;
+        const res = await api.get(`/article/list`);
+        this.articles = res.data;
+        this.Article_Id = res.data.Article_Id;
+        console.log(this.articles);
+        
+        // if (res.data.code === 200) {
+        //   this.articles = res.data;
+        //   console.log(this.articles);
+        // }
       } catch (error) {
         console.error("Error fetching data:", error);
-      }
-    },
-    async fetchCourse(page = 1) {
-      try {
-        const response = await api.get('/admin/course/', {
-          params: {
-            page: 1,
-            size: this.pageSize,
-            course_name: this.formInline.key
-          }
-        });
-        if (!response.data.courses.length) {
-          ElMessage({
-            message: 'No course found',
-            type: 'warning'
-          });
-          return;
-        }
-        this.courses = response.data.courses;
-        this.totalItems = response.data.total;
-      } catch (error) {
-        console.error('Failed to fetch course:', error);
       }
     },
     async deleteUser(user) {
@@ -203,14 +174,16 @@ export default {
 
       this.dialogFormVisible = true;
     },
-    handleEdit(user) {
-      this.action = 'edit';
-      this.form.id = user.id;
+    handleEdit(article) {
+      // this.action = 'edit';
+      // this.form.id = user.id;
 
-      this.form.username = user.username;
-      this.form.instructor = '';
+      // this.form.username = user.username;
+      // this.form.instructor = '';
 
-      this.dialogFormVisible = true;
+      // this.dialogFormVisible = true;
+      this.$router.push({ path: `/editor`, query: { id: article.Article_Id } });
+      // console.log(article.Article_Id);
     },
     handleSubmit() {
       this.$refs.formRef.validate((valid) => {
@@ -263,7 +236,7 @@ export default {
 
     <div style="margin: 20px;">
       <div class="table">
-        <el-table :data="users" style="width: 100%; max-height: 500px; overflow-y: auto;">
+        <el-table :data="articles" style="width: 100%; max-height: 500px; overflow-y: auto;">
           <el-table-column v-for="item in tableLabel" :key="item.prop" :prop="item.prop" :label="item.label"
             :width="item.width ? item.width : 125" />
           <el-table-column fixed="right" label="Operations" min-width="120">
@@ -280,7 +253,7 @@ export default {
       </el-pagination>
     </div>
 
-    <el-dialog v-model="dialogFormVisible" :title="action == 'add' ? '新增课程' : '编辑用户'" width="500">
+    <!-- <el-dialog v-model="dialogFormVisible" :title="action == 'add' ? '新增课程' : '编辑用户'" width="500">
       <el-form :model="form" :rules="rules" ref="formRef">
         <el-form-item label="用户名" :label-width="formLabelWidth" prop="username">
           <el-input v-model="form.username" autocomplete="off" />
@@ -295,7 +268,7 @@ export default {
           <el-button type="primary" @click="handleSubmit">确认</el-button>
         </div>
       </template>
-    </el-dialog>
+    </el-dialog> -->
   </div>
 </template>
 

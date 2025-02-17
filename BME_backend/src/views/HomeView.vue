@@ -34,7 +34,7 @@ export default {
       // }
 
       if (res.data.code == 200) {
-        console.log(res)
+        // console.log(res)
         this.store.dispatch('setUser', res.data)
       }
     }
