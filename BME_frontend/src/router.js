@@ -18,6 +18,8 @@ import UserIndex from './views/UserIndex.vue';
 import UserCenter from './views/UserCenter.vue';
 import UserInfoComponent from './components/UserInfoComponent.vue';
 
+import AboutUsView from './views/AboutUsView.vue'
+
 
 const router = createRouter({
     history: createWebHistory(),
@@ -48,6 +50,11 @@ const router = createRouter({
             path: '/user',
             name: 'user',
             component: UserIndex,
+        },
+        {
+            path: '/about',
+            name: 'about',
+            component: AboutUsView,
         },
         {
             path: '/user-center',

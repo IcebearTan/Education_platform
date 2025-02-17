@@ -12,6 +12,7 @@
     "@element-plus/icons-vue": "^2.3.1",
     "axios": "^1.7.7",
     "element-plus": "^2.8.3",
+    "gsap": "^3.12.7",
     "js-md5": "^0.8.3",
     "vue": "^3.4.37",
     "vue-persistedstate": "^1.2.5",
