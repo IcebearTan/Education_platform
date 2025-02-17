@@ -58,6 +58,14 @@ import { ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useStore } from 'vuex'
 
+
+const handleOpen = (key, keyPath) => {
+  
+}
+
+const handleClose = (key, keyPath) => {
+
+}
 </script>
 
 
@@ -69,7 +77,7 @@ import { useStore } from 'vuex'
         <el-aside width="200px" position="relative">
           <!-- <h5 class="title">训练营<br>后台管理系统</h5> -->
           <el-menu active-text-color="#ffd04b" background-color="#545c64" class="el-menu-vertical-demo"
-            :default-active=this.activeIndex text-color="#fff" @open="handleOpen" @close="handleClose">
+            :default-active=activeIndex text-color="#fff" @open="handleOpen" @close="handleClose">
             <div class="title">训练营<br>后台管理系统</div>
             <el-sub-menu index="1">
               <template #title>
@@ -100,37 +108,6 @@ import { useStore } from 'vuex'
               <el-menu-item index="3-1">编辑文章</el-menu-item>
               <el-menu-item index="3-2">管理文章</el-menu-item>
             </el-sub-menu>
-            <!-- <el-sub-menu index="4">
-              <template #title>
-                <el-icon>
-                  <location />
-                </el-icon>
-                <span>文章管理</span>
-              </template>
-              <el-menu-item index="4-1">编辑文章</el-menu-item>
-              <el-menu-item index="4-2">管理文章</el-menu-item>
-            </el-sub-menu>
-            <el-sub-menu index="5">
-              <template #title>
-                <el-icon>
-                  <location />
-                </el-icon>
-                <span>文章管理</span>
-              </template>
-              <el-menu-item index="5-1">编辑文章</el-menu-item>
-              <el-menu-item index="5-2">管理文章</el-menu-item>
-            </el-sub-menu>
-            <el-sub-menu index="6">
-              <template #title>
-                <el-icon>
-                  <location />
-                </el-icon>
-                <span>文章管理</span>
-              </template>
-              <el-menu-item index="6-1">编辑文章</el-menu-item>
-              <el-menu-item index="6-2">管理文章</el-menu-item>
-            </el-sub-menu> -->
-
             <el-menu-item index="7" style="position: absolute; bottom: 0;">
               <el-icon>
                 <setting />

@@ -1,179 +1,164 @@
 <script>
-import api from '../api';
-import { md5 } from 'js-md5';
+import { useRouter } from 'vue-router';
+import { ref, reactive, onMounted, defineComponent } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import tinymce from 'tinymce';
-import 'tinymce/themes/silver';
+import { md5 } from 'js-md5';
+import api from '../api';
+// import EditorComponent from './EditorComponent.vue';
 
-export default {
-  data() {
-    return {
-      formInline: {
-        key: ''
-      },
-      dialogFormVisible: true,
-      users: [
-        {
-          id: 1,
-          username: 'admin',
-          is_admin: "2024-12-07",
-        },
-        {
-          id: 2,
-          username: 'user1',
-          is_admin: "2024-12-07",
-        },
-        {
-          id: 3,
-          username: 'user2',
-          is_admin: "2024-12-07",
-        },
-      ],
-      tableLabel: [
-        {
-          prop: 'id',
-          label: '文章id',
-          width: '200px',
-        },
-        {
-          prop: 'username',
-          label: '文章标题',
-          width: '300px',
-        },
-        {
-          prop: 'is_admin',
-          label: '创建日期',
-          width: '300px',
-        },
-      ],
-      currentPage: 1,
-      pageSize: 10,
-      totalItems: 0,
-      username: null,
-      user_id: '',
-      form: {
-        username: '',
-        password: '',
-      },
-      rules: {
-        username: [
-          { required: true, message: '请输入用户名', trigger: 'blur' },
-        ],
-        password: [
-          { required: true, message: '请输入用户密码', trigger: 'blur' },
-        ],
-      },
-      action: 'edit',
-    };
+export default defineComponent({
+  name: 'UserManagement',
+  components: {
+    // EditorComponent,
   },
 
-  async created() {
-    await this.fetchData();
-  },
+  setup() {
+    const router = useRouter();
 
-  mounted() {
-    tinymce.init({
-      selector: '#mytiny',
+    // Reactive data
+    const formInline = reactive({
+      key: ''
     });
 
-  },
+    const dialogFormVisible = ref(true);
+    const users = ref([
+      { id: 1, username: 'admin', is_admin: "2024-12-07" },
+      { id: 2, username: 'user1', is_admin: "2024-12-07" },
+      { id: 3, username: 'user2', is_admin: "2024-12-07" },
+    ]);
 
-  methods: {
-    async fetchData() {
+    const tableLabel = reactive([
+      { prop: 'id', label: '文章id', width: '200px' },
+      { prop: 'username', label: '文章标题', width: '300px' },
+      { prop: 'is_admin', label: '创建日期', width: '300px' },
+    ]);
+
+    const currentPage = ref(1);
+    const pageSize = ref(10);
+    const totalItems = ref(0);
+    const username = ref(null);
+    const user_id = ref('');
+    
+    const form = reactive({
+      username: '',
+      password: '',
+    });
+
+    const rules = reactive({
+      username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
+      password: [{ required: true, message: '请输入用户密码', trigger: 'blur' }],
+    });
+
+    const action = ref('edit');
+
+    // Fetch user data
+    const fetchData = async () => {
       try {
         const response = await api.get(`/api/admin/users/`, {
           params: {
-            page: this.currentPage,
-            size: this.pageSize,
-            username: this.username,
-          }
-        }
-        );
+            page: currentPage.value,
+            size: pageSize.value,
+            username: username.value,
+          },
+        });
+
         if (!response.data.users.length) {
           ElMessage({
             message: 'No user found',
-            type: 'warning'
+            type: 'warning',
           });
           return;
         }
-        this.users = response.data.users;
-        this.totalItems = response.data.total;
+
+        users.value = response.data.users;
+        totalItems.value = response.data.total;
       } catch (error) {
         console.error("Error fetching data:", error);
       }
-    },
-    async fetchCourse(page = 1) {
+    };
+
+    // Fetch course data
+    const fetchCourse = async (page = 1) => {
       try {
         const response = await api.get('/admin/course/', {
           params: {
             page: 1,
-            size: this.pageSize,
-            course_name: this.formInline.key
-          }
+            size: pageSize.value,
+            course_name: formInline.key,
+          },
         });
+
         if (!response.data.courses.length) {
           ElMessage({
             message: 'No course found',
-            type: 'warning'
+            type: 'warning',
           });
           return;
         }
-        this.courses = response.data.courses;
-        this.totalItems = response.data.total;
+
+        courses.value = response.data.courses;
+        totalItems.value = response.data.total;
       } catch (error) {
         console.error('Failed to fetch course:', error);
       }
-    },
-    async deleteUser(user) {
+    };
+
+    // Delete user
+    const deleteUser = async (user) => {
       try {
         await api.delete(`/api/admin/user/${user.id}`);
         ElMessage({
           message: '删除成功',
-          type: 'success'
+          type: 'success',
         });
-        this.fetchData();
+        fetchData();
       } catch (error) {
         console.error('Failed to delete course:', error);
       }
-    },
-    async addUser() {
+    };
+
+    // Add user
+    const addUser = async () => {
       try {
-        const response = await api.post('/courses/', this.form);
-
-        this.courses.push(response.data);
-
+        const response = await api.post('/courses/', form);
+        courses.value.push(response.data);
         ElMessage({
           message: '添加成功',
-          type: 'success'
+          type: 'success',
         });
-        this.dialogFormVisible = false;
-        this.fetchData();
+        dialogFormVisible.value = false;
+        fetchData();
       } catch (error) {
         console.error('Failed to add course:', error);
       }
-    },
-    async editUser() {
-      try {
-        this.form.password = md5(this.form.password);
-        const response = await api.put(`/api/admin/user/${this.form.id}`, this.form);
-        this.users.push(response.data);
+    };
 
+    // Edit user
+    const editUser = async () => {
+      try {
+        form.password = md5(form.password);
+        const response = await api.put(`/api/admin/user/${form.id}`, form);
+        users.value.push(response.data);
         ElMessage({
           message: '修改成功',
-          type: 'success'
+          type: 'success',
         });
-        this.dialogFormVisible = false;
-        this.fetchData();
+        dialogFormVisible.value = false;
+        fetchData();
       } catch (error) {
         console.error('Failed to add course:', error);
       }
-    },
-    showAssignments(user) {
-      this.dialogTableVisible = true;
+    };
+
+    // Show assignments (example)
+    const showAssignments = (user) => {
+      dialogTableVisible.value = true;
       console.log(course.assignments);
-      this.assignments = course.assignments;
-    },
-    formatDateTime(row, col, dateTime, index) {
+      assignments.value = course.assignments;
+    };
+
+    // Format datetime
+    const formatDateTime = (row, col, dateTime, index) => {
       const date = new Date(dateTime);
       const options = {
         year: 'numeric',
@@ -181,81 +166,123 @@ export default {
         day: '2-digit',
         hour: '2-digit',
         minute: '2-digit',
-        hour12: false
+        hour12: false,
       };
       return date.toLocaleString('en-US', options).replace(',', '');
-    },
-    handlePageChange(page) {
-      this.currentPage = page;
-      this.fetchData(page);
-    },
-    handleSearch() {
-      if (this.formInline.key) {
-        this.username = this.formInline.key;
+    };
+
+    // Handle page change
+    const handlePageChange = (page) => {
+      currentPage.value = page;
+      fetchData(page);
+    };
+
+    // Handle search
+    const handleSearch = () => {
+      if (formInline.key) {
+        username.value = formInline.key;
       }
-      this.fetchData();
-    },
-    handleDelete(val) {
+      fetchData();
+    };
+
+    // Confirm delete action
+    const handleDelete = (val) => {
       ElMessageBox.confirm('你确定要删除吗？', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
-        type: 'warning'
+        type: 'warning',
       }).then(() => {
-        this.deleteUser(val);
+        deleteUser(val);
       });
-    },
-    handleAdd() {
-      this.action = 'add';
+    };
 
-      this.form.username = '';
-      this.form.password = '';
+    // Handle add action
+    const handleAdd = () => {
+      // action.value = 'add';
+      // form.username = '';
+      // form.password = '';
+      // dialogFormVisible.value = true;
 
-      this.dialogFormVisible = true;
-    },
-    handleEdit(user) {
-      this.action = 'edit';
-      this.form.id = user.id;
+      router.push('/editor');
+    };
 
-      this.form.username = user.username;
-      this.form.instructor = '';
+    // Handle edit action
+    const handleEdit = (user) => {
+      action.value = 'edit';
+      form.id = user.id;
+      form.username = user.username;
+      form.instructor = '';
+      dialogFormVisible.value = true;
+    };
 
-      this.dialogFormVisible = true;
-    },
-    handleSubmit() {
-      this.$refs.formRef.validate((valid) => {
+    // Handle form submission
+    const handleSubmit = () => {
+      formRef.value.validate((valid) => {
         if (valid) {
-          if (this.action === 'edit') {
-            this.editUser();
+          if (action.value === 'edit') {
+            editUser();
           } else {
-            this.addUser();
+            addUser();
           }
-          this.form.username = '';
-          this.form.password = '';
+          form.username = '';
+          form.password = '';
         } else {
-          // Form is invalid
           console.log('Form validation failed');
           return false;
         }
       });
-    },
-    handleCancle() {
-      this.dialogFormVisible = false;
-      this.form.username = '';
-      this.form.password = '';
-    },
-  },
-  computed: {
+    };
 
-  }
-};
+    // Handle cancel
+    const handleCancle = () => {
+      dialogFormVisible.value = false;
+      form.username = '';
+      form.password = '';
+    };
+
+    // On mounted, fetch initial data
+    onMounted(() => {
+      fetchData();
+    });
+
+    // Return all reactive data, methods, and computed properties
+    return {
+      formInline,
+      dialogFormVisible,
+      users,
+      tableLabel,
+      currentPage,
+      pageSize,
+      totalItems,
+      username,
+      form,
+      rules,
+      action,
+      fetchData,
+      fetchCourse,
+      deleteUser,
+      addUser,
+      editUser,
+      showAssignments,
+      formatDateTime,
+      handlePageChange,
+      handleSearch,
+      handleDelete,
+      handleAdd,
+      handleEdit,
+      handleSubmit,
+      handleCancle,
+    };
+  },
+});
 </script>
+
 
 <template>
 
   <div style="width: 100%; height: 100%; position: relative; overflow: hidden;">
     <div class="header-container">
       <div class="l-container">草稿箱</div>
-
       <div class="r-container">
         <el-button type="primary" @click="handleAdd">添加文章</el-button>
 
@@ -274,7 +301,7 @@ export default {
       </div>
     </div>
     <div style="margin: 20px;">
-      <div id="mytiny"></div>
+      <EditorComponent />
       <div class="table">
         <el-table :data="users" style="width: 100%; max-height: 500px; overflow-y: auto;">
           <el-table-column v-for="item in tableLabel" :key="item.prop" :prop="item.prop" :label="item.label"
@@ -291,10 +318,6 @@ export default {
         :total="totalItems" layout="prev, pager, next" style="position:absolute; bottom: 0; margin-bottom: 20px;">
       </el-pagination>
     </div>
-
-    <el-dialog v-model="dialogFormVisible" :title="action == 'add' ? '新增课程' : '编辑用户'" width="500">
-      <div id="mytiny"></div>
-    </el-dialog>
   </div>
 </template>
 
