@@ -86,15 +86,15 @@ export default {
           <h2>前端团队</h2>
           <h3>前端技术栈为vue3</h3>
           <div class="image-container">
-            <img src="https://via.placeholder.com/600x400" alt="成员一" />
+            <!-- <img src="https://via.placeholder.com/600x400" alt="成员一" /> -->
           </div>
           <h3>成员一</h3>
           <div class="image-container">
-            <img src="https://via.placeholder.com/600x400" alt="成员二" />
+            <!-- <img src="https://via.placeholder.com/600x400" alt="成员二" /> -->
           </div>
           <h3>成员二</h3>
           <div class="image-container">
-            <img src="https://via.placeholder.com/600x400" alt="成员三" />
+            <!-- <img src="https://via.placeholder.com/600x400" alt="成员三" /> -->
           </div>
           <h3>成员三</h3>
         </div>
