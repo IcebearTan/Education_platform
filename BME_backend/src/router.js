@@ -7,6 +7,7 @@ import RegisterView from './views/RegisterView.vue'
 import UserManage from './components/UserManage.vue'
 import ArticleManage from './components/ArticleManage.vue'
 import ArticleCreate from './components/ArticleCreate.vue'
+import EditorView from './views/EditorView.vue';
 
 
 
@@ -52,6 +53,12 @@ const router = createRouter({
             name: 'register',
             component: RegisterView
         },
+        {
+            path: '/editor',
+            name: 'editor',
+            component: EditorView
+
+        }
     ]
 })
 

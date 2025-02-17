@@ -3,6 +3,7 @@ import { RouterView } from "vue-router";
 import MenuComponent from "../components/MenuComponent.vue";
 import { useStore } from 'vuex'
 import { useRouter } from 'vue-router'
+import { ElMessage } from 'element-plus'
 import api from "../api";
 
 export default {
@@ -23,14 +24,10 @@ export default {
       url: "/user/user_index",
       method: "get",
     }).catch((error) => {
-      // if (error.response.status == 422){
       ElMessage.error('登录失效，请重新登录')
       this.router.push('/login')
-      // }
-
     }).then((res) => {
         if (res.data.code == 200) {
-          // console.log(res)
           this.store.dispatch('setUser', res.data)
         }
       }
