@@ -111,6 +111,9 @@ export default defineComponent({
     text-decoration: underline;
     color: #dadada;
 }
+.subtitle:active{
+    color: #9f9f9f;
+}
 .links-container{
     display: flex;
     justify-content: flex-start;
