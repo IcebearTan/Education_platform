@@ -62,12 +62,12 @@ export default {
     },
     plugins: {
       type: [String, Array],
-      default: 'lists image media table wordcount link code preview hr paste',
+      default: 'lists image media table wordcount link code preview hr paste textcolor colorpicker contextmenu',
     },
     toolbar: {
       type: [String, Array],
       default:
-        "undo redo | formatselect fontselect fontsizeselect | hr link lineheight forecolor backcolor bold italic underline strikethrough | alignleft aligncenter alignright alignjustify | image media quicklink h2 h3 blockquote table numlist bullist fullscreen",
+        "undo redo | formatselect fontselect fontsizeselect | hr link lineheight forecolor backcolor bold italic underline strikethrough | alignleft aligncenter alignright alignjustify | quicklink h2 h3 blockquote table numlist bullist fullscreen",
     },
     height: {
       type: Number,
@@ -89,8 +89,6 @@ export default {
             console.log(content.value)
         }
 
-        // 定义响应式的数据
-        // const myValue = ref(props.baseValue);
         const init = reactive({
             images_upload_url: 'http://192.168.3.47:8081/imgUpload',
             language_url: '/tinymce/langs/zh_CN.js', // 中文插件
@@ -107,21 +105,8 @@ export default {
             plugins: props.plugins,
             toolbar: props.toolbar,
             branding: false,
-            
-            //   external_plugins: {
-            //     powerpaste: '/tinymce/powerpaste/plugin.min.js', // word文档黏贴插件
-            //   },
-            images_upload_handler: async (blobInfo, success, failure) => {
-            const files = blobInfo.blob();
-            const formData = new FormData();
-            formData.append('file', files);
-            try {
-                const response = await upLoadImg(formData);
-                success(response.data); // 上传成功返回图片URL
-            } catch (error) {
-                emit('showMessage', { type: 'warning', message: '上传失败！服务器错误！' });
-            }
-            },
+
+            content_style: "body { color: #444; font-family: sans-serif; }"
         });
 
         const Article_Id = ref('');
@@ -166,11 +151,6 @@ export default {
             updateArticleContent();
         }
 
-        // // 监听 myValue 和 baseValue 的变化
-        // watch(myValue, (newValue) => {
-        //   emit('getValue', newValue + '<style>*{margin: 0;padding: 0} img{max-width: 100%!important} table{max-width: 100%!important;}</style>');
-        // });
-
         watch(
             () => props.baseValue,
             (newBaseValue) => {
@@ -196,12 +176,36 @@ export default {
 
     },
 };
+
+
+//未来可能会用到的代码，先留着吧
+//   external_plugins: {
+//     powerpaste: '/tinymce/powerpaste/plugin.min.js', // word文档黏贴插件
+//   },
+// images_upload_handler: async (blobInfo, success, failure) => {
+// const files = blobInfo.blob();
+// const formData = new FormData();
+// formData.append('file', files);
+// try {
+//     const response = await upLoadImg(formData);
+//     success(response.data); // 上传成功返回图片URL
+// } catch (error) {
+//     emit('showMessage', { type: 'warning', message: '上传失败！服务器错误！' });
+// }
+// }
+
+
+
+// // 监听 myValue 和 baseValue 的变化
+// watch(myValue, (newValue) => {
+//   emit('getValue', newValue + '<style>*{margin: 0;padding: 0} img{max-width: 100%!important} table{max-width: 100%!important;}</style>');
+// });
 </script>
 
 <style scoped>
 /* 添加你的样式 */
 .common-layer{
-    display: flex;
-    flex-direction: row;
+    /* display: flex; */
+    /* flex-direction: row； */
 }
 </style>
