@@ -7,4 +7,8 @@ export default defineConfig({
   optimizeDeps: {
     include: ['@tinymce/tinymce-vue'],
   },
+  server: {
+    host: '0.0.0.0',
+    port: 5173, // 你想要的端口号
+  },
 })
