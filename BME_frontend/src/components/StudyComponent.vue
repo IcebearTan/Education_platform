@@ -121,7 +121,7 @@ onMounted(() => {
 }
 .cardTitle {
     font-size: 15px;
-    font-weight: bold;
+    font-weight: normal;
     height: 25%;
 }
 .cardText {
@@ -135,12 +135,15 @@ onMounted(() => {
     text-overflow: ellipsis; /* 添加省略号（可选） */
 
     margin-bottom: 20px;
+    margin-top: 5px;
+    color: #888;
 }
 .cardFooter {
     position: relative;
     
     font-size: 12px;
     height: 25%;
+    color: #aaa;
 }
 .boxCard :deep(.el-card__body) {
     padding: 0px;

@@ -26,6 +26,7 @@ export default {
 import { onMounted, ref, unref } from 'vue'
 import { ClickOutside as vClickOutside } from 'element-plus'
 import { useRouter } from 'vue-router'
+import { ElMessage } from 'element-plus'
 import api from '../api'
 
 const buttonRef = ref()
@@ -42,9 +43,10 @@ onMounted(() => {
     })
     .then((avatarRes) => {
         if (avatarRes.data.code === 200) {
-            User_Avatar.value = `data:image/png;base64,${avatarRes.data.User_Avatar}`;  // 假设头像URL存储在res.data.avatarUrl中
+            User_Avatar.value = `data:image/png;base64,${avatarRes.data.User_Avatar}`;  // 头像URL存储在res.data.avatarUrl中
         } else {
-            ElMessage.error('获取头像失败');
+            User_Avatar.value = 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png';
+            ElMessage.error('用户尚未上传头像');
         }  
     })
     .catch((error) => {
@@ -52,7 +54,8 @@ onMounted(() => {
             ElMessage.error('登录失效，请重新登录');
             router.push('/login');  //这里还没做完
         } else {
-            ElMessage.error('未知的错误');
+            User_Avatar.value = 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png';
+            ElMessage.error('MenuComponent:用户尚未上传头像或未知的错误');
         }
     })
 })
@@ -109,13 +112,18 @@ const handleUserInfo = () => {
                 >
                     <div>
                         <div style="display: flex; align-items: center; cursor: pointer;" @click="$router.push('/user')">
-                            <el-avatar @click="visible = !visible"
+                            <div style="width: 50px; height: 50px;">
+                                <el-avatar @click="visible = !visible"
                                 :src="User_Avatar" alt="image"
                                 :size="50"
-                            />
-                            <div style="position: relative; top: 0; font-size: 25px; margin-left: 10px">{{ $store.state.user.User_Name }}</div>
-                            <div v-if="$store.state.user.User_Mode == 'admin'" class="user-type-instructor">导师</div>
-                            <div v-else class="user-type-student">学生</div>
+                                />
+                            </div>
+                            
+                            <div style="display: flex; flex-wrap: wrap; margin-left: 10px;">
+                                <div style="" class="user-name">{{ $store.state.user.User_Name }}</div>
+                                <div v-if="$store.state.user.User_Mode == 'admin'" class="user-type-instructor">导师</div>
+                                <div v-else class="user-type-student">学生</div>
+                            </div>
                         </div>
                         <ul style="list-style: none; padding: 0; margin-bottom: 0;" role="none">
                             <li class="popli" role="none" @click="handleUserInfo()">
@@ -159,7 +167,16 @@ const handleUserInfo = () => {
     width: 100%;
     height: 100%;
 }
+.user-name{
+    position: relative;
+    top: 0;
+    font-size: 18px;
+    margin-left: 0px;
+    width: 100%;
 
+    color: #000;
+    font-weight: bold;
+}
 .popli{
     display: flex; 
     align-items: center;
@@ -180,8 +197,8 @@ const handleUserInfo = () => {
 .user-type-instructor{
     position: relative;
     top: 0;
-    font-size: 20px;
-    margin-left: 10px;
+    font-size: 15px;
+    /* margin-left: 10px; */
     font-weight: bold;
     color: #DA6AFC;
 
@@ -191,8 +208,8 @@ const handleUserInfo = () => {
 .user-type-student{
     position: relative;
     top: 0;
-    font-size: 20px;
-    margin-left: 10px;
+    font-size: 15px;
+    /* margin-left: 10px; */
     font-weight: bold;
     color: #6AD5FC;
 
