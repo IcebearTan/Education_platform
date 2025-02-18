@@ -2,12 +2,15 @@
 import { ref, onMounted } from "vue";
 import { useRoute } from "vue-router"; // 用来获取当前路由
 import MenuComponent from "../components/MenuComponent.vue";
+import PageFooterComponent from "../components/PageFooterComponent.vue";
+
 import api from '../api';
 
 export default {
   name: "HomeView",
   components: {
-    MenuComponent
+    MenuComponent,
+    PageFooterComponent
   },
   setup() {
     const route = useRoute(); // 获取当前路由
@@ -55,26 +58,31 @@ export default {
         <el-row>
           <el-col :span="4" class="left-col">广告招租</el-col>
           <el-col :span="16" class="main-col">
-            <div class="common-layout">
+            <div class="article-container">
               <el-container>
-                <el-header>
-                  <h1>
+                <el-header class="article-header">
+                  <div style="display: flex; justify-content: left; align-items: center; font-size: 28px; font-weight: bold; margin-bottom: 10px;">
                     震惊！中山大学BME卓越工程师训练营竟然是一个卓越工程师训练营
-                  </h1>
+                  </div>
+                  <div class="article-footer">
+                    <span class="publish-time">修改时间：2025-02-18</span>
+                    <div class="article-stats">
+                      <span class="like-count">点赞数 0</span>
+                      <span class="view-count">阅读数 0</span>
+                    </div>
+                  </div>
                 </el-header>
                 <el-main>
                   <div class="content" v-html="article"></div>
-                  
                 </el-main>
-                <el-footer>Footer</el-footer>
               </el-container>
             </div>
           </el-col>
           <el-col :span="4" class="right-col">广告招租</el-col>
         </el-row>
       </el-main>
-      <el-footer class="footer">备案编号：1145141919810 没有版权和免责声明 千万别申诉版权 出版物许可证也没有 ©2024-2024深圳中大BME草台班子无限公司
-        服务冷线：4008-123-123 客服邮箱：thisIsAfakeEmail@bme.com
+      <el-footer class="page-footer">
+        <PageFooterComponent />
       </el-footer>
     </el-container>
   </div>
@@ -91,6 +99,15 @@ export default {
   display: flex;
   flex-direction: column;
   justify-content:space-between;
+}
+
+.article-container{
+  width: 100%;
+  height: 1000px;
+
+  border-radius: 5px;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  
 
 }
 
@@ -131,7 +148,22 @@ export default {
 
 .main-col {
   text-align: center;
-  padding: 10px;
+  padding-left: 20px;
+  padding-right: 20px;
+}
+
+.article-footer {
+  /* margin-left: 23px;
+  margin-right: 30px; */
+  /* padding-bottom: 10px; */
+}
+
+.article-header{
+  margin-top: 20px;
+  margin-left: 30px;
+  margin-right: 30px;
+
+  height: min-content;
 }
 </style>
 

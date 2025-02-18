@@ -1,7 +1,7 @@
 <script>
 import UserindexComponent from "../components/UserindexComponent.vue";
 import AdminindexComponent from "../components/AdminindexComponent.vue";
-
+import PageFooterComponent from "../components/PageFooterComponent.vue";
 import MenuComponent from "../components/MenuComponent.vue";
 import api from '../api';
 import { RouterLink } from "vue-router";
@@ -10,7 +10,8 @@ export default {
     name: 'UserIndex',
     components: {
         UserindexComponent,
-        MenuComponent
+        MenuComponent,
+        PageFooterComponent
     },
 
     data() {
@@ -112,8 +113,8 @@ onMounted(() => {
                     <el-col :span="3"></el-col>
                 </el-row>
             </el-main>
-            <el-footer class="footer">备案编号：1145141919810 没有版权和免责声明 千万别申诉版权 出版物许可证也没有 ©2024-2024深圳中大BME草台班子无限公司
-                服务冷线：4008-123-123 客服邮箱：thisIsAfakeEmail@bme.com
+            <el-footer class="page-footer">
+                <PageFooterComponent />
             </el-footer>
         </el-container>
     </div>

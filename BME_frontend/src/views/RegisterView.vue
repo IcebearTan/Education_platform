@@ -1,10 +1,12 @@
 <script>
 import Register from '../components/RegisterComponent.vue';
+import PageFooterComponent from '../components/PageFooterComponent.vue';
 
 export default {
   name: 'RegisterView',
   components: {
-    Register
+    Register,
+    PageFooterComponent
   },
 };
 </script>
@@ -18,8 +20,8 @@ export default {
       <el-main class="homeMainContainer">
         <Register />
       </el-main>
-      <el-footer class="footer">备案编号：1145141919810 没有版权和免责声明 千万别申诉版权 出版物许可证也没有 ©2024-2024深圳中大BME草台班子无限公司
-        服务冷线：4008-123-123 客服邮箱：thisIsAfakeEmail@bme.com
+      <el-footer class="page-footer">
+        <PageFooterComponent />
       </el-footer>
     </el-container>
   </div>

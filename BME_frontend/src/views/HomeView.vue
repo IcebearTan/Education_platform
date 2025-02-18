@@ -5,11 +5,13 @@ import { useStore } from 'vuex'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import api from "../api";
+import PageFooterComponent from "../components/PageFooterComponent.vue";
 
 export default {
   name: "HomeView",
   components: { 
-    MenuComponent
+    MenuComponent,
+    PageFooterComponent
   },
 
   data() {
@@ -46,8 +48,8 @@ export default {
         <RouterView />
         <!-- <TestComponent /> -->
       </el-main>
-      <el-footer class="footer">备案编号：1145141919810 没有版权和免责声明 千万别申诉版权 出版物许可证也没有 ©2024-2024深圳中大BME草台班子无限公司
-        服务冷线：4008-123-123 客服邮箱：thisIsAfakeEmail@bme.com
+      <el-footer class="page-footer">
+        <PageFooterComponent />
       </el-footer>
     </el-container>
   </div>
@@ -84,12 +86,31 @@ export default {
 .homeMainContainer{
   padding-left: 20px;
   min-height: 100vh;
-  background-color: rgba(129, 51, 33, 0.898);
+  /* background-color: rgba(129, 51, 33, 0.898); */
+  background-color: rgb(255, 255, 255);
+  
 }
 </style>
 
 <style>
 .el-header {
   padding: 0;
+}
+
+.page-footer {
+  display: flex;
+  /* justify-content: center; */
+  align-items: center;
+  flex-direction: column;
+
+  padding: 10px;
+  background-color: #252525;
+
+  /* margin: 0 a; */
+
+  width: 100%;
+  min-height: 400px;
+  
+  color: #ffffff;
 }
 </style>
