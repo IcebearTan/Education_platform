@@ -15,39 +15,83 @@ const activeIndex = ref('/')
 const router = useRouter()
 const store = useStore()
 
-onMounted(() => {
-  Promise.all([
-    api({
+const fetchUserInfo = async () => {
+  try {
+    const response = await api({
       url: "/user/user_index",
       method: "get",
-    }),
-    api({
-      url: "/user/user_avatars", // 请求头像的URL
-      method: "get",
-    })
-  ])
-  .then(([userInfoRes, avatarRes]) => {
-    if (userInfoRes.data.code === 200) {
-      console.log(userInfoRes.data)
-      User_Info.value = userInfoRes.data;
+    });
+    if (response.data.code === 200) {
+      User_Info.value = response.data;
     } else {
       ElMessage.error('获取用户信息失败');
     }
+  } catch (error) {
+    if (error.response.status === 401) {
+      ElMessage.error('登录失效，请重新登录');
+      router.push('/login');//这里还没做完
+    }
+  }
+}
 
-    if (avatarRes.data.code === 200) {
-      User_Avatar.value = `data:image/png;base64,${avatarRes.data.User_Avatar}`;  // 假设头像URL存储在res.data.avatarUrl中
+const fetchUserAvatar = async () => {
+  try {
+    const response = await api({
+      url: "/user/user_avatars", // 请求头像的URL
+      method: "get",
+    });
+    if (response.data.code === 200) {
+      User_Avatar.value = `data:image/png;base64,${response.data.User_Avatar}`;  // 假设头像URL存储在res.data.avatarUrl中
     } else {
       ElMessage.error('获取头像失败');
     }
-  })
-  .catch((error) => {
+  } catch (error) { 
     if (error.response.status === 401) {
       ElMessage.error('登录失效，请重新登录');
       router.push('/login');//这里还没做完
     } else {
-      ElMessage.error('获取用户信息失败');
+      User_Avatar.value = 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png'; 
+      ElMessage.error('UserCenterComponent:用户尚未上传头像或未知的错误');
     }
-  });
+  }
+}
+
+onMounted(() => {
+  // Promise.all([
+  //   api({
+  //     url: "/user/user_index",
+  //     method: "get",
+  //   }),
+  //   api({
+  //     url: "/user/user_avatars", // 请求头像的URL
+  //     method: "get",
+  //   })
+  // ])
+  // .then(([userInfoRes, avatarRes]) => {
+  //   if (userInfoRes.data.code === 200) {
+  //     console.log(userInfoRes.data)
+  //     User_Info.value = userInfoRes.data;
+  //   } else {
+  //     ElMessage.error('获取用户信息失败');
+  //   }
+
+  //   if (avatarRes.data.code === 200) {
+  //     User_Avatar.value = `data:image/png;base64,${avatarRes.data.User_Avatar}`;  // 假设头像URL存储在res.data.avatarUrl中
+  //   } else {
+  //     ElMessage.error('获取头像失败');
+  //   }
+  // })
+  // .catch((error) => {
+  //   if (error.response.status === 401) {
+  //     ElMessage.error('登录失效，请重新登录');
+  //     router.push('/login');//这里还没做完
+  //   } else {
+  //     User_Avatar.value = 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png'; 
+  //     ElMessage.error('UserCenterComponent:用户尚未上传头像或未知的错误');
+  //   }
+  // });
+  fetchUserInfo();
+  fetchUserAvatar();
 
   activeIndex.value = router.currentRoute.value.path;
 })
@@ -194,7 +238,7 @@ onMounted(() => {
   align-items: center;
   font-size: larger;
   font-weight: normal;
-  margin-bottom: 0px;
+  margin-bottom: 5px;
 
   width: 100%;
 

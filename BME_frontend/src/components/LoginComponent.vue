@@ -103,7 +103,12 @@ export default {
                     </el-form-item>
                 </el-form>
 
-                <el-link href="/register" type="primary">没有账户，前去注册</el-link>
+                <div style="display: flex; justify-content: space-between;">
+                    <el-link href="/register" type="primary">没有账户，前去注册</el-link>
+                    <el-link href="/find_password" type="primary">忘记密码</el-link>
+                </div>
+                
+
             </el-main>
             <el-footer class="footer">
                 注册和登录什么也代表不了

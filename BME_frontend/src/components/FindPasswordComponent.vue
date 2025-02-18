@@ -219,7 +219,7 @@ export default {
                     </el-form-item>
                 </el-form>
 
-                <el-link href="/login" type="primary">登录</el-link>
+                <el-link href="/login" type="primary">返回登录</el-link>
             </el-main>
             <el-footer class="footer">
                 注册和登录什么也代表不了
