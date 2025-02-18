@@ -39,7 +39,7 @@ export default {
     <img src="../assets/Logo_NewYear.png" alt="BME Logo" width="250px" class="largeLogo"/>
     <h1 class="largeTitle">卓越工程师训练营</h1>
   </div>
-  <div style="display: flex; justify-content: center; align-items: center; color: whitesmoke; font-size: 20px;">中山大学生物医学工程医工融合科创协会在线教育平台</div>
+  <div style="display: flex; justify-content: center; align-items: center; color: #666; font-size: 20px;">中山大学生物医学工程医工融合科创协会在线教育平台</div>
   
   <div style="display: flex; justify-content: center; align-items: center; flex-wrap: wrap;">
     <h1 class="secondTitle">最新资讯</h1>

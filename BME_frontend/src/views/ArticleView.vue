@@ -129,7 +129,7 @@ export default {
   color: #ff0000;
   /* color: #bb00ff; */
 
-  /* animation: jumpAnimation 0.5s infinite; */
+  animation: jumpAnimation 0.5s infinite;
 
 }
 
@@ -147,7 +147,7 @@ export default {
   color: #ff0000;
 
 
-  /* animation: jumpAnimation 0.5s infinite; */
+  animation: jumpAnimation 0.5s infinite;
 
 }
 

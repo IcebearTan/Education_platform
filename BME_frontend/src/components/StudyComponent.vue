@@ -39,16 +39,15 @@ onMounted(() => {
         <h2 style="margin-left: 10px;font-weight: 500;">最新课程</h2>
         <div class="columnContainer">
             <el-card class="boxCard" v-for="course in courseList" :key="course.Course_Id" @click="handleCourseClick(course.Course_Id)">
-                <el-row>
-                    <el-col :span="6">
-                        暂无图片
-                    </el-col>
-                    <el-col :span="18">
+                <div style="width: 100%; height: 100%; display: flex; flex-wrap: wrap;">
+                    <div class="bookCover">{{ course.Course_title }}</div>
+                    <div class="bookInfo">
                         <div class="cardTitle">{{ course.Course_title }}</div>
                         <div class="cardText">{{ course.Course_Introduction }}</div>
                         <div class="cardFooter">共 {{ course.Course_Chapters }} 章</div>
-                    </el-col>
-                </el-row>
+                    </div>
+                </div>
+                
             </el-card>
         </div>
         <!-- <el-card class="boxCard"></el-card> -->
@@ -108,10 +107,6 @@ onMounted(() => {
 
     margin: 10px;
     border-radius: 6px;
-    /* overflow: hidden;
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2; */
 
     box-shadow: 0 2px 10px 0 rgba(53, 53, 53, 0.1);
     transition: all 0.3s ease;
@@ -149,5 +144,33 @@ onMounted(() => {
 }
 .boxCard :deep(.el-card__body) {
     padding: 0px;
+}
+
+.bookCover{
+    background-color: #91bdff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+
+    font-weight: bold;
+    width: 65px;
+    height: 90px;
+
+    border-radius: 5px;
+    margin: 5px;
+    padding: 5px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+
+    color: #fff;
+
+    /* padding: 5px; */
+}
+.bookInfo{
+    height: 100%;
+
+    margin-top: 5px;
+    margin-left: 5px;
 }
 </style>
