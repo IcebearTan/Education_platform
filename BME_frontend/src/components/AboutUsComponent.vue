@@ -101,7 +101,7 @@ export default {
 
         <div class="image-container">
           <img src="../assets/ice_bear_avatar.jpg" alt="ice bear" />
-          <div align="center">组长——ice bear</div>
+          <div style="text-align: center;">组长 —— Ice bear</div>
         </div>
       </section>
 
@@ -115,7 +115,7 @@ export default {
 
         <div class="image-container">
           <img src="../assets/Jerry_Scintilla_avatar.jpg" alt="Jerry Scintilla" />
-          <div align="center">组长——Jerry Scintilla</div>
+          <div style="text-align: center;">组长 —— Jerry Scintilla</div>
         </div>
       </section>
 
@@ -177,6 +177,7 @@ main {
 .about-section ,
 .about-section .text-container {
   flex: 1;
+  margin-right: 20px;
 }
 
 .image-container {
