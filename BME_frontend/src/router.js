@@ -19,6 +19,7 @@ import UserCenter from './views/UserCenter.vue';
 import UserInfoComponent from './components/UserInfoComponent.vue';
 
 import AboutUsView from './views/AboutUsView.vue'
+import FindPasswordView from './views/FindPasswordView.vue'
 
 
 const router = createRouter({
@@ -55,6 +56,11 @@ const router = createRouter({
             path: '/about',
             name: 'about',
             component: AboutUsView,
+        },
+        {
+            path: '/find_password',
+            name: 'find_password',
+            component: FindPasswordView,
         },
         {
             path: '/user-center',
