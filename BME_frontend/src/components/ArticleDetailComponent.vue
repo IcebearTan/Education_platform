@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div style="user-select: text;">
     <el-container>
         <el-header class="article-header">
         <div style="display: flex; justify-content: left; align-items: center; font-size: 28px; font-weight: bold; margin-bottom: 10px;">
@@ -93,5 +93,8 @@ export default defineComponent({
 .content{
     margin-left: 30px;
     margin-right: 30px;
+
+    overflow: hidden;
 }
+
 </style>

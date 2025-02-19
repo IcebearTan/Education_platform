@@ -55,7 +55,7 @@ export default {
 <script setup>
 import api from '../api';
 import { onMounted } from 'vue'
-import { ref } from 'vue'
+import { ref, nextTick } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useStore } from 'vuex'
 import { useRouter } from 'vue-router'
@@ -64,6 +64,15 @@ const store = useStore()
 const router = useRouter()
 
 const Article_Id = ref(router.currentRoute.value.query.id)
+
+const loading = ref(false)
+
+nextTick(() => {
+    loading.value = true
+    setTimeout(() => {
+        loading.value = false
+    }, 8000)
+})
 
 onMounted(() => {
   // const id = this.$route.query.id
@@ -84,7 +93,11 @@ const handleClose = (key, keyPath) => {
 
 
 <template>
-  <div>
+  <div
+        v-loading="loading" 
+        element-loading-background="rgba(255, 255, 255, 1)" 
+        :delay="0" 
+        element-loading-text="正在着急地加载...">
     <div class="common-layout">
       <EditorComponent :Article_Id="Article_Id" />
     </div>
@@ -94,8 +107,11 @@ const handleClose = (key, keyPath) => {
 <style scoped>
 .common-layout {
   width: 100%;
-  min-height: 100%;
-  /* background-color: #f5f5f5; */
+  min-height: 100vh;
+  background-color: #f5f5f5;
+
+  padding-top: 20px;
+  padding-bottom: 20px;
 }
 
 .el-menu-vertical-demo {
