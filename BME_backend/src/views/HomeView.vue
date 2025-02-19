@@ -2,6 +2,7 @@
 import { RouterView } from "vue-router";
 import { useStore } from 'vuex'
 import { useRouter } from 'vue-router'
+import { Document } from '@element-plus/icons-vue';
 
 export default {
   name: "HomeView",
@@ -41,7 +42,7 @@ export default {
     )
 
     if (this.$route.path === '/') {
-      this.activeIndex = '/user-manage'
+      this.activeIndex = '/article/manage'
     }
     else {
       this.activeIndex = this.$route.path
@@ -79,7 +80,7 @@ const handleClose = (key, keyPath) => {
           <el-menu active-text-color="#ffd04b" background-color="#545c64" class="el-menu-vertical-demo"
             :default-active=activeIndex text-color="#fff" @open="handleOpen" @close="handleClose">
             <div class="title">训练营<br>后台管理系统</div>
-            <el-sub-menu index="1">
+            <el-sub-menu index="1" disabled>
               <template #title>
                 <el-icon>
                   <location />
@@ -88,17 +89,17 @@ const handleClose = (key, keyPath) => {
               </template>
               <el-menu-item index="/user-manage" @click="router.push('/user-manage')">管理用户</el-menu-item>
             </el-sub-menu>
-            <el-sub-menu index="2">
+            <el-sub-menu index="2" >
               <template #title>
                 <el-icon>
-                  <location />
+                  <Document />
                 </el-icon>
                 <span>文章管理</span>
               </template>
               <el-menu-item index="/article/manage" @click="router.push('/article/manage')">管理文章</el-menu-item>
-              <el-menu-item index="/article/create" @click="router.push('/article/create')">草稿箱</el-menu-item>
+              <el-menu-item index="/article/create" @click="router.push('/article/create')" disabled>草稿箱</el-menu-item>
             </el-sub-menu>
-            <el-sub-menu index="3">
+            <el-sub-menu index="3" disabled>
               <template #title>
                 <el-icon>
                   <location />

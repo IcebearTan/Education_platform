@@ -26,7 +26,7 @@ export default {
       method: "get",
     }).catch((error) => {
       // if (error.response.status == 422){
-      ElMessage.error('登录失效，请重新登录')
+      ElMessage.error('用户未登录')
       this.router.push('/login')
       // }
 

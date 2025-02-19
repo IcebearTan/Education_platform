@@ -61,6 +61,7 @@ export default {
                     // 将数据存入浏览器
                     localStorage.setItem("token", res.data.token)
                     this.store.commit('setUser', res.data)
+                    console.log(res.data)
                     this.$message({
                         message: '登录成功',
                         type: 'success'

@@ -72,9 +72,9 @@ const fetchUserAvatar = async () => {
     })
 }
 onMounted(() => {
-    if (checkLogin()) {
-        fetchUserAvatar()
-    }
+    // if (checkLogin()) {
+    //     fetchUserAvatar()
+    // }
 })
 
 const onClickOutside = () => {
@@ -117,61 +117,6 @@ const handleUserInfo = () => {
         </el-menu-item>
         <el-menu-item index="/discuss" disabled>
             讨论
-        </el-menu-item>
-        <el-menu-item v-if="!isLogin" class="custom-menu-item">
-            <a href="/login" class="custom-link">登录</a>
-            <span style="margin-left: 10px; margin-right: 10px;">或</span>
-            <a href="/register" class="custom-link">注册</a>
-        </el-menu-item>
-        <el-menu-item v-else>
-            <div class="user-avatar">
-                <el-popover
-                    :showArrow=false
-                    trigger="click"
-                    width="300px"
-                    height="500px"
-                    popper-class="popover"
-                >
-                    <div>
-                        <div style="display: flex; align-items: center; cursor: pointer;" @click="$router.push('/user')">
-                            <div style="width: 50px; height: 50px;">
-                                <el-avatar @click="visible = !visible"
-                                :src="User_Avatar" alt="image"
-                                :size="50"
-                                />
-                            </div>
-                            
-                            <div style="display: flex; flex-wrap: wrap; margin-left: 10px;">
-                                <div class="user-name">{{ $store.state.user.User_Name }}</div>
-                                <div v-if="$store.state.user.User_Mode == 'admin'" class="user-type-instructor">导师</div>
-                                <div v-else class="user-type-student">学生</div>
-                            </div>
-                        </div>
-                        <ul style="list-style: none; padding: 0; margin-bottom: 0;" role="none">
-                            <li class="popli" role="none" @click="handleUserInfo()">
-                                <el-icon>
-                                    <user />
-                                </el-icon>
-                                <span style="margin-left: 10px;" >账户设置</span>
-                                
-                            </li>
-                            <li class="popli" role="none" @click="logOut()">
-                                <el-icon>
-                                    <Close />
-                                </el-icon>
-                                <span style="margin-left: 10px;" >退出·</span>
-                            </li>
-                        </ul>
-                    </div>
-                    
-                    <template #reference>
-                        <el-avatar @click="visible = !visible"
-                            :src="User_Avatar" alt="image"
-                        />
-                    </template>
-                </el-popover>
-                
-            </div>
         </el-menu-item>
     </el-menu>
 </template>

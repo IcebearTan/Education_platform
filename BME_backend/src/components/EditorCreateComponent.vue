@@ -1,10 +1,8 @@
 <script>
 import { ref, reactive, watch, onMounted, onBeforeUnmount } from 'vue';
 import { ElMessage } from 'element-plus';
-import { ElButton, ElDialog } from 'element-plus'
-import { CircleCloseFilled } from '@element-plus/icons-vue'
-
 import api from '../api';
+import { useRouter } from 'vue-router';
 
 import Editor from '@tinymce/tinymce-vue';
 import tinymce from 'tinymce/tinymce';
@@ -27,43 +25,42 @@ import 'tinymce/plugins/paste';
 
 
 export default {
-  name: 'EditorComponent',
-  components: {
-    Editor,
-  },
-  props: {
-    disabled: {
-      type: Boolean,
-      default: false,
+    name: 'EditorCreateComponent',
+    components: {
+        Editor,
     },
-    plugins: {
-      type: [String, Array],
-      default: 'lists image table wordcount link preview hr paste',
+    props: {
+        disabled: {
+            type: Boolean,
+            default: false,
+        },
+        plugins: {
+            type: [String, Array],
+            default: 'lists image table wordcount link preview hr paste',
+        },
+        toolbar: {
+            type: [String, Array],
+            default: "undo redo | formatselect fontsizeselect | hr link lineheight forecolor backcolor bold italic underline strikethrough | alignleft aligncenter alignright alignjustify | quicklink h2 h3 blockquote table numlist bullist fullscreen",
+        },
+        width: {
+            type: Number,
+            default: 1000,
+        },
+        height: {
+            type: Number,
+            default: 1000,
+        },
+        baseValue: {
+            type: String,
+            default: '',
+        }
     },
-    toolbar: {
-      type: [String, Array],
-      default:"undo redo | formatselect fontsizeselect | hr link lineheight forecolor backcolor bold italic underline strikethrough | alignleft aligncenter alignright alignjustify | quicklink h2 h3 blockquote table numlist bullist fullscreen",
-      },
-    width: {
-      type: Number,
-      default: 1000,
-    },
-    height: {
-      type: Number,
-      default: 1000,
-    },
-    baseValue: {
-      type: String,
-      default: '',
-      },
-    Article_Id: {
-        type: String,
-        default: '',
-    }
-  },
     setup(props, { emit }) {
-        const visible = ref(true)
-        const content = ref('<p>fuck you</p>')
+        const visible = ref(true);
+        const router = useRouter()
+
+        const content = ref('<p>请写些什么内容吧！</p>')
+        const Article_Introduction = ref('')
 
         const handleClick = () => {
             console.log(content.value)
@@ -138,61 +135,27 @@ export default {
 
         const Article_Id = ref('');
         const Article_Title = ref('');
-        const Article_Introduction = ref('');
-        const fetchArticleContent = async () => {
-            console.log('获取文章内容');
-            try {
-                // Article_Id.value = props.Article_Id;
-                console.log(Article_Id.value);
-                const res = await api({
-                    url: '/article',
-                    method: 'get',
-                    params: {
-                        Article_Id: Article_Id.value,
-                    }
-                });
-                console.log('拿到了！');
-                Article_Title.value = res.data.Article_Title;
-                Article_Introduction.value = res.data.Article_Introduction;
-                console.log(Article_Title.value);
-                console.log(res.data.html_content);
-                content.value = JSON.parse(res.data.html_content);
 
-                
-            } catch (error) {
-                emit('showMessage', { type: 'warning', message: '获取文章内容失败！' });
-            }
-        };
-
-        const updateArticleContent = () => {
+        const createArticle = async () => {
+            const article = {
+                Article_Title: Article_Title.value,
+                Article_Introduction: Article_Introduction.value,
+                Html: JSON.stringify(content.value),
+            };
             try {
-                const res = api({
-                    url: '/article/detail_json',
-                    method: 'post',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    data: {
-                        Article_Id: Article_Id.value,
-                        Article_Title: Article_Title.value,
-                        Article_Introduction: Article_Introduction.value,
-                        Html: JSON.stringify(content.value),
-                    }
-                });
-                console.log(res);
-                // emit('showMessage', { type: 'success', message: '更新文章内容成功！' });
-            } catch (error) {
-                emit('showMessage', { type: 'warning', message: '更新文章内容失败！' });
-            } finally {
-                ElMessage.success('更新文章内容成功！正在审核！');
+                const response = await api.post('/article/public', article);
+                console.log(response.data);
+                // 处理成功响应
+                ElMessage.success('创建文章成功');
                 setTimeout(() => {
-                    window.location.reload();
+                    router.push('/article/manage');
                 }, 1000);
+            } catch (error) {
             }
-            }
+        }
 
         const handleSubmit = () => {
-            updateArticleContent();
+            createArticle();
         }
 
         const isPreviewShow = ref(false);
@@ -203,22 +166,19 @@ export default {
         watch(
             () => props.baseValue,
             (newBaseValue) => {
-            myValue.value = newBaseValue;
+                myValue.value = newBaseValue;
             }
         );
 
         onMounted(() => {
             // 在mounted中初始化tinymce
-            Article_Id.value = props.Article_Id;
-            fetchArticleContent();
-
             tinymce.init({});
         });
 
         onBeforeUnmount(() => {
             // 在组件卸载前销毁tinymce实例
             tinymce.remove();
-        });
+        })
 
         return {
             init,
@@ -235,7 +195,7 @@ export default {
         };
 
     },
-};
+}
 </script>
 
 <template>
@@ -245,7 +205,7 @@ export default {
                 <div class="article-info">
                     <div class="button-group">
                         <!-- <el-button @click="handleClick()">获取内容</el-button> -->
-                        <el-button @click="handleSubmit()" size="large" type="success">保存提交</el-button>
+                        <el-button @click="handleSubmit()" size="large" type="success">发布文章</el-button>
                         <el-button @click="togglePreview()" size="large" type="primary" plain>预览效果</el-button>
                     </div>
                     <div style="margin: 20px;">
@@ -282,6 +242,7 @@ export default {
         </div>
         
     </div>
+
     <el-dialog v-model="visible" :show-close="false" width="500">
         <template #header="{ close, titleId, titleClass }">
         <div class="my-header">
@@ -296,7 +257,6 @@ export default {
         <br>
         图片第一次粘贴可能出现大小错误，请撤回重新粘贴！
     </el-dialog>
-
     
 </template>
 

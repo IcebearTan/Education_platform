@@ -1,12 +1,15 @@
 <script>
 import FindPasswordComponent from '../components/FindPasswordComponent.vue';
 import PageFooterComponent from '../components/PageFooterComponent.vue';
+import MenuPlainComponent from '../components/MenuPlainComponent.vue';
+
 
 export default {
   name: 'FindPasswordView',
   components: {
     FindPasswordComponent,
-    PageFooterComponent
+    PageFooterComponent,
+    MenuPlainComponent
   },
 };
 </script>
@@ -15,7 +18,7 @@ export default {
   <div>
     <el-container class="common-layout">
       <el-header>
-        <!-- <MenuComponent /> -->
+        <MenuPlainComponent />
       </el-header>
       <el-main class="homeMainContainer">
         <FindPasswordComponent />
