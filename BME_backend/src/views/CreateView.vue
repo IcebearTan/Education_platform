@@ -2,13 +2,13 @@
 import { RouterView } from "vue-router";
 import { useStore } from 'vuex'
 import { useRouter } from 'vue-router'
-import EditorComponent from '../components/EditorComponent.vue';
+import EditorCreateComponent from '../components/EditorCreateComponent.vue';
 
 
 export default {
   name: "HomeView",
   components: {
-    EditorComponent,
+    EditorCreateComponent,
   },
 
   data() {
@@ -55,7 +55,7 @@ export default {
 
 <script setup>
 import api from '../api';
-import { onMounted, onBeforeUnmount } from 'vue'
+import { onMounted } from 'vue'
 import { ref, nextTick } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useStore } from 'vuex'
@@ -70,31 +70,18 @@ const createArticle = ref(true)
 const loading = ref(false)
 
 nextTick(() => {
-    loading.value = true
-    setTimeout(() => {
-        loading.value = false
-    }, 5000)
+    loading.value = false
+    // setTimeout(() => {
+    //     loading.value = false
+    // }, 2000)
 })
 
 onMounted(() => {
   // const id = this.$route.query.id
-  console.log('传过来咯')
+  // console.log('传过来咯')
   // Article_Id.value = router.currentRoute.value.query.id
-  console.log(Article_Id.value)
-  console.log(router.currentRoute)
-
-  window.addEventListener('beforeunload', handleBeforeUnload)
-})
-
-const handleBeforeUnload = (event) => {
-    const message = '您有未保存的内容，确定要离开吗？';
-    event.returnValue = message; // 标准做法
-    return message; // 某些浏览器需要返回消息
-};
-
-onBeforeUnmount(() => {
-    console.log('走咯！')
-    window.removeEventListener('beforeunload', handleBeforeUnload)
+  // console.log(Article_Id.value)
+  // console.log(router.currentRoute)
 })
 
 const handleOpen = (key, keyPath) => {
@@ -115,7 +102,7 @@ const handleClose = (key, keyPath) => {
         :delay="0" 
         element-loading-text="正在着急地加载...">
     <div class="common-layout">
-      <div><EditorComponent :Article_Id="Article_Id" /></div>
+      <div><EditorCreateComponent /></div>
     </div>
   </div>
 </template>

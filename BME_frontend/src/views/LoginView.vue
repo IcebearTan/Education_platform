@@ -1,12 +1,14 @@
 <script>
 import Login from '../components/LoginComponent.vue';
 import PageFooterComponent from '../components/PageFooterComponent.vue';
+import MenuPlainComponent from '../components/MenuPlainComponent.vue';
 
 export default {
   name: 'LoginView',
   components: {
     Login,
-    PageFooterComponent
+    PageFooterComponent,
+    MenuPlainComponent
   },
 };
 </script>
@@ -15,7 +17,7 @@ export default {
   <div>
     <el-container class="common-layout">
       <el-header>
-        <!-- <MenuComponent /> -->
+        <MenuPlainComponent />
       </el-header>
       <el-main class="homeMainContainer">
         <Login />

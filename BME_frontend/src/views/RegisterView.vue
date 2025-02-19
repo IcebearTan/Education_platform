@@ -1,12 +1,14 @@
 <script>
 import Register from '../components/RegisterComponent.vue';
+import MenuPlainComponent from '../components/MenuPlainComponent.vue';
 import PageFooterComponent from '../components/PageFooterComponent.vue';
 
 export default {
   name: 'RegisterView',
   components: {
     Register,
-    PageFooterComponent
+    PageFooterComponent,
+    MenuPlainComponent
   },
 };
 </script>
@@ -15,7 +17,7 @@ export default {
   <div>
     <el-container class="common-layout">
       <el-header>
-        <!-- <MenuComponent /> -->
+        <MenuPlainComponent />
       </el-header>
       <el-main class="homeMainContainer">
         <Register />

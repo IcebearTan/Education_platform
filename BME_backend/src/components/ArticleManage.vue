@@ -2,6 +2,7 @@
 import api from '../api';
 import { md5 } from 'js-md5';
 import { ElMessage, ElMessageBox } from 'element-plus';
+import router from '../router';
 
 export default {
   data() {
@@ -86,14 +87,14 @@ export default {
         console.error("Error fetching data:", error);
       }
     },
-    async deleteUser(user) {
+    async deleteArticle(val) {
       try {
-        await api.delete(`/api/admin/user/${user.id}`);
+        await api.post(`/article/delete`, { Article_Id: val.Article_Id });
         ElMessage({
           message: '删除成功',
           type: 'success'
         });
-        this.fetchData();
+        this.fetchArticles();
       } catch (error) {
         console.error('Failed to delete course:', error);
       }
@@ -163,16 +164,13 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        this.deleteUser(val);
+        this.deleteArticle(val);
       });
     },
     handleAdd() {
       this.action = 'add';
 
-      this.form.username = '';
-      this.form.password = '';
-
-      this.dialogFormVisible = true;
+      router.push({ path: `/public` });
     },
     handleEdit(article) {
       // this.action = 'edit';
@@ -217,7 +215,9 @@ export default {
 <template>
   <div style="width: 100%; height: 100%; position: relative; overflow: hidden;">
     <div class="header-container">
-      <div class="l-container">文章列表</div>
+      <div class="l-container">文章列表
+        <el-button type="warning" @click="handleAdd" size="large" style="margin-left: 10px;">添加文章</el-button>
+      </div>
       <div class="r-container">
         <el-form :inline="true" class="form-inline" :model="formInline">
           <el-form-item label="文章查询" style="margin: 0; align-items: center;">

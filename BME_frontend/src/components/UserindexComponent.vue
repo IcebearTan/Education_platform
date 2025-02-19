@@ -38,9 +38,9 @@ onMounted(() => {
     <el-col :span="6">
       <div class="left-side">
         <div>
-          <div style="padding: 20px; display: flex; align-items: center; font-size: large; font-weight: bold;">个人简介</div>
-          <div style="padding-left: 20px; color: #aaa">{{ User_Info.Introduction }}</div>
-          <div style="color: #555;">
+          <div style="padding-left: 20px; display: flex; align-items: center; font-size: large; font-weight: bold; padding-top: 20px;">个人简介</div>
+          <div style="padding-left: 20px; color: #aaa; font-size: 15px; margin-top: 10px;">{{ User_Info.Introduction }}</div>
+          <div style="color: #555; font-size: 15px;">
             <div style="padding: 20px; padding-bottom: 0;">性别：{{ User_Info.User_Sex }}</div>
             <div style="padding: 20px; padding-bottom: 0;">学院：{{ User_Info.Institute }}</div>
             <div style="padding: 20px; padding-bottom: 0;">专业：{{ User_Info.Major }}</div>

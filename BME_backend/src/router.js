@@ -8,6 +8,10 @@ import UserManage from './components/UserManage.vue'
 import ArticleManage from './components/ArticleManage.vue'
 import ArticleCreate from './components/ArticleCreate.vue'
 import EditorView from './views/EditorView.vue';
+import CreateView from './views/CreateView.vue';
+
+import EditorComponent from './components/EditorComponent.vue';
+import EditorCreateComponent from './components/EditorCreateComponent.vue';
 
 
 
@@ -29,7 +33,7 @@ const router = createRouter({
                 {
                     path: '',
                     name: 'home_default',
-                    component: UserManage
+                    component: ArticleManage
                 },
                 {
                     path: '/article/manage',
@@ -56,8 +60,12 @@ const router = createRouter({
         {
             path: '/editor',
             name: 'editor',
-            component: EditorView
-
+            component: EditorView,
+        },
+        {
+            path: '/public',
+            name: 'public',
+            component: CreateView,
         }
     ]
 })

@@ -25,7 +25,7 @@ export default {
       url: "/user/user_index",
       method: "get",
     }).catch((error) => {
-      ElMessage.error('登录失效，请重新登录')
+      ElMessage.error('用户未登录')
       this.router.push('/login')
     }).then((res) => {
         if (res.data.code == 200) {
