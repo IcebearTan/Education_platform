@@ -59,16 +59,17 @@ export default {
       <el-header>
         <MenuComponent />
       </el-header>
-      <el-main style="padding-left: 20px; min-height: 100vh;">
-        <el-row style="display: flex; justify-content: center;">
+      <el-main style="padding-left: 20px; min-height: 100vh; display: flex; justify-content: center;">
+        <div class="article-container">
+          <ArticleDetailComponent :id="Article_Id"/>
+        </div>
+        <!-- <el-row style="display: flex; justify-content: center;">
           <el-col :span="4" class="left-col">训练营学员滞销！帮帮我们！</el-col>
           <el-col :span="14" class="main-col">
-            <div class="article-container">
-              <ArticleDetailComponent :id="Article_Id"/>
-            </div>
+            
           </el-col>
           <el-col :span="4" class="right-col">训练营学员滞销！帮帮我们！</el-col>
-        </el-row>
+        </el-row> -->
       </el-main>
       <el-footer class="page-footer">
         <PageFooterComponent/>
@@ -91,7 +92,7 @@ export default {
 }
 
 .article-container{
-  width: 100%;
+  width: 1000px;
   min-height: 1000px;
 
   border-radius: 5px;
