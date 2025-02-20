@@ -20,6 +20,7 @@ import UserInfoComponent from './components/UserInfoComponent.vue';
 
 import AboutUsView from './views/AboutUsView.vue'
 import FindPasswordView from './views/FindPasswordView.vue'
+import MedalWallComponent from './components/MedalWallComponent.vue';
 
 
 const router = createRouter({
@@ -34,6 +35,11 @@ const router = createRouter({
                     path: '',
                     name: 'home_default',
                     component: HomePage,
+                },
+                {
+                    path: '/medal-wall',
+                    name: 'medal-wall',
+                    component: MedalWallComponent,
                 }
             ]
         },

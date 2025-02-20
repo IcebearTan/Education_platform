@@ -102,7 +102,72 @@ const formatChapters = (chapters) => {
   return formattedData;
 }
 
+const donwloadBook = async () => {
+  try {
+    const res = await api({
+      responseType: 'blob',
+      url: '/course/book_down',
+      method: 'get',
+      params: {
+        Course_Id: courseId.value
+      }
+    })
+    const url = window.URL.createObjectURL(new Blob([res.data]));
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', 'manual_pc_template');  // 下载文件名称
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
 
+    if (res.data.code === 200) {
+      console.log(res)
+    }
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+const downloadFile = () => {
+  api.get({path: '/course/book_down', params: { Course_Id: courseId.value }})
+  .then(response => {
+    // 假设响应是一个文件，处理文件下载
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', 'manual_pc_template');  // 下载文件名称
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  })
+  .catch(error => console.error('Download error:', error));
+}
+
+
+const handleFileDownload = (blobData, fileName) => {
+  // 创建 Blob 对象
+  const blob = new Blob([blobData], { type: blobData.type });
+
+  // 创建临时下载链接
+  const downloadUrl = window.URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = downloadUrl;
+
+  // 设置下载属性（文件名）
+  link.setAttribute('download', fileName || 'downloaded_file.ext');
+
+  // 触发下载
+  document.body.appendChild(link);
+  link.click();
+
+  // 清理资源
+  document.body.removeChild(link);
+  window.URL.revokeObjectURL(downloadUrl);
+};
+
+const handleDownload = () => {
+  donwloadBook()
+}
 
 // 在组件挂载后执行
 onMounted(() => {
@@ -132,6 +197,7 @@ const caution = () => {
           </div>
           <div class="course-bottom">
             <el-button type="primary" plain size="large" @click="caution()">加入学习</el-button>
+            <el-button type="primary" size="large" @click="handleDownload()">下载内容</el-button>
           </div>
         </div>
         
@@ -252,6 +318,9 @@ const caution = () => {
 
   /* margin: 10px; */
   margin-left: 0;
+
+  display: flex;
+  justify-content: space-between;
 }
 
 .main-col {
