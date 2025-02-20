@@ -27,13 +27,7 @@ export default {
     }).catch((error) => {
       ElMessage.error('用户未登录')
       this.router.push('/login')
-    }).then((res) => {
-        if (res.data.code == 200) {
-          // console.log(res)
-          this.store.dispatch('setUser', res.data)
-        }
-      }
-    )
+    })
   }
 };
 </script>
@@ -92,4 +86,6 @@ import { useStore } from 'vuex'
   
   color: #bababa;
 }
+
+
 </style>

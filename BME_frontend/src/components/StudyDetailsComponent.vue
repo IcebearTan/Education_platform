@@ -5,6 +5,8 @@ import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import MenuComponent from '../components/MenuComponent.vue'
 import api from '../api'
+import StudentProgressComponent from './studentProgressComponent.vue'
+import StudentRankComponent from './StudentRankComponent.vue'
 
 const store = useStore()  // 获取 Vuex store
 const router = useRouter()  // 获取 Vue Router 实例
@@ -17,22 +19,22 @@ const formatedCourseDetails = ref([])
 // Number(router.currentRoute.value.query.id)
 
 // 页面挂载时调用的函数，类似 Vue 2 中的 created()
-const fetchUserData = async () => {
-  try {
-    const res = await api({
-      url: '/user/user_index',
-      method: 'get',
-    })
+// const fetchUserData = async () => {
+//   try {
+//     const res = await api({
+//       url: '/user/user_index',
+//       method: 'get',
+//     })
 
-    if (res.data.code === 200) {
-      // console.log(res)
-      store.dispatch('setUser', res.data)  // 将用户信息保存到 Vuex
-    }
-  } catch (error) {
-    ElMessage.error('登录失效，请重新登录')
-    router.push('/login')  // 跳转到登录页面
-  }
-}
+//     if (res.data.code === 200) {
+//       // console.log(res)
+//       store.dispatch('setUser', res.data)  // 将用户信息保存到 Vuex
+//     }
+//   } catch (error) {
+//     ElMessage.error('登录失效，请重新登录')
+//     router.push('/login')  // 跳转到登录页面
+//   }
+// }
 
 const fetchCourseInfo = async () => {
   try {
@@ -100,11 +102,12 @@ const formatChapters = (chapters) => {
   return formattedData;
 }
 
+
+
 // 在组件挂载后执行
 onMounted(() => {
   // courseId.value = router.value.quer.id
 
-  fetchUserData()
   fetchCourseDetails()
   fetchCourseInfo()
 })
@@ -140,25 +143,30 @@ const caution = () => {
         <div class="course-content-card">
           <div class="course-content-item" v-for="(item, index) in formatedCourseDetails" :key="index">
             <div style="font-size: 20px; font-weight: 500; margin-bottom: 10px;">
-              <span style="margin-right: 10px;">{{ index + 1 }}</span>
-              <span>{{ item.name }}</span>
+              <span class="course-content-item-index">{{ index + 1 }}</span>
+              <span style="position: relative; left: -15px">{{ item.name }}</span>
             </div>
-            <div class="course-content-item-sub" v-for="(subItem, subIndex) in item.subChapters" :key="subIndex">{{ subItem.name }}<span>未解锁</span></div>
+            <div class="course-content-item-sub" v-for="(subItem, subIndex) in item.subChapters" :key="subIndex">
+              <div>{{ subItem.name }}</div>
+              <div>
+                <el-icon><Lock /></el-icon>
+              </div>
+            </div>
           </div>
-          <div style="display: flex; justify-content: center; align-items: center; height: 50px; margin-bottom: 20px;">没有更多内容啦~</div>
+          <div style="display: flex; justify-content: center; align-items: center; height: 50px; margin-bottom: 20px; font-size: 15px; color: #999;">没有更多内容啦~</div>
         </div>
       </div>
     </div>
-    
-    <div class="course-process">
-      课程进度:0/17
-    </div>
-    <div class="course-class">
-      <div>导师：Jie Luo</div>
-      <div>
-        同班同学<div>Icebear</div><div>Labor</div>
+
+    <div>
+      <div class="course-process">
+        <StudentProgressComponent />
+      </div>
+      <div class="class-rank">
+        <StudentRankComponent />
       </div>
     </div>
+    
   </div>
     
 </template>
@@ -166,8 +174,19 @@ const caution = () => {
 <style scoped>
 
 .course-wrapper {
-  display: flex;
-  justify-content: center;
+  
+}
+
+.course-process{
+  width: 300px;
+  height: 120px;
+  margin-top: 20px;
+  margin-bottom: 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  padding-bottom: 10px;
+  background-color: #fff;
 }
 
 .course-details {
@@ -197,7 +216,7 @@ const caution = () => {
   font-size: 30px;
   font-weight: bold;
   background-color: #91bdff;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 0 15px 2px #d2dbe9;
   color: #fff;
 
   margin-right: 35px; 
@@ -258,11 +277,23 @@ const caution = () => {
 
   padding-bottom: 10px;
 }
+.course-content-item-index{
+  display: inline-block;
 
+  position: relative;
+  left: -35px;
+  width: 50px;
+  text-align: center;
+  border-radius: 50px;
+  background-color: #333;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
+  color: #fff;
+}
 .course-content-item-sub{
   display: flex;
   justify-content: space-between;
-  font-size: 16px;
+  font-size: 15px;
+  color: #555;
   /* margin-bottom: 10px; */
   padding: 10px;
 
@@ -278,5 +309,19 @@ const caution = () => {
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+.course-wrapper {
+  display: flex;
+  justify-content: center;
+
+  /* background: linear-gradient(
+    135deg, 
+    #dee7ff 0%,      
+    #dce6ff 30%,     
+    #ffffff 100%     
+  );
+  background-size: 100% 100%;
+  box-shadow: inset 0 8px 32px rgba(255, 255, 255, 0.15);  */
 }
 </style>

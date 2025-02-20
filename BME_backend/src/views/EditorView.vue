@@ -83,18 +83,18 @@ onMounted(() => {
   console.log(Article_Id.value)
   console.log(router.currentRoute)
 
-  window.addEventListener('beforeunload', handleBeforeUnload)
+  // window.addEventListener('beforeunload', handleBeforeUnload)
 })
 
-const handleBeforeUnload = (event) => {
-    const message = '您有未保存的内容，确定要离开吗？';
-    event.returnValue = message; // 标准做法
-    return message; // 某些浏览器需要返回消息
-};
+// const handleBeforeUnload = (event) => {
+//     const message = '您可能有未保存的内容，确定要离开吗？';
+//     event.returnValue = message; // 标准做法
+//     return message; // 某些浏览器需要返回消息
+// };
 
 onBeforeUnmount(() => {
     console.log('走咯！')
-    window.removeEventListener('beforeunload', handleBeforeUnload)
+    // window.removeEventListener('beforeunload', handleBeforeUnload)
 })
 
 const handleOpen = (key, keyPath) => {

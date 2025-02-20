@@ -125,7 +125,7 @@ onMounted(() => {
             </el-menu-item>
             <el-menu-item index="2">
               <el-icon><document /></el-icon>
-              <span>个人简历</span>
+              <span>我的小组</span>
             </el-menu-item>
             <el-menu-item index="3">
               <el-icon><document /></el-icon>

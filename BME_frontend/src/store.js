@@ -8,6 +8,7 @@ export default new Vuex.Store({
         user: null,
         token: localStorage.getItem('token') || null,
         isLogin: false,
+        avatar: null,
     },
     mutations: {
         setToken(state, token) {
@@ -21,6 +22,12 @@ export default new Vuex.Store({
         },
         clearUser(state) {
             state.user = null
+        },
+        setAvatar(state, avatar) {
+            state.avatar = avatar
+        },
+        clearAvatar(state) {
+            state.avatar = null
         }
 
     },
@@ -34,12 +41,15 @@ export default new Vuex.Store({
                 console.error('Login failed:', error);
             }
         },
-        setUser({ commit }, user) {
+        setUser({ commit }, user, avatar) {
             commit('setUser', user)
+            commit('setAvatar', avatar)
         },
         logout({ commit }) {
             commit('clearUser');
-        }
+            commit('clearAvatar');
+        },
+
     },
     getters: {
         isLogin: (state) => !!state.token,
