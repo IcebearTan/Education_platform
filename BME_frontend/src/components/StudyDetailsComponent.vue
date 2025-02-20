@@ -5,6 +5,7 @@ import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import MenuComponent from '../components/MenuComponent.vue'
 import api from '../api'
+import { API_URL } from '../api'
 import StudentProgressComponent from './studentProgressComponent.vue'
 import StudentRankComponent from './StudentRankComponent.vue'
 
@@ -102,71 +103,35 @@ const formatChapters = (chapters) => {
   return formattedData;
 }
 
-const donwloadBook = async () => {
+const fetchDownloadUrl = async () => {
   try {
     const res = await api({
-      responseType: 'blob',
       url: '/course/book_down',
       method: 'get',
       params: {
         Course_Id: courseId.value
       }
     })
-    const url = window.URL.createObjectURL(new Blob([res.data]));
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', 'manual_pc_template');  // 下载文件名称
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
 
     if (res.data.code === 200) {
       console.log(res)
+      await downloadBook(res)
     }
   } catch (error) {
     console.error(error)
   }
 }
 
-const downloadFile = () => {
-  api.get({path: '/course/book_down', params: { Course_Id: courseId.value }})
-  .then(response => {
-    // 假设响应是一个文件，处理文件下载
-    const url = window.URL.createObjectURL(new Blob([response.data]));
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', 'manual_pc_template');  // 下载文件名称
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-  })
-  .catch(error => console.error('Download error:', error));
+const downloadBook = async (res) => {
+  console.log(API_URL)
+  const downCode = res.data.Down_Code;
+  const url = `${API_URL}/course/book_download?Down_Code=${encodeURIComponent(downCode)}`
+  const URL = String(url)
+  window.open(URL, '_blank')
 }
 
-
-const handleFileDownload = (blobData, fileName) => {
-  // 创建 Blob 对象
-  const blob = new Blob([blobData], { type: blobData.type });
-
-  // 创建临时下载链接
-  const downloadUrl = window.URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = downloadUrl;
-
-  // 设置下载属性（文件名）
-  link.setAttribute('download', fileName || 'downloaded_file.ext');
-
-  // 触发下载
-  document.body.appendChild(link);
-  link.click();
-
-  // 清理资源
-  document.body.removeChild(link);
-  window.URL.revokeObjectURL(downloadUrl);
-};
-
 const handleDownload = () => {
-  donwloadBook()
+  fetchDownloadUrl()
 }
 
 // 在组件挂载后执行
