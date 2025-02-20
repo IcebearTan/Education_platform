@@ -30,6 +30,10 @@ export default {
 </template>
 
 <style scoped>
+.common-layout{
+  height: 100vh;
+}
+
 .footer {
   position: absolute;
   bottom: 0;

@@ -1,11 +1,24 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import api from '../api'
 
 const router = useRouter()
 
 const courseList = ref([])  // 使用 ref 来声明响应式数据
+
+const buttons = reactive([
+      { label: '硬件组', active: false },
+      { label: '软件组', active: false },
+      { label: '先进制造组', active: false },
+]);
+
+// 设置活动按钮的方法
+const setActive = (index) => {
+    buttons.forEach((button, i) => {
+    button.active = i === index;
+    });
+};
 
 const getCourseList = async () => {
     try {
@@ -36,7 +49,18 @@ onMounted(() => {
         <div class="headGraph">学习路径</div>
     </div>
     <div class="mainContainer">
-        <h2 style="margin-left: 10px;font-weight: 500;">最新课程</h2>
+        <div class="button-group-container">
+            <el-button
+                v-for="(button, index) in buttons"
+                :key="index"
+                :type="button.active ? 'primary' : 'text'"
+                class="styled-button"
+                @click="setActive(index)"
+            >
+                {{ button.label }}
+            </el-button>
+        </div>
+        <div style="margin-left: 10px;font-weight: normal; margin-top: 30px; margin-bottom: 10px; font-size: 20px; color: #333;">最新课程</div>
         <div class="columnContainer">
             <el-card class="boxCard" v-for="course in courseList" :key="course.Course_Id" @click="handleCourseClick(course.Course_Id)">
                 <div style="width: 100%; height: 100%; display: flex; flex-wrap: wrap;">
@@ -102,6 +126,7 @@ onMounted(() => {
     flex-wrap: wrap;
 }
 .boxCard{
+    min-width: 390px;
     width: 30%;
     height: 110px;
 
@@ -175,5 +200,52 @@ onMounted(() => {
 
     margin-top: 5px;
     margin-left: 5px;
+}
+.button-group-container {
+  display: flex;
+  /* justify-content: center; */
+  margin-top: 30px;
+  margin-left: 10px;
+}
+
+.styled-button {
+  font-size: 17px;
+  padding: 18px 20px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+
+  margin-right: 20px;
+}
+
+.styled-button:hover {
+  background-color: #f0f0f0;
+}
+
+.styled-button:focus {
+  outline: none;
+}
+
+.el-button--primary {
+  background-color: #f0f0f0;
+  color: #444;
+  border-color: #f0f0f0;
+}
+
+.el-button--primary:hover {
+  background-color: #f0f0f0;
+  color: #444;
+
+}
+
+.el-button--text {
+  background-color: transparent;
+  color: #333;
+  border: 1px solid transparent;
+}
+
+.el-button--text:hover {
+  background-color: #f0f0f0;
+  color: #444;
+
 }
 </style>

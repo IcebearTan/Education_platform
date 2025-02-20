@@ -50,7 +50,7 @@ export default {
     },
     height: {
       type: Number,
-      default: 1000,
+      default: 600,
     },
     baseValue: {
       type: String,
@@ -63,7 +63,7 @@ export default {
   },
     setup(props, { emit }) {
         const visible = ref(true)
-        const content = ref('<p>fuck you</p>')
+        const content = ref('<p>请添加一点内容吧~</p>')
 
         const handleClick = () => {
             console.log(content.value)
@@ -76,8 +76,8 @@ export default {
 
             // font_formats:
             // "微软雅黑=Microsoft YaHei,Helvetica Neue;PingFang SC;sans-serif;苹果苹方=PingFang SC,Microsoft YaHei,sans-serif;宋体=simsun;serifsans-serif;Terminal=terminal;monaco;Times New Roman=times new roman;times",
-            fontsize_formats: '12px 14px 16px 18px 20px 24px 26px 28px 30px 32px 36px',
-            block_formats: 'Paragraph=p; Heading 1=h1; Heading 2=h2; Heading 3=h3; Preformatted=pre; Blockquote=blockquote',
+            // fontsize_formats: '12px 14px 16px 18px 20px 24px 26px 28px 30px 32px 36px',
+            // block_formats: 'Paragraph=p; Heading 1=h1; Heading 2=h2; Heading 3=h3; Preformatted=pre; Blockquote=blockquote',
             skin_url: '/tinymce/skins/ui/oxide',
             paste_data_images: true, // 允许粘贴图片
             paste_word_valid_elements: 'img[src|width|height|alt|title|class]', // 允许图片标签带上特定属性
@@ -119,6 +119,9 @@ export default {
                     white-space: break-spaces;
                     word-wrap: break-word;
                 }
+                .mce-content-body{
+                    caret-color: #ff0000; /* 修改光标颜色 */
+                }
             `,
         });
         // 封装一个 resizeImage 函数，处理图片尺寸
@@ -139,6 +142,7 @@ export default {
         const Article_Id = ref('');
         const Article_Title = ref('');
         const Article_Introduction = ref('');
+
         const fetchArticleContent = async () => {
             console.log('获取文章内容');
             try {
@@ -246,7 +250,7 @@ export default {
                     <div class="button-group">
                         <!-- <el-button @click="handleClick()">获取内容</el-button> -->
                         <el-button @click="handleSubmit()" size="large" type="success">保存提交</el-button>
-                        <el-button @click="togglePreview()" size="large" type="primary" plain>预览效果</el-button>
+                        <el-button @click="togglePreview()" size="large" type="primary" plain>{{ isPreviewShow ? '隐藏预览' : '显示预览'}}</el-button>
                     </div>
                     <div style="margin: 20px;">
                         <el-form-item label="文章标题" label-position="top">

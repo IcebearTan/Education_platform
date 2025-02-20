@@ -23,7 +23,7 @@ export default {
 </script>
 
 <script setup>
-import { onMounted, ref, unref } from 'vue'
+import { onMounted, ref, nextTick } from 'vue'
 import { ClickOutside as vClickOutside } from 'element-plus'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
@@ -71,9 +71,15 @@ const fetchUserAvatar = async () => {
         }
     })
 }
+
+const setUserAvatar = () => {
+    User_Avatar.value = `data:image/png;base64,${store.state.avatar}`
+}
+
 onMounted(() => {
     if (checkLogin()) {
-        fetchUserAvatar()
+        // fetchUserAvatar()
+        setUserAvatar()
     }
 })
 
@@ -238,16 +244,19 @@ const handleUserInfo = () => {
     text-shadow: 0px 0px 5px #a5e7ff;
 
 }
+.custom-menu-item {
+  background-color: #ffffff !important;
+  color: #777 !important;
+}
 .custom-menu-item:hover {
-  background-color: transparent !important;  /* 悬停时背景色不变 */
-  color: #000 !important;
 }
 .custom-link{
     text-decoration: none;
+    transition: 0.3s;
 }
 .custom-link:hover{
-    color: #6aa9fc !important;
-    text-decoration: underline;
+    color: #000 !important;
+    text-shadow: 0 0 3px #e6e6e6;
 }
 </style>
 

@@ -2,6 +2,7 @@
 import { useStore } from 'vuex';
 import api from '../api';
 import md5 from 'js-md5'
+import { nextTick } from 'vue';
 
 export default {
 
@@ -40,6 +41,16 @@ export default {
             return true;
         },
 
+        async fetchAvatar() {
+            await api({
+                url: "/user/user_avatars",
+                method: "get",
+            }).then((res) => {
+                this.store.commit('setAvatar', res.data.User_Avatar)
+                console.log(this.store.state.avatar)
+            })
+        },
+
         async submitForm() {
             if (!this.validateForm()) {
                 return;
@@ -55,18 +66,23 @@ export default {
                     User_Email: this.loginForm.email,
                     User_Password: User_Password
                 },
-            }).then((res) => {
+            }).then(async (res) => {
                 if (res.data.code == 200) {
                     console.log(res)
                     // 将数据存入浏览器
                     localStorage.setItem("token", res.data.token)
                     this.store.commit('setUser', res.data)
-                    console.log(res.data)
+                    await this.fetchAvatar()
+
+                    if (this.store.state.avatar) {
+                        this.$router.push('/')
+                        console.log('登录成功')
+                    }
+
                     this.$message({
                         message: '登录成功',
                         type: 'success'
                     });
-                    this.$router.push('/')
                 }
                 if (res.data.code == 400) {
                     console.log(res)
