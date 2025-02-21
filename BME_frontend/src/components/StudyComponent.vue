@@ -8,7 +8,7 @@ const router = useRouter()
 const courseList = ref([])  // 使用 ref 来声明响应式数据
 
 const buttons = reactive([
-      { label: '硬件组', active: false },
+      { label: '硬件组', active: true },
       { label: '软件组', active: false },
       { label: '先进制造组', active: false },
 ]);

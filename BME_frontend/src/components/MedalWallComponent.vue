@@ -1,28 +1,3 @@
-<template>
-  <div class="background">
-    <div class="medal-wall">
-      <h1 class="medal-title">勋章墙</h1>
-      <div class="content">
-        <div class="left-bar">
-          <button class="category-button" :class="{active:currentCategory===''}" @click="currentCategory=''">全部</button>
-          <button class="category-button" :class="{active:currentCategory==='软件组'}" @click="currentCategory='软件组'">软件组</button>
-          <button class="category-button" :class="{active:currentCategory==='硬件组'}" @click="currentCategory='硬件组'">硬件组</button>
-          <button class="category-button" :class="{active:currentCategory==='先进制造组'}" @click="currentCategory='先进制造组'">先进制造组</button>
-        </div>
-        <div class="medal-grid">
-          <div class="medal" v-for="medal in filteredMedals" :key="medal.id">
-            <img src="/image.png" :alt="medal.name" class="medal-icon" />
-            <div class="medal-info">
-              <h3>{{ medal.name }}</h3>
-              <p>{{ medal.date }}</p>
-            </div>
-          </div>
-        </div>  
-      </div>
-    </div>
-  </div>
-</template>
-
 <script>
 export default {
   name: 'MedalWall',
@@ -32,83 +7,148 @@ export default {
       medals: [
         {
           id: 1,
-          name: '软件组勋章名字',
+          name: 'STM32',
           date: '获得日期：2025.1.1',
-          icon: 'public\image.png', //图片存在public里面
-          category: '软件组',
+          icon: '/medals/STM32.png', //图片存在public里面
+          category: '硬件组',
         },
         {
           id: 2,
-          name: '勋章2',
+          name: 'GD32',
           date: '获得日期：2025.1.1',
-          icon: '/medal.png', 
-          category: '软件组',
+          icon: '/medals/GD32.png', 
+          category: '硬件组',
         },
         {
           id: 3,
-          name: '勋章3',
+          name: '微机原理',
           date: '获得日期：2025.1.1',
-          icon: '/medal.png', 
-          category: '软件组',
+          icon: '/medals/MicroTech.png', 
+          category: '硬件组',
         },
         {
           id: 4,
-          name: '勋章4',
+          name: 'μC/OS-Ⅲ原理与应用开发',
           date: '获得日期：2025.1.1',
-          icon: '/medal.png',
-          category: '软件组',
+          icon: '/medals/uCOS3Dev.png',
+          category: '硬件组',
         },
         {
           id: 5,
-          name: '勋章',
+          name: 'Altium Designer',
           date: '获得日期：2025.1.1',
-          icon: '/medal.png',
-          category: '软件组',
+          icon: '/medals/AD.png',
+          category: '硬件组',
         },
         {
           id: 6,
-          name: '硬件组勋章名字',
+          name: '立创EDA',
           date: '获得日期：2025.1.1',
-          icon: '/medal2.png',
+          icon: '/medals/JLC-EDA.png',
           category: '硬件组',
         },
         {
           id: 7,
-          name: '勋章',
+          name: 'Multisim',
           date: '获得日期：2025.1.1',
-          icon: '/medal2.png',
+          icon: '/medals/Multisim.png',
           category: '硬件组',
         },
         {
           id: 8,
-          name: '勋章',
+          name: 'MATLAB',
           date: '获得日期：2025.1.1',
-          icon:'/medal2.png',
+          icon:'/medals/MATLAB.png',
           category: '硬件组',
         },
         {
           id: 9,
-          name: '勋章',
+          name: '焊接',
           date: '获得日期：2025.1.1',
-          icon: '/medal2.png',
+          icon: '/medals/WeldTech.png',
           category: '硬件组',
         },
         {
           id: 10,
-          name: '先进制造组勋章名字',
+          name: '体温',
           date: '获得日期：2025.1.1',
-          icon: '/medal3.png',
-          category: '先进制造组',
+          icon: '/medals/TempModule.png',
+          category: '硬件组',
         },
         {
           id: 11,
-          name: '勋章',
+          name: '心电',
           date: '获得日期：2025.1.1',
-          icon: '/medal3.png',
-          category: '先进制造组',
+          icon: '/medals/ECGModule.png',
+          category: '硬件组',
+        },
+        {
+          id: 12,
+          name: '血氧',
+          date: '获得日期：2025.1.1',
+          icon: '/medals/SpO2Module.png',
+          category: '硬件组',
+        },
+        {
+          id: 13,
+          name: 'VTK手术机器人',
+          date: '获得日期：2025.1.1',
+          icon: '/medals/Default.png',
+          category: '软件组',
+        },
+        {
+          id: 14,
+          name: 'C语言程序设计',
+          date: '获得日期：2025.1.1',
+          icon: '/medals/CLang.png',
+          category: '软件组',
+        },
+        {
+          id: 15,
+          name: 'C++程序设计',
+          date: '获得日期：2025.1.1',
+          icon: '/medals/Cpp.png',
+          category: '软件组',
+        },
+        {
+          id: 16,
+          name: 'Qt程序设计',
+          date: '获得日期：2025.1.1',
+          icon: '/medals/QT.png',
+          category: '软件组',
+        },
+        {
+          id: 17,
+          name: '骨干-蓝',
+          date: '获得日期：2025.1.1',
+          icon: '/medals/EliteBlue.png',
+          category: '特殊勋章',
+        },
+        {
+          id: 18,
+          name: '骨干-黄',
+          date: '获得日期：2025.1.1',
+          icon: '/medals/EliteYellow.png',
+          category: '特殊勋章',
+        },
+        {
+          id: 19,
+          name: '开拓先锋',
+          date: '获得日期：2025.1.1',
+          icon: '/medals/PioneerX.png',
+          category: '特殊勋章',
         },
       ],
     };
+  },
+  methods: {
+    medalClass(name) {
+      if (name === 'VTK手术机器人') {
+        return 'medal-icon';
+      } else {
+        return 'medal-icon';
+      }
+    }
   },
   computed:{
     filteredMedals(){
@@ -121,6 +161,32 @@ export default {
   },
 };
 </script>
+
+<template>
+  <div class="background">
+    <div class="medal-wall">
+      <h1 class="medal-title">勋章墙</h1>
+      <div class="content">
+        <div class="left-bar">
+          <button class="category-button" :class="{active:currentCategory===''}" @click="currentCategory=''">全部</button>
+          <button class="category-button" :class="{active:currentCategory==='软件组'}" @click="currentCategory='软件组'">软件组</button>
+          <button class="category-button" :class="{active:currentCategory==='硬件组'}" @click="currentCategory='硬件组'">硬件组</button>
+          <button class="category-button" :class="{active:currentCategory==='先进制造组'}" @click="currentCategory='先进制造组'">先进制造组</button>
+          <button class="category-button" :class="{active:currentCategory==='特殊勋章'}" @click="currentCategory='特殊勋章'">特殊勋章</button>
+        </div>
+        <div class="medal-grid">
+          <div class="medal" v-for="medal in filteredMedals" :key="medal.id">
+            <img :src="medal.icon" :alt="medal.name" :class="medalClass(medal.name)" />
+            <div class="medal-info">
+              <h3>{{ medal.name }}</h3>
+              <p>{{ medal.date }}</p>
+            </div>
+          </div>
+        </div>  
+      </div>
+    </div>
+  </div>
+</template>
 
 <style>
 html,
@@ -256,31 +322,52 @@ body,#app, .app-main {
 }
 
 .medal {
-  border-radius: 8px;
+  border-radius: 20px;
   padding: 15px;
   width:90%;
   text-align: center;
   background: #fff;
-  /* box-shadow: 0px 0px 8px rgba(203, 213, 224, 0.838); */
+  box-shadow: 0px 0px 8px rgba(203, 213, 224, 0.838);
   height: 200px;
 }
 
 .medal-icon {
+  width: 180px;
+  height: 180px;
+  /* margin-bottom: 10px; */
+  border-radius: 8px;
+
+  position: relative;
+  top: -20px;
+
+  opacity: 0.1;
+  filter: grayscale(90%);
+
+}
+
+.medal-icon-old {
   width: 120px;
   height: 120px;
   margin-bottom: 10px;
   border-radius: 8px;
 }
 
+.medal-info {
+  position: relative;
+  top: -35px;
+}
+
 .medal-info h3 {
   font-size: 16px;
   margin: 5px 0;
-  color: #333;
+  color: #555;
 }
 
 .medal-info p {
   font-size: 14px;
-  color: #666;
+  color: #999;
+
+  margin-top: 10px;
 }
 </style>
 
