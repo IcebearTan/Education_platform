@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import api from '../api';
 
 const currentCategory = ref('');
@@ -16,7 +16,7 @@ const filteredMedals = computed(() => {
   if (currentCategory.value === '') {
     return medals.value;
   } else {
-    return medals.value.filter(medal => medal.category === currentCategory.value);
+    return medals.value.filter(medal => medal.Medal_Tag === currentCategory.value);
   }
 });
 
@@ -24,12 +24,20 @@ const medals = ref([])
 
 const fetchMedals = async () => {
   try {
-    const res = await api('https://api.example.com/medals');
+    const res = await api.get('/medal/medal_list');
     console.log(res);
+    if (res.data.code === 200) {
+      medals.value = res.data.medal;
+    }
+    console.log(medals.value);
   } catch (error) {
     console.error('Error fetching medals:', error);
   }
 }
+
+onMounted(() => {
+  fetchMedals()
+})
 </script>
 
 <template>
@@ -45,12 +53,15 @@ const fetchMedals = async () => {
           <button class="category-button" :class="{active:currentCategory==='特殊勋章'}" @click="currentCategory='特殊勋章'">特殊勋章</button>
         </div>
         <div class="medal-grid">
-          <div class="medal" v-for="medal in filteredMedals" :key="medal.id">
-            <img :src="medal.icon" :alt="medal.name" :class="medalClass(medal.name)" />
+          <div class="medal" v-for="medal in filteredMedals" :key="medal.id" v-if="filteredMedals.length > 0">
+            <img :src="`/medals/${medal.Medal_Name}.png`" :alt="medal.name" :class="medalClass(medal.name)" />
             <div class="medal-info">
-              <h3>{{ medal.name }}</h3>
-              <p>{{ medal.date }}</p>
+              <h3>{{ medal.Medal_Description }}</h3>
+              <p>获得时间：2025.2.21</p>
             </div>
+          </div>
+          <div v-else>
+            <p>还没有勋章哦~</p>
           </div>
         </div>  
       </div>
@@ -255,7 +266,7 @@ body,#app, .app-main {
 }
 </style>
 
-
+//以下为配置表
 {
   "Medal_Name": "STM32",
   "Medal_Name_CN": "STM32",
