@@ -22,6 +22,8 @@ import AboutUsView from './views/AboutUsView.vue'
 import FindPasswordView from './views/FindPasswordView.vue'
 import MedalWallComponent from './components/MedalWallComponent.vue';
 
+import MedalView from './views/MedalView.vue';
+
 
 const router = createRouter({
     history: createWebHistory(),
@@ -36,11 +38,6 @@ const router = createRouter({
                     name: 'home_default',
                     component: HomePage,
                 },
-                {
-                    path: '/medal-wall',
-                    name: 'medal-wall',
-                    component: MedalWallComponent,
-                }
             ]
         },
         {
@@ -129,6 +126,18 @@ const router = createRouter({
             path: '/discuss',
             name: 'discuss',
             component: StudyDetailsComponent,
+        },
+        {
+            path: '/medal',
+            name: 'medal',
+            component: MedalView,
+            children: [
+                {
+                    path: '/medal/user-medal',
+                    name: 'medal-wall',
+                    component: MedalWallComponent,
+                }
+            ]
         },
     ]
 })
