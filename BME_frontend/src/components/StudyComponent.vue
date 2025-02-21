@@ -60,10 +60,13 @@ onMounted(() => {
                 {{ button.label }}
             </el-button>
         </div>
-        <div style="margin-left: 10px;font-weight: normal; margin-top: 30px; margin-bottom: 10px; font-size: 20px; color: #333;">最新课程</div>
+        <div style="display: flex; justify-content: center; margin-top: 30px; margin-bottom: 30px; flex-wrap: wrap;">
+            
+        </div>
+        <div style="margin-left: 10px;font-weight: normal; margin-top: 30px; margin-bottom: 10px; font-size: 20px; color: #333; width: 100px;">最新课程</div>
         <div class="columnContainer">
             <el-card class="boxCard" v-for="course in courseList" :key="course.Course_Id" @click="handleCourseClick(course.Course_Id)">
-                <div style="width: 100%; height: 100%; display: flex; flex-wrap: wrap;">
+                <div style="width: 100%; height: 100%; display: flex;">
                     <div class="bookCover">{{ course.Course_title }}</div>
                     <div class="bookInfo">
                         <div class="cardTitle">{{ course.Course_title }}</div>
@@ -74,6 +77,7 @@ onMounted(() => {
                 
             </el-card>
         </div>
+        
         <!-- <el-card class="boxCard"></el-card> -->
     </div>
 </template>
@@ -96,7 +100,7 @@ onMounted(() => {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100px;
+    width: 100%;
 
     height: 300px;
     background-color: #eeeeee;
@@ -116,7 +120,7 @@ onMounted(() => {
     margin-top: 20px;
     margin-bottom: 20px;
 
-    width: 100%;
+    /* width: 100%; */
 
     /* display: flex;
     align-items: center;
@@ -130,8 +134,8 @@ onMounted(() => {
     /* width: 100%; */
 }
 .boxCard{
-    /* min-width: 390px; */
-    width: 30%;
+    min-width: 350px;
+    width: 31%;
     height: 110px;
 
     margin: 10px;
@@ -159,8 +163,8 @@ onMounted(() => {
     line-height: 1.5em; /* 设置行高 */
     overflow: hidden; /* 超出部分隐藏 */
     display: -webkit-box; /* 必须要用 webkit-box 才能支持 line-clamp */
-    -webkit-line-clamp: 2; /* 限制为两行 */
-    -webkit-box-orient: vertical; /* 垂直排列 */
+    -webkit-line-clamp: 2; 
+    -webkit-box-orient: vertical; 
     text-overflow: ellipsis; /* 添加省略号（可选） */
 
     margin-bottom: 20px;
@@ -200,7 +204,7 @@ onMounted(() => {
     /* padding: 5px; */
 }
 .bookInfo{
-    height: 100%;
+    height: 100px;
 
     margin-top: 5px;
     margin-left: 5px;
