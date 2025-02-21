@@ -13,6 +13,10 @@ const User_Info = ref({})
 
 const router = useRouter()
 const store = useStore()
+
+const toMedalWall = () => {
+  router.push('/medal/user-medal')
+}
 // 将获取到的用户数据打印到控制台
 onMounted(() => {
   api({
@@ -58,7 +62,7 @@ onMounted(() => {
         <div class="right-side" style="margin-left: 0;">
           班级模块
         </div>
-        <div class="medal-card">
+        <div class="medal-card" @click="toMedalWall()">
           <span style="height: 100%; width: 60%;">
             <div style="padding: 20px; display: flex; align-items: center; font-size: large; font-weight: bold; padding-bottom: 0;">
               勋章成就: 
@@ -66,8 +70,10 @@ onMounted(() => {
             <div style="padding: 20px; display: flex; align-items: center; font-size: 25px; font-weight: bold; padding-bottom: 0;">
               {{ User_Info.User_Medal }}
             </div>
-            <div style="padding: 20px; padding-bottom: 0;">最近获得：</div>
-            <div style="padding: 20px; font-weight: bold;">VTK手术机器人</div>
+            <div class="medalInfo">
+              <div class="medalTitle">VTK手术机器人</div>
+              <div class="medalDate">获取时间：2025.2.21</div>
+            </div>
           </span>
           <span style="display: flex; align-items: center; justify-content: center;">
             <img src="../assets/image.png" class="medal-image" />
@@ -97,10 +103,8 @@ onMounted(() => {
 }
 
 .medal-card{
-  border-radius: 5px;
-
+  border-radius: 10px;
   box-shadow: #d3dce6 0px 0px 10px 0px;
-
   color: #555;
 
   height: 200px;
@@ -108,8 +112,13 @@ onMounted(() => {
 
   display: flex;
 
-
   margin: 10px;
+
+  transition: all 0.3s;
+  cursor: pointer;
+}
+.medal-card:hover{
+  transform: translateY(-5px);
 }
 
 .medal-image{
@@ -188,42 +197,24 @@ onMounted(() => {
 
 }
 
-.dialog-footer {
-  padding-top: 10px;
-  padding-left: 10%;
+.medalDate {
+  font-size: 14px;
+  padding-left: 20px;
+  /* text-align: center; */
+  color: #999;
+
+  margin-top: 5px;
+}
+.medalTitle {
+  font-size: 16px;
+  font-weight: bold;
+  padding-left: 20px;
+  /* text-align: center; */
+  color: #444;
+}
+.medalInfo {
+  margin-top: 30px;
 }
 
-.el-row {
-  margin-bottom: 20px;
 
-  &:last-child {
-    margin-bottom: 0;
-  }
-}
-
-.el-col {
-  border-radius: 4px;
-}
-
-.bg-purple-dark {
-  background: #99a9bf;
-}
-
-.bg-purple {
-  background: #d3dce6;
-}
-
-.bg-purple-light {
-  background: #e5e9f2;
-}
-
-.grid-content {
-  border-radius: 4px;
-  min-height: 36px;
-}
-
-.row-bg {
-  padding: 10px 0;
-  background-color: #f9fafc;
-}
 </style>
