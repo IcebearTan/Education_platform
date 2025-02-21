@@ -109,11 +109,11 @@ const handleUserInfo = () => {
         <el-menu-item index="/study">
             学习
         </el-menu-item>
-        <el-menu-item index="/exam">
+        <el-menu-item index="/exam" disabled>
             考核
         </el-menu-item>
         <el-menu-item index="/order" disabled>
-            接单
+            资源库
         </el-menu-item>
         <el-menu-item index="/discuss" disabled>
             讨论

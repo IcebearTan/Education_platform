@@ -116,6 +116,8 @@ onMounted(() => {
     margin-top: 20px;
     margin-bottom: 20px;
 
+    width: 100%;
+
     /* display: flex;
     align-items: center;
     flex-wrap: wrap; */
@@ -124,9 +126,11 @@ onMounted(() => {
     display: flex;
     align-items: center;
     flex-wrap: wrap;
+
+    /* width: 100%; */
 }
 .boxCard{
-    min-width: 390px;
+    /* min-width: 390px; */
     width: 30%;
     height: 110px;
 

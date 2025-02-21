@@ -31,7 +31,7 @@ export default {
 
 <style scoped>
 .common-layout{
-  height: 100vh;
+  height: 100%;
 }
 
 .footer {

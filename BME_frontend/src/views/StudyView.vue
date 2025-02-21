@@ -86,6 +86,4 @@ import { useStore } from 'vuex'
   
   color: #bababa;
 }
-
-
 </style>
