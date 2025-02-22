@@ -39,13 +39,24 @@ const User_Avatar = ref('');
 const token = localStorage.getItem('token')
 const isLogin = ref(false)
 const checkLogin = () => {
-    if (token) {
+    // if (token) {
+    //     isLogin.value = true
+    //     return true
+    // } else {
+    //     isLogin.value = false
+    //     return false
+    // }
+    api({
+        url: "/user/user_index",
+        method: "get",
+    }).then((res) => {
         isLogin.value = true
-        return true
-    } else {
+        setUserAvatar()
+        console.log(res)
+    }).catch((error) => {
         isLogin.value = false
-        return false
-    }
+        store.dispatch('logout')
+    })
 }
 
 const fetchUserAvatar = async () => {
@@ -77,10 +88,14 @@ const setUserAvatar = () => {
 }
 
 onMounted(() => {
-    if (checkLogin()) {
-        // fetchUserAvatar()
-        setUserAvatar()
-    }
+    checkLogin()
+    // console.log(isLogin.value)
+    // if (isLogin.value) {
+    //     // fetchUserAvatar()
+    //     setUserAvatar()
+    // } else {
+        
+    // }
 })
 
 const onClickOutside = () => {
@@ -124,12 +139,7 @@ const handleUserInfo = () => {
         <el-menu-item index="/discuss" disabled>
             讨论
         </el-menu-item>
-        <el-menu-item v-if="!isLogin" class="custom-menu-item">
-            <a href="/login" class="custom-link">登录</a>
-            <span style="margin-left: 10px; margin-right: 10px;">或</span>
-            <a href="/register" class="custom-link">注册</a>
-        </el-menu-item>
-        <el-menu-item v-else>
+        <el-menu-item v-if="isLogin">
             <div class="user-avatar">
                 <el-popover
                     :showArrow=false
@@ -178,6 +188,11 @@ const handleUserInfo = () => {
                 </el-popover>
                 
             </div>
+        </el-menu-item>
+        <el-menu-item v-else class="custom-menu-item">
+            <a href="/login" class="custom-link">登录</a>
+            <span style="margin-left: 10px; margin-right: 10px;">或</span>
+            <a href="/register" class="custom-link">注册</a>
         </el-menu-item>
     </el-menu>
 </template>
