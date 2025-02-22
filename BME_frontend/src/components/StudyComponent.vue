@@ -2,6 +2,7 @@
 import { ref, onMounted, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import api from '../api'
+import LearningPathComponent from './LearningPathComponent.vue'
 
 const router = useRouter()
 
@@ -45,24 +46,23 @@ onMounted(() => {
 
 <template>
     <div class="headContainer">
-        <div class="headText">探索学习路径</div>
-        <div class="headGraph">学习路径</div>
+        <LearningPathComponent />
     </div>
     <div class="mainContainer">
-        <div class="button-group-container">
-            <el-button
-                v-for="(button, index) in buttons"
-                :key="index"
-                :type="button.active ? 'primary' : 'text'"
-                class="styled-button"
-                @click="setActive(index)"
-            >
-                {{ button.label }}
-            </el-button>
+        <div style="width: 1300px;">
+            <div class="button-group-container">
+                <el-button
+                    v-for="(button, index) in buttons"
+                    :key="index"
+                    :type="button.active ? 'primary' : 'text'"
+                    class="styled-button"
+                    @click="setActive(index)"
+                >
+                    {{ button.label }}
+                </el-button>
+            </div>
         </div>
-        <div style="display: flex; justify-content: center; margin-top: 30px; margin-bottom: 30px; flex-wrap: wrap;">
-            
-        </div>
+        
         <div style="margin-left: 10px;font-weight: normal; margin-top: 30px; margin-bottom: 10px; font-size: 20px; color: #333; width: 100px;">最新课程</div>
         <div class="columnContainer">
             <el-card class="boxCard" v-for="course in courseList" :key="course.Course_Id" @click="handleCourseClick(course.Course_Id)">
@@ -115,8 +115,8 @@ onMounted(() => {
 }
 .mainContainer {
     height: 100%;
-    margin-left: 15%;
-    margin-right: 15%;
+    /* margin-left: 15%;
+    margin-right: 15%; */
     margin-top: 20px;
     margin-bottom: 20px;
 
@@ -125,16 +125,22 @@ onMounted(() => {
     /* display: flex;
     align-items: center;
     flex-wrap: wrap; */
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    overflow: hidden;
 }
 .columnContainer {
     display: flex;
     align-items: center;
     flex-wrap: wrap;
 
-    /* width: 100%; */
+    width: 1300px;
 }
 .boxCard{
-    min-width: 350px;
+    /* min-width: 350px; */
     width: 31%;
     height: 110px;
 
@@ -214,6 +220,7 @@ onMounted(() => {
   /* justify-content: center; */
   margin-top: 30px;
   margin-left: 10px;
+  margin-right: auto;
 }
 
 .styled-button {

@@ -88,11 +88,11 @@ export default {
           <div class="image-container">
             <!-- <img src="https://via.placeholder.com/600x400" alt="成员一" /> -->
           </div>
-          <h3>成员一</h3>
+          <h3>san-shui</h3>
           <div class="image-container">
             <!-- <img src="https://via.placeholder.com/600x400" alt="成员二" /> -->
           </div>
-          <h3>成员二</h3>
+          <h3>yinginging</h3>
           <div class="image-container">
             <!-- <img src="https://via.placeholder.com/600x400" alt="成员三" /> -->
           </div>
@@ -217,3 +217,12 @@ footer p {
   }
 }
 </style>
+
+{
+  "Group_Name": "string",
+  "Student_Ids": [
+    {
+      "student_id":"10"
+    }
+  ]
+}
