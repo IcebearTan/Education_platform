@@ -16,6 +16,7 @@ import api from '../api'
 import { ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
+import { useStore } from 'vuex'
 
 import type { UploadProps } from 'element-plus'
 
@@ -46,7 +47,17 @@ const customUploadRequest = (options: any) => {
     uploadAvatar(formData, onSuccess, onError)
         
         
-};
+}
+
+const store = useStore()
+const fetchAvatar = async () =>{
+    await api({
+        url: "/user/user_avatars",
+        method: "get",
+    }).then((res) => {
+        store.commit('setAvatar', res.data.User_Avatar)
+    })
+}
 
 const handleAvatarSuccess: UploadProps['onSuccess'] = (
   response,
@@ -54,6 +65,10 @@ const handleAvatarSuccess: UploadProps['onSuccess'] = (
 ) => {
   imageUrl.value = URL.createObjectURL(uploadFile.raw!)
   ElMessage.success('头像上传成功!')
+  fetchAvatar()
+  setTimeout(() => {
+    window.location.reload()
+  }, 1000)
   
 }
 

@@ -1,90 +1,95 @@
 <template>
-  <div style="width: 900px;">
+  <div style="width: 1000px;">
     <div class="links-container">
         <div class="links">
-            <div class="title">
-                训练营平台
-            </div>
-            <div class="subtitle">
+            <router-link class="title" :to="{ path: '/'}" target="_blank">
+                AMEII 教育平台
+            </router-link>
+            <router-link class="subtitle" :to="{ path: '/study'}" target="_blank">
                 LeaningBooks
-            </div>
-            <div class="subtitle">
+            </router-link>
+            <div class="subtitle_disabled">
                 考核报名
             </div>
-            <div class="subtitle">
+            <div class="subtitle_disabled">
                 资源库
             </div>
-            <div class="subtitle">
+            <div class="subtitle_disabled">
                 讨论社区
             </div>
         </div>
         <div class="links">
-            <div class="title">
-                训练营平台
+            <div class="title_disabled">
+                医工融合科创协会
             </div>
-            <div class="subtitle">
-                LeaningBooks
-            </div>
-            <div class="subtitle">
-                考核报名
-            </div>
-            <div class="subtitle">
+            <a class="subtitle" href="https://bme.sysu.edu.cn" target="_blank">中山大学生物医学工程</a>
+            <a class="subtitle" href="https://www.sysu.edu.cn" target="_blank">中山大学</a>
+            <!-- <div class="subtitle_disabled">
                 资源库
             </div>
-            <div class="subtitle">
+            <div class="subtitle_disabled">
+                讨论社区
+            </div> -->
+        </div>
+        <div class="links">
+            <div class="title_disabled">
+                训练营平台
+            </div>
+            <div class="subtitle_disabled">
+                LeaningBooks
+            </div>
+            <div class="subtitle_disabled">
+                考核报名
+            </div>
+            <div class="subtitle_disabled">
+                资源库
+            </div>
+            <div class="subtitle_disabled">
                 讨论社区
             </div>
         </div>
         <div class="links">
-            <div class="title">
-                训练营平台
-            </div>
-            <div class="subtitle">
-                LeaningBooks
-            </div>
-            <div class="subtitle">
-                考核报名
-            </div>
-            <div class="subtitle">
-                资源库
-            </div>
-            <div class="subtitle">
-                讨论社区
-            </div>
-        </div>
-        <div class="links">
-            <div class="title">
-                开发团队
-            </div>
-            <div class="subtitle" @click="$router.push('/about')">
+            <router-link class="title" :to="{ path: '/about'}" target="_blank">
                 关于我们
-            </div>
-            <div class="subtitle">
+            </router-link>
+            <div class="subtitle_disabled">
                 加入我们
             </div>
+            <div class="subtitle_disabled">
+                支持我们
+            </div>
         </div>
+        <div style="position: relative;" v-show="isVisible ">
+            <div style="position: absolute; width: 50px; top: 10px; left: -15px;">公众号</div>
+            <img src="/wechatQRcode.png" alt="wechatQRcode" class="QRcode" >
+        </div>
+        <img src="/wechat_1.png" alt="wechat" class="foot-icon"
+        @mouseover="isVisible = true"
+        @mouseleave="isVisible = false"
+        >
     </div>
     <hr class="custom-hr"></hr>
     <div style="font-size: 15px; color: #fff; margin-bottom: 10px;">©2024-2025 中山大学医工融创训练营</div>
     <div style="font-size: 13px; color: #999; margin-bottom: 10px; display: flex; flex-wrap: wrap;">
         <div style="margin-right: 10px;">备案编号：1145141919810</div>
-        <div> 没有版权和免责声明</div>
-        <div>服务冷线：4008-123-123</div>
-        <div>客服邮箱：thisIsAfakeEmail@bme.com</div>
+        <div style="margin-right: 10px;">没有版权和免责声明</div>
+        <div style="margin-right: 10px;">服务冷线：4008-123-123</div>
+        <div style="margin-right: 10px;">客服邮箱：thisIsAfakeEmail@bme.com</div>
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue'
+import { defineComponent, ref } from 'vue'
+import { RouterLink } from 'vue-router'
 
 export default defineComponent({
 
     setup(props, context) {
-
+        const isVisible = ref(false);
         
         return {
-        
+            isVisible,
         }
     },
 })
@@ -92,23 +97,61 @@ export default defineComponent({
 
 <style scoped>
 .title{
-    color: white;
+    color: #fff;
     font-size: 15px;
     font-weight: normal;
+    text-decoration: none;
 
     margin-bottom: 20px;
+    display: inline-block;
+
+    transition: 0.2s;
+    width: fit-content;
+
+    cursor: pointer;
+}
+.title_disabled{
+    color: #fff;
+    font-size: 15px;
+    font-weight: normal;
+    text-decoration: none;
+
+    margin-bottom: 20px;
+    display: block;
+
+    transition: 0.2s;
+    width: fit-content;
+}
+.title:hover{
+    color: #9f9f9f;
+}
+.title:active{
+    color: #fff;
 }
 .subtitle{
     color: #9f9f9f;
     font-size: 15px;
     font-weight: normal;
+    width: fit-content;
+
+    margin-bottom: 15px;
+    display: block;
+    text-decoration: none;
+
+    cursor: pointer;
+    transition: 0.2s;
+}
+.subtitle_disabled{
+    color: #9f9f9f;
+    font-size: 15px;
+    font-weight: normal;
+    width: fit-content;
 
     margin-bottom: 15px;
 
-    cursor: pointer;
+    transition: 0.2s;
 }
 .subtitle:hover{
-    text-decoration: underline;
     color: #dadada;
 }
 .subtitle:active{
@@ -131,5 +174,28 @@ export default defineComponent({
   background-color: #4b4b4b; /* 设置颜色 */
   width: 100%; /* 设置宽度 */
   margin: 20px auto; /* 设置上下间距并居中 */
+}
+.foot-icon{
+    width: 25px;
+    height: 25px;
+
+    margin-top: auto;
+    /* opacity: 0.5; */
+    filter: grayscale(100%);
+
+    cursor: pointer;
+}
+.foot-icon:hover{
+    filter: grayscale(0%);
+}
+.QRcode{
+    width: 100px;
+    height: 100px;
+
+    border-radius: 10px;
+
+    position: absolute;
+    top: 40px;
+    right: -60px;
 }
 </style>
