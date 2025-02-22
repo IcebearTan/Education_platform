@@ -8,6 +8,7 @@ import { ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useRouter } from 'vue-router'
 import { useStore } from 'vuex';
+import UserIndexGroupComponent from './UserIndexGroupComponent.vue';
 
 const User_Info = ref({})
 
@@ -60,7 +61,7 @@ onMounted(() => {
     <el-col :span="18">
       <div style="display: flex;">
         <div class="right-side" style="margin-left: 0;">
-          班级模块
+          <UserIndexGroupComponent />
         </div>
         <div class="medal-card" @click="toMedalWall()">
           <span style="height: 100%; width: 60%;">
@@ -90,12 +91,9 @@ onMounted(() => {
 
 <style scoped>
 .right-side{
-  border-radius: 5px;
+  border-radius: 10px;
 
   box-shadow: #d3dce6 0px 0px 10px 0px;
-
-  color: #729bd4;
-
   height: 200px;
   width: 50%;
 
