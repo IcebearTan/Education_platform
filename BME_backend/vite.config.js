@@ -11,4 +11,5 @@ export default defineConfig({
     host: '0.0.0.0',
     port: 5173, // 你想要的端口号
   },
+  base: "/admin/",
 })
