@@ -18,7 +18,7 @@ import EditorCreateComponent from './components/EditorCreateComponent.vue';
 
 
 const router = createRouter({
-    history: createWebHistory(),
+    history: createWebHistory("/admin/"),
     routes: [
         {
             path: '/',

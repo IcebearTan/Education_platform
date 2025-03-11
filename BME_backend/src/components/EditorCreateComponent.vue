@@ -67,14 +67,19 @@ export default {
 
         const init = reactive({
             // images_upload_url: 'http://192.168.3.47:8081/imgUpload',
-            language_url: '/tinymce/langs/zh_CN.js', // 中文插件
+            language_url: '/admin/tinymce/langs/zh_CN.js', // 中文插件
             language: 'zh_CN',
 
             // font_formats:
             // "微软雅黑=Microsoft YaHei,Helvetica Neue;PingFang SC;sans-serif;苹果苹方=PingFang SC,Microsoft YaHei,sans-serif;宋体=simsun;serifsans-serif;Terminal=terminal;monaco;Times New Roman=times new roman;times",
             // fontsize_formats: '12px 14px 16px 18px 20px 24px 26px 28px 30px 32px 36px',
             // block_formats: 'Paragraph=p; Heading 1=h1; Heading 2=h2; Heading 3=h3; Preformatted=pre; Blockquote=blockquote',
-            skin_url: '/tinymce/skins/ui/oxide',
+            // skin_url: '/tinymce/skins/ui/oxide',
+
+            base_url: '/admin/node_modules/tinymce/', // 根据实际路径调整
+            skin_url: '/admin/tinymce/skins/ui/oxide',
+            content_css: '/admin/skins/content/default/content.css',
+
             paste_data_images: true, // 允许粘贴图片
             paste_word_valid_elements: 'img[src|width|height|alt|title|class]', // 允许图片标签带上特定属性
             paste_postprocess: function (plugin, args) {
