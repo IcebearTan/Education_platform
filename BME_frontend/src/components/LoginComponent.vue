@@ -46,8 +46,10 @@ export default {
                 url: "/user/user_avatars",
                 method: "get",
             }).then((res) => {
-                this.store.commit('setAvatar', res.data.User_Avatar)
-                console.log(this.store.state.avatar)
+                if (res.data.code == 200) {
+                    this.store.commit('setAvatar', res.data.User_Avatar)
+                    console.log(this.store.state.avatar)
+                }
             })
         },
 
@@ -74,10 +76,8 @@ export default {
                     this.store.commit('setUser', res.data)
                     await this.fetchAvatar()
 
-                    if (this.store.state.avatar) {
-                        this.$router.push('/')
-                        console.log('登录成功')
-                    }
+                    this.$router.push('/')
+                    console.log('登录成功')
 
                     this.$message({
                         message: '登录成功',

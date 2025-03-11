@@ -63,7 +63,6 @@ onMounted(() => {
             </div>
         </div>
         
-        <div style="margin-left: 10px;font-weight: normal; margin-top: 30px; margin-bottom: 10px; font-size: 20px; color: #333; width: 100px;">最新课程</div>
         <div class="columnContainer">
             <el-card class="boxCard" v-for="course in courseList" :key="course.Course_Id" @click="handleCourseClick(course.Course_Id)">
                 <div style="width: 100%; height: 100%; display: flex;">

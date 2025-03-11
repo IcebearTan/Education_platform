@@ -1,5 +1,6 @@
 <script>
 import { useStore } from 'vuex'
+import { User } from '@element-plus/icons-vue'
 
 export default {
     data() {
@@ -84,7 +85,12 @@ const fetchUserAvatar = async () => {
 }
 
 const setUserAvatar = () => {
-    User_Avatar.value = `data:image/png;base64,${store.state.avatar}`
+    if (store.state.avatar) {
+        User_Avatar.value = `data:image/png;base64,${store.state.avatar}`
+    } else {
+        User_Avatar.value = 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png'
+    }
+    // User_Avatar.value = `data:image/png;base64,${store.state.avatar}`
 }
 
 onMounted(() => {
@@ -139,8 +145,8 @@ const handleUserInfo = () => {
         <el-menu-item index="/discuss" disabled>
             讨论
         </el-menu-item>
-        <el-menu-item v-if="isLogin">
-            <div class="user-avatar">
+        <el-menu-item v-if="isLogin" class="custom-menu-item">
+            <div class="user-avatar" style="cursor: pointer;">
                 <el-popover
                     :showArrow=false
                     trigger="click"
@@ -262,6 +268,7 @@ const handleUserInfo = () => {
 .custom-menu-item {
   background-color: #ffffff !important;
   color: #777 !important;
+  cursor: auto !important;
 }
 .custom-menu-item:hover {
 }

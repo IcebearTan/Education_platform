@@ -1,8 +1,9 @@
 import axios from 'axios';
 
 // const API_URL = 'http://110.41.177.107:8000';
-export const API_URL = 'http://139.159.157.5:5000';
-// const API_URL = 'http://localhost:8000';
+// export const API_URL = 'http://139.159.157.5:5000';
+export const API_URL = 'http://172.25.56.83:5000';
+
 // 这个能下 http://139.159.157.5:5000/course/book_download?Down_Code=MU2PIKNPEYGK
 // 这个不能下 http://139.159.157.5:5000/coures/book_download?Down_Code=MU2PIKNPEYGK 
 

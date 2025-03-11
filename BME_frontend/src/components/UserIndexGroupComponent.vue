@@ -114,3 +114,14 @@ export default defineComponent({
 
 }
 </style>
+{
+  "Group_Name": "string",
+  "Student_Ids": [
+    {
+    "student_id": "13"
+    },
+    {
+    "student_id": "14"
+    }
+  ]
+}
