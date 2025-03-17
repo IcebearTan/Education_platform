@@ -49,7 +49,7 @@ export default {
 
             // 向后端请求用户信息
             api({
-                url: "/auth/login",
+                url: "/auth/admin_login",
                 method: "post",
                 data: {
                     User_Email: this.loginForm.email,
@@ -106,7 +106,7 @@ export default {
                     </el-form-item>
                 </el-form>
 
-                <el-link href="/register" type="primary">没有账户，前去注册</el-link>
+                <!-- <el-link href="/register" type="primary">没有账户，前去注册</el-link> -->
             </el-main>
         </el-container>
     </div>

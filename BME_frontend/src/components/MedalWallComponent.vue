@@ -101,7 +101,7 @@ body,#app, .app-main {
   height: 100vh;
   padding: 20px;
   box-sizing: border-box;
-  background: linear-gradient(to bottom, #cfe9ff,#fff);
+  background: linear-gradient(to bottom, #e8f4ff,#fff);
   display: flex;
   flex-direction: column;
   align-items: center;
