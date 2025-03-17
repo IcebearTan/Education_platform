@@ -59,9 +59,17 @@ export default {
           </div>
         </div>
       </el-card>
-      
+      <!-- <div style="border: solid 2px #444; border-radius: 20px;">
+        <iframe
+        src="http://172.25.56.83:3380/chat/share?shared_id=c5832400021c11f0bd7e96b002ae6e83&from=chat&auth=NjYzYwNDE0MDMyZDExZjBiYzZjOTZiMD"
+        style="width: 100%; height: 100%; min-height: 600px; border-radius: 20px;"
+        frameborder="0"
+        >
+        </iframe>
+      </div> -->
     </div>
-  </div>
+    </div>
+    
 </template>
 
 <style scoped>
