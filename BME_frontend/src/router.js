@@ -23,6 +23,7 @@ import FindPasswordView from './views/FindPasswordView.vue'
 import MedalWallComponent from './components/MedalWallComponent.vue';
 
 import MedalView from './views/MedalView.vue';
+import StudentGroupsComponent from './components/StudentGroupsComponent.vue';
 
 
 const router = createRouter({
@@ -74,6 +75,11 @@ const router = createRouter({
                     path: '/user-center/user-info',
                     name: 'user-info',
                     component: UserInfoComponent,
+                },
+                {
+                    path: '/user-center/my-groups',
+                    name: 'my-groups',
+                    component: StudentGroupsComponent,
                 }
             ]
         },
