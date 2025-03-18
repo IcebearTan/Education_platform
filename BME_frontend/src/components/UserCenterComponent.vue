@@ -6,6 +6,7 @@ import { ElMessage } from 'element-plus'
 import { useRouter } from 'vue-router'
 import { useStore } from 'vuex';
 import { el } from 'element-plus/es/locales.mjs';
+import { DataLine, Platform } from '@element-plus/icons-vue';
 
 const User_Info = ref({})
 const User_Avatar = ref('');
@@ -91,12 +92,12 @@ onMounted(() => {
           class="el-menu-vertical-demo"
         >
           <div class="functionSection">
-            <el-menu-item index="/user-center/user-info">
+            <el-menu-item index="/user-center/user-info" @click="router.push('/user-center/user-info')">
               <el-icon><document /></el-icon>
               <span>个人信息</span>
             </el-menu-item>
-            <el-menu-item index="2">
-              <el-icon><document /></el-icon>
+            <el-menu-item index="/user-center/my-groups" @click="router.push('/user-center/my-groups')">
+              <el-icon><DataLine /></el-icon>
               <span>我的小组</span>
             </el-menu-item>
             <el-menu-item index="3">
