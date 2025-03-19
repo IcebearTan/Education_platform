@@ -105,34 +105,6 @@ onMounted(() => {
               <span>学过什么</span>
             </el-menu-item>
           </div>
-          <div class="functionSection">
-            <el-menu-item index="1">
-              <el-icon><document /></el-icon>
-              <span>个人信息</span>
-            </el-menu-item>
-            <el-menu-item index="2">
-              <el-icon><document /></el-icon>
-              <span>个人简历</span>
-            </el-menu-item>
-            <el-menu-item index="3">
-              <el-icon><document /></el-icon>
-              <span>学过什么</span>
-            </el-menu-item>
-          </div>
-          <div class="functionSection">
-            <el-menu-item index="1">
-              <el-icon><document /></el-icon>
-              <span>个人信息</span>
-            </el-menu-item>
-            <el-menu-item index="2">
-              <el-icon><document /></el-icon>
-              <span>个人简历</span>
-            </el-menu-item>
-            <el-menu-item index="3">
-              <el-icon><document /></el-icon>
-              <span>学过什么</span>
-            </el-menu-item>
-          </div>
         </el-menu>
       </div>
     </el-col>
