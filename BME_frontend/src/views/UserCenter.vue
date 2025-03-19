@@ -85,14 +85,8 @@ nextTick(() => {
             <el-header>
                 <MenuComponent/>
             </el-header>
-            <el-main style="min-height: 100vh; background-color: #fff;" >
-                <el-row>
-                    <el-col :span="4"></el-col>
-                    <el-col :span="16">
-                        <UserCenterComponent />
-                    </el-col>
-                    <el-col :span="4"></el-col>
-                </el-row>
+            <el-main style="min-height: 100vh; background-color: #fff; width: 1200px; margin: auto;" >
+                <UserCenterComponent />
             </el-main>
             <el-footer class="page-footer">
                 <PageFooterComponent />
