@@ -24,7 +24,7 @@ export default {
             rules: {
                 username: [
                     { required: true, message: "请输入用户名", trigger: "blur" },
-                    { min: 3, max: 15, message: "用户名长度需要在3-15个字符之间", trigger: "blur" },
+                    { min: 4, max: 15, message: "用户名长度需要在4-15个字符之间", trigger: "blur" },
                     {
                         validator: (rule, value, callback) => {
                             if ('\u4000' <= value && value <= '\u9fa5') {

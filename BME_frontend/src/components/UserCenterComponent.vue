@@ -52,13 +52,24 @@ const fetchUserAvatar = async () => {
     }
   } catch (error) { 
     if (error.response.status === 401) {
-      ElMessage.error('登录失效，请重新登录');
+      // ElMessage.error('登录失效，请重新登录');
       router.push('/login');//这里还没做完
     } else {
       User_Avatar.value = 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png'; 
       ElMessage.error('UserCenterComponent:用户尚未上传头像或未知的错误');
     }
   }
+}
+
+const vertifyUserMode = () => {
+  if (store.state.user) {
+    if (store.state.user.User_Mode == 'admin') {
+      return '导师'
+    } else {
+      return '学生'
+    }
+  }
+  
 }
 
 onMounted(() => {
@@ -84,7 +95,7 @@ onMounted(() => {
             />
           </div>
           <div class="username">{{ User_Info.User_Name }}</div>
-          <div v-if="$store.state.user.User_Mode == 'admin'" class="user-type-instructor">导师</div>
+          <div v-if="vertifyUserMode() == 'admin'" class="user-type-instructor">导师</div>
           <div v-else class="user-type-student">学生</div>
         </div>
         <el-menu

@@ -2,7 +2,7 @@
 <script setup>
 import api from '../api';
 import { onMounted } from 'vue'
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive, computed, nextTick } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useRouter } from 'vue-router'
 import { useStore } from 'vuex';
@@ -51,7 +51,7 @@ const form = reactive({
 const rules = {
   username: [
     { message: '请输入昵称', trigger: 'blur' },
-    { min: 3, max: 15, message: '昵称长度需要在3-15个字符之间', trigger: 'blur' },
+    { min: 4, max: 15, message: '昵称长度需要在4-15个字符之间', trigger: 'blur' },
     {
       validator: (rule, value, callback) => {
           if ('\u4000' <= value && value <= '\u9fa5') {
@@ -73,7 +73,13 @@ const tagsCount = computed(() => {
   }
 })
 
-
+const loading = ref(false)
+nextTick(() => {
+    loading.value = true
+    setTimeout(() => {
+        loading.value = false
+    }, 500)
+})
 
 const onSubmit = () => {
   console.log(form)
@@ -105,7 +111,11 @@ const onSubmit = () => {
 </script>
 
 <template>
-  <div class="userInfoContainer">
+  <div class="userInfoContainer"
+        v-loading="loading" 
+        element-loading-background="rgba(255, 255, 255, 1)" 
+        :delay="0" 
+        element-loading-text="loading...">
     <div class="UserInfoCard">
       <div class="avatarContainer">
         <AvatarUploadComponent />
