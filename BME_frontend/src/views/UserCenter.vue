@@ -77,11 +77,7 @@ nextTick(() => {
 
 <template>
     <div class="common-layout">
-        <el-container 
-        v-loading="loading" 
-        element-loading-background="rgba(255, 255, 255, 1)" 
-        :delay="0" 
-        element-loading-text="loading...">
+        <el-container>
             <el-header>
                 <MenuComponent/>
             </el-header>

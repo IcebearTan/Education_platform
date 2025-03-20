@@ -105,7 +105,7 @@ export default {
             </el-header>
             <el-main>
                 <el-form ref="loginForm" style="max-width: 600px;" :model="loginForm" status-icon :rules="rules"
-                    label-width="auto" class="demo-ruleForm">
+                    label-width="auto" class="demo-ruleForm" @keyup.enter.native="submitForm(loginForm)">
 
                     <el-form-item prop="email">
                         <el-input v-model="loginForm.email" type="email" autocomplete="off" placeholder="输入邮箱" class="input"/>
@@ -114,7 +114,7 @@ export default {
                         <el-input v-model="loginForm.password" type="password" autocomplete="off" show-password  placeholder="输入密码" class="input"/>
                     </el-form-item>
                     <el-form-item>
-                        <el-button type="primary" @click="submitForm(loginForm)" class="submit-button">
+                        <el-button type="primary" @click="submitForm(loginForm)"  class="submit-button" >
                             登录
                         </el-button>
                     </el-form-item>
