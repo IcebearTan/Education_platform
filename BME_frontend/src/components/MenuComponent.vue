@@ -39,6 +39,24 @@ const User_Avatar = ref('');
 
 const token = localStorage.getItem('token')
 const isLogin = ref(false)
+const fetchUserInfo = async () => {
+  try {
+    const response = await api({
+      url: "/user/user_index",
+      method: "get",
+    });
+    if (response.data.code === 200) {
+      User_Info.value = response.data;
+    } else {
+      ElMessage.error('获取用户信息失败');
+    }
+  } catch (error) {
+    if (error.response.status === 401) {
+      ElMessage.error('登录失效，请重新登录');
+      router.push('/login');//这里还没做完
+    }
+  }
+}
 const checkLogin = () => {
     // if (token) {
     //     isLogin.value = true
@@ -52,8 +70,10 @@ const checkLogin = () => {
         method: "get",
     }).then((res) => {
         isLogin.value = true
+        // fetchUserInfo()
+        // User_Info.value = res.data
         setUserAvatar()
-        console.log(res)
+        // console.log(res)
     }).catch((error) => {
         isLogin.value = false
         store.dispatch('logout')
@@ -110,12 +130,8 @@ const isSearchInputExpand = () => {
 const searchInputClass = ref('search-input')
 const searchInput = ref(null)
 
-onBeforeMount(() => {
-    checkLogin()
-})
-
 onMounted(() => {
-    
+    checkLogin()
     // console.log(isLogin.value)
     // if (isLogin.value) {
     //     // fetchUserAvatar()

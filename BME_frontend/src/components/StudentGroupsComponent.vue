@@ -111,7 +111,7 @@ export default defineComponent({
   height: 160px;
   border-radius: 10px;
 
-  box-shadow: #e6e6e6 0 0 10px;
+  box-shadow: #efefef 0 0 10px;
   margin: auto;
 
   display: flex;
@@ -124,10 +124,10 @@ export default defineComponent({
 
 .group-card:hover{  
   transform: translateY(-5px);
-  box-shadow: #ddd 0 0 10px;
+  box-shadow: #e4e4e4 0 0 10px;
 }
 .group-card:active{
-  transform: scale(0.96);
+  transform: scale(0.98);
 }
 .groups-container{
   margin-top: 20px;

@@ -52,7 +52,7 @@ export default {
             // }
 
             if (res.data.code == 200) {
-                console.log(res)
+                // console.log(res)
                 this.username = res.data.User_Name
             }
         }
