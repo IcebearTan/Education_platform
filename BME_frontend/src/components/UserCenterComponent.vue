@@ -64,9 +64,9 @@ const fetchUserAvatar = async () => {
 const vertifyUserMode = () => {
   if (store.state.user) {
     if (store.state.user.User_Mode == 'admin') {
-      return '导师'
+      return true
     } else {
-      return '学生'
+      return false
     }
   }
   
@@ -96,7 +96,7 @@ onMounted(() => {
             />
           </div>
           <div class="username">{{ User_Info.User_Name }}</div>
-          <div v-if="vertifyUserMode() == 'admin'" class="user-type-instructor">导师</div>
+          <div v-if="vertifyUserMode()" class="user-type-instructor">导师</div>
           <div v-else class="user-type-student">学生</div>
         </div>
         <el-menu
