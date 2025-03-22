@@ -1,5 +1,6 @@
 <script>
 import { useStore } from 'vuex'
+import { User } from '@element-plus/icons-vue'
 
 export default {
     data() {
@@ -23,7 +24,7 @@ export default {
 </script>
 
 <script setup>
-import { onMounted, ref, unref } from 'vue'
+import { onMounted, ref, nextTick, onBeforeMount } from 'vue'
 import { ClickOutside as vClickOutside } from 'element-plus'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
@@ -39,13 +40,24 @@ const User_Avatar = ref('');
 const token = localStorage.getItem('token')
 const isLogin = ref(false)
 const checkLogin = () => {
-    if (token) {
+    // if (token) {
+    //     isLogin.value = true
+    //     return true
+    // } else {
+    //     isLogin.value = false
+    //     return false
+    // }
+    api({
+        url: "/user/user_index",
+        method: "get",
+    }).then((res) => {
         isLogin.value = true
-        return true
-    } else {
+        setUserAvatar()
+        console.log(res)
+    }).catch((error) => {
         isLogin.value = false
-        return false
-    }
+        store.dispatch('logout')
+    })
 }
 
 const fetchUserAvatar = async () => {
@@ -71,9 +83,45 @@ const fetchUserAvatar = async () => {
         }
     })
 }
+
+const setUserAvatar = () => {
+    if (store.state.avatar) {
+        User_Avatar.value = `data:image/png;base64,${store.state.avatar}`
+    } else {
+        User_Avatar.value = 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png'
+    }
+    // User_Avatar.value = `data:image/png;base64,${store.state.avatar}`
+}
+
+const isExpanded = ref(false)
+
+const isSearchInputExpand = () => {
+    if (!isExpanded.value) {
+        isExpanded.value = true
+        searchInputClass.value ='search-input-expanded'
+    } else {
+        if (!searchInput.value) {
+            isExpanded.value = false
+            searchInputClass.value = 'search-input'
+        }
+    }
+}
+
+const searchInputClass = ref('search-input')
+const searchInput = ref(null)
+
+onBeforeMount(() => {
+    checkLogin()
+})
+
 onMounted(() => {
-    // if (checkLogin()) {
-    //     fetchUserAvatar()
+    
+    // console.log(isLogin.value)
+    // if (isLogin.value) {
+    //     // fetchUserAvatar()
+    //     setUserAvatar()
+    // } else {
+        
     // }
 })
 
@@ -91,7 +139,21 @@ const logOut = () => {
 
 const handleUserInfo = () => {
     if (router.currentRoute.value.path != '/user-center/user-info') {
+        setTimeout(() => {
+            window.location.reload()
+        }, 200)
         router.push('/user-center/user-info')
+    }else {
+        window.location.reload()
+    }
+}
+
+const handleUserGroup = () => {
+    if (router.currentRoute.value.path != '/user-center/my-groups') {
+        setTimeout(() => {
+            window.location.reload()
+        }, 200)
+        router.push('/user-center/my-groups')
     }else {
         window.location.reload()
     }
@@ -101,11 +163,9 @@ const handleUserInfo = () => {
 <template>
     <el-menu :default-active="activeIndex" class="el-menu-demo" mode="horizontal" :ellipsis="false"
         @select="handleSelect" router>
-        <el-menu-item index="/">
+        <el-menu-item index="/" style="margin: 0;">
             <img style="width: 50px" src="../assets/Logo_NewYear.png" />
         </el-menu-item>
-
-        
         <el-menu-item index="/study">
             学习
         </el-menu-item>
@@ -115,14 +175,29 @@ const handleUserInfo = () => {
         <el-menu-item index="/order" disabled>
             资源库
         </el-menu-item>
-        <el-menu-item index="/discuss" disabled>
+        <el-menu-item index="/discuss" style="margin-right: auto;" disabled>
             讨论
         </el-menu-item>
+        <div style="display: flex; align-items: center;">
+            <el-input
+                 v-model="searchInput"
+                placeholder="搜索"
+                suffix-icon="Search"
+                @focus="isSearchInputExpand()"
+                @blur="isSearchInputExpand()"
+                :class="searchInputClass"
+            />
+        </div>
     </el-menu>
 </template>
 
 
 <style scoped>
+
+.el-menu-demo{
+    width: 1325px;
+    border: none;
+}
 .el-menu--horizontal>.el-menu-item:nth-child(1) {
     margin-right: auto;
 }
@@ -145,7 +220,7 @@ const handleUserInfo = () => {
     font-weight: bold;
 }
 .popli{
-    display: flex; 
+    display: flex;
     align-items: center;
 
     font-size: 15px;
@@ -158,6 +233,26 @@ const handleUserInfo = () => {
 
 .popli:hover{
     background-color: #f5f7fa;
+    cursor: pointer;
+}
+
+.popli-exit{
+    display: flex; 
+    align-items: center;
+
+    font-size: 15px;
+    font-weight: 500;
+    padding: 8px;
+
+    border-radius: 10px;
+    border: solid 1px #ffffff;
+
+    transition: 0.5s;
+}
+
+.popli-exit:hover{
+    background-color: #ffe9e9;
+    border: solid 1px #ff8888;
     cursor: pointer;
 }
 
@@ -183,16 +278,30 @@ const handleUserInfo = () => {
     text-shadow: 0px 0px 5px #a5e7ff;
 
 }
-.custom-menu-item:hover {
-  background-color: transparent !important;  /* 悬停时背景色不变 */
-  color: #000 !important;
+.custom-menu-item {
+  background-color: #ffffff !important;
+  color: #777 !important;
+  cursor: auto !important;
+  
 }
 .custom-link{
     text-decoration: none;
+    transition: 0.3s;
 }
 .custom-link:hover{
-    color: #6aa9fc !important;
-    text-decoration: underline;
+    color: #000 !important;
+    text-shadow: 0 0 3px #e6e6e6;
+}
+:deep(.search-input .el-input__wrapper){
+    border-radius: 20px;
+    width: 100px;
+    transition: all 0.2s ease-in-out;
+}
+:deep(.search-input-expanded .el-input__wrapper){
+    border-radius: 20px;
+    width: 200px;
+    transition: all 0.2s ease-in-out;
+
 }
 </style>
 
