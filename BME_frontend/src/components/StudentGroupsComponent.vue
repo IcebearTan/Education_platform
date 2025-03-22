@@ -20,99 +20,7 @@
         </div>
       </div>
       <div class="groups-container">
-        <div class="group-card">
-          <div class="cover-container">
-            <div class="cover">C语言程序设计</div>
-          </div>
-          <div class="detail-container">
-            <div class="group-title">C语言9组</div>
-            <div class="group-member">
-              <div class="instructor">
-                <img src="../assets/ice_bear_avatar.jpg" alt="" class="avatar"/>
-                <div>导师：Jie Luo</div>
-              </div>
-              <div class="students">
-                <div class="avatars">
-                  <img src="../assets/ice_bear_avatar.jpg" alt="" class="avatar"/>
-                  <img src="../assets/Jerry_Scintilla_avatar.jpg" alt="" class="avatar"/>
-                  <img src="../assets/ice_bear_avatar.jpg" alt="" class="avatar"/>
-                  <img src="../assets/Jerry_Scintilla_avatar.jpg" alt="" class="avatar"/>
-                </div>
-                <div>Icebear、Labor 等 6 名学生在内</div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="group-card">
-          <div class="cover-container">
-            <div class="cover">C语言程序设计</div>
-          </div>
-          <div class="detail-container">
-            <div class="group-title">C语言9组</div>
-            <div class="group-member">
-              <div class="instructor">
-                <img src="../assets/ice_bear_avatar.jpg" alt="" class="avatar"/>
-                <div>导师：Jie Luo</div>
-              </div>
-              <div class="students">
-                <div class="avatars">
-                  <img src="../assets/ice_bear_avatar.jpg" alt="" class="avatar"/>
-                  <img src="../assets/Jerry_Scintilla_avatar.jpg" alt="" class="avatar"/>
-                  <img src="../assets/ice_bear_avatar.jpg" alt="" class="avatar"/>
-                  <img src="../assets/Jerry_Scintilla_avatar.jpg" alt="" class="avatar"/>
-                </div>
-                <div>Icebear、Labor 等 6 名学生在内</div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="group-card">
-          <div class="cover-container">
-            <div class="cover">C语言程序设计</div>
-          </div>
-          <div class="detail-container">
-            <div class="group-title">C语言9组</div>
-            <div class="group-member">
-              <div class="instructor">
-                <img src="../assets/ice_bear_avatar.jpg" alt="" class="avatar"/>
-                <div>导师：Jie Luo</div>
-              </div>
-              <div class="students">
-                <div class="avatars">
-                  <img src="../assets/ice_bear_avatar.jpg" alt="" class="avatar"/>
-                  <img src="../assets/Jerry_Scintilla_avatar.jpg" alt="" class="avatar"/>
-                  <img src="../assets/ice_bear_avatar.jpg" alt="" class="avatar"/>
-                  <img src="../assets/Jerry_Scintilla_avatar.jpg" alt="" class="avatar"/>
-                </div>
-                <div>Icebear、Labor 等 6 名学生在内</div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="group-card">
-          <div class="cover-container">
-            <div class="cover">C语言程序设计</div>
-          </div>
-          <div class="detail-container">
-            <div class="group-title">C语言9组</div>
-            <div class="group-member">
-              <div class="instructor">
-                <img src="../assets/ice_bear_avatar.jpg" alt="" class="avatar"/>
-                <div>导师：Jie Luo</div>
-              </div>
-              <div class="students">
-                <div class="avatars">
-                  <img src="../assets/ice_bear_avatar.jpg" alt="" class="avatar"/>
-                  <img src="../assets/Jerry_Scintilla_avatar.jpg" alt="" class="avatar"/>
-                  <img src="../assets/ice_bear_avatar.jpg" alt="" class="avatar"/>
-                  <img src="../assets/Jerry_Scintilla_avatar.jpg" alt="" class="avatar"/>
-                </div>
-                <div>Icebear、Labor 等 6 名学生在内</div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="group-card">
+        <div class="group-card" @click="toGroupDetails()">
           <div class="cover-container">
             <div class="cover">C语言程序设计</div>
           </div>
@@ -142,11 +50,23 @@
 
 <script>
 import { defineComponent } from 'vue'
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+
 
 export default defineComponent({
-  setup (props, context) {
-    return {
+  setup(props, context) {
+    const router = useRouter()
+
+    const toGroupDetails = () => {
+      setTimeout(() => {
+        router.push('/user-center/student-group-details')
+      },100)
       
+    }
+    
+    return {
+      toGroupDetails,
     }
   },
 })
@@ -157,7 +77,6 @@ export default defineComponent({
   width: 100%;
 
   margin-top: 10px;
-  margin-left: 20px;
 }
 .student-group-card{
   /* width: 100%; */
@@ -166,7 +85,6 @@ export default defineComponent({
   border-radius: 10px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 
-  margin-right: 10px;
 }
 .title{
   display: flex;
@@ -199,13 +117,17 @@ export default defineComponent({
   display: flex;
   margin-bottom: 20px;
 
-  transition: 0.3s;
   cursor: pointer;
+
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
+
 .group-card:hover{  
   transform: translateY(-5px);
   box-shadow: #ddd 0 0 10px;
-
+}
+.group-card:active{
+  transform: scale(0.96);
 }
 .groups-container{
   margin-top: 20px;

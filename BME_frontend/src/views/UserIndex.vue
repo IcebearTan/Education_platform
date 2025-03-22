@@ -78,33 +78,27 @@ onMounted(() => {
 <template>
     <div class="common-layout">
         <el-container>
-            <el-header>
+            <el-header style="display: flex; justify-content: center; align-items: center; border-bottom: solid 1px #e6e6e6; padding-bottom: 1px;">
                 <MenuComponent/>
             </el-header>
-            <el-main style="min-height: 100vh;">
-                <el-row>
-                    <el-col :span="3"></el-col>
-                    <el-col :span="18">
-                        <div style="position: relative; display: flex;">
-                            <div>
-                                <el-avatar @click="visible = !visible"
-                                    shape="square"
-                                    size="large"
-                                    class="avatar"
-                                    :src="User_Avatar" alt="image"
-                                />
-                            </div>
+            <el-main style="min-height: 100vh; width: 1300px; margin: auto; ">
+                <div style="position: relative; display: flex; margin-top: 10px; margin-bottom: 15px;">
+                    <div style="margin-right: 10px;">
+                        <el-avatar @click="visible = !visible"
+                            shape="square"
+                            size="large"
+                            class="avatar"
+                            :src="User_Avatar" alt="image"
+                        />
+                    </div>
 
-                            <div style="margin-left: 10px;">
-                                <div style="font-size: larger; font-weight: bold; margin-bottom: 5px;">{{ username }}</div>
-                                <div style="font-size: 15px; color: #666;">Email：{{ user_email }}</div>
-                                <div style="position: absolute; bottom: 5px; font-size: 15px; color: #666;">#uid：{{ uid }}</div>
-                            </div>
-                        </div>
-                        <UserindexComponent />
-                    </el-col>
-                    <el-col :span="3"></el-col>
-                </el-row>
+                    <div style="margin-left: 10px;">
+                        <div style="font-size: larger; font-weight: bold; margin-bottom: 5px;">{{ username }}</div>
+                        <div style="font-size: 15px; color: #666;">Email：{{ user_email }}</div>
+                        <div style="position: absolute; bottom: 5px; font-size: 15px; color: #666;">#uid：{{ uid }}</div>
+                    </div>
+                </div>
+                <UserindexComponent />
             </el-main>
             <el-footer class="page-footer">
                 <PageFooterComponent />
@@ -122,6 +116,8 @@ onMounted(() => {
 .avatar {
     width: 100px;
     height: 100px;
+
+    border-radius: 15px;
 }
 
 .footer {
