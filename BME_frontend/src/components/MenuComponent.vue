@@ -24,7 +24,7 @@ export default {
 </script>
 
 <script setup>
-import { onMounted, ref, nextTick } from 'vue'
+import { onMounted, ref, nextTick, onBeforeMount } from 'vue'
 import { ClickOutside as vClickOutside } from 'element-plus'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
@@ -93,8 +93,29 @@ const setUserAvatar = () => {
     // User_Avatar.value = `data:image/png;base64,${store.state.avatar}`
 }
 
-onMounted(() => {
+const isExpanded = ref(false)
+
+const isSearchInputExpand = () => {
+    if (!isExpanded.value) {
+        isExpanded.value = true
+        searchInputClass.value ='search-input-expanded'
+    } else {
+        if (!searchInput.value) {
+            isExpanded.value = false
+            searchInputClass.value = 'search-input'
+        }
+    }
+}
+
+const searchInputClass = ref('search-input')
+const searchInput = ref(null)
+
+onBeforeMount(() => {
     checkLogin()
+})
+
+onMounted(() => {
+    
     // console.log(isLogin.value)
     // if (isLogin.value) {
     //     // fetchUserAvatar()
@@ -118,7 +139,21 @@ const logOut = () => {
 
 const handleUserInfo = () => {
     if (router.currentRoute.value.path != '/user-center/user-info') {
+        setTimeout(() => {
+            window.location.reload()
+        }, 200)
         router.push('/user-center/user-info')
+    }else {
+        window.location.reload()
+    }
+}
+
+const handleUserGroup = () => {
+    if (router.currentRoute.value.path != '/user-center/my-groups') {
+        setTimeout(() => {
+            window.location.reload()
+        }, 200)
+        router.push('/user-center/my-groups')
     }else {
         window.location.reload()
     }
@@ -128,11 +163,9 @@ const handleUserInfo = () => {
 <template>
     <el-menu :default-active="activeIndex" class="el-menu-demo" mode="horizontal" :ellipsis="false"
         @select="handleSelect" router>
-        <el-menu-item index="/">
+        <el-menu-item index="/" style="margin: 0;">
             <img style="width: 50px" src="../assets/Logo_NewYear.png" />
         </el-menu-item>
-
-        
         <el-menu-item index="/study">
             学习
         </el-menu-item>
@@ -142,9 +175,20 @@ const handleUserInfo = () => {
         <el-menu-item index="/order" disabled>
             资源库
         </el-menu-item>
-        <el-menu-item index="/discuss" disabled>
+        <el-menu-item index="/discuss" style="margin-right: auto;" disabled>
             讨论
         </el-menu-item>
+        <div style="display: flex; align-items: center;">
+            <el-input
+                 v-model="searchInput"
+                placeholder="搜索"
+                suffix-icon="Search"
+                @focus="isSearchInputExpand()"
+                @blur="isSearchInputExpand()"
+                :class="searchInputClass"
+            />
+        </div>
+        
         <el-menu-item v-if="isLogin" class="custom-menu-item">
             <div class="user-avatar" style="cursor: pointer;">
                 <el-popover
@@ -177,11 +221,18 @@ const handleUserInfo = () => {
                                 <span style="margin-left: 10px;" >账户设置</span>
                                 
                             </li>
-                            <li class="popli" role="none" @click="logOut()">
+                            <li class="popli" role="none" @click="handleUserGroup()">
+                                <el-icon>
+                                    <DataLine />
+                                </el-icon>
+                                <span style="margin-left: 10px;" >我的小组</span>
+                                
+                            </li>
+                            <li class="popli-exit" role="none" @click="logOut()">
                                 <el-icon>
                                     <Close />
                                 </el-icon>
-                                <span style="margin-left: 10px;" >退出·</span>
+                                <span style="margin-left: 10px;" >退出</span>
                             </li>
                         </ul>
                     </div>
@@ -205,6 +256,11 @@ const handleUserInfo = () => {
 
 
 <style scoped>
+
+.el-menu-demo{
+    width: 1325px;
+    border: none;
+}
 .el-menu--horizontal>.el-menu-item:nth-child(1) {
     margin-right: auto;
 }
@@ -227,7 +283,7 @@ const handleUserInfo = () => {
     font-weight: bold;
 }
 .popli{
-    display: flex; 
+    display: flex;
     align-items: center;
 
     font-size: 15px;
@@ -240,6 +296,26 @@ const handleUserInfo = () => {
 
 .popli:hover{
     background-color: #f5f7fa;
+    cursor: pointer;
+}
+
+.popli-exit{
+    display: flex; 
+    align-items: center;
+
+    font-size: 15px;
+    font-weight: 500;
+    padding: 8px;
+
+    border-radius: 10px;
+    border: solid 1px #ffffff;
+
+    transition: 0.5s;
+}
+
+.popli-exit:hover{
+    background-color: #ffe9e9;
+    border: solid 1px #ff8888;
     cursor: pointer;
 }
 
@@ -269,8 +345,7 @@ const handleUserInfo = () => {
   background-color: #ffffff !important;
   color: #777 !important;
   cursor: auto !important;
-}
-.custom-menu-item:hover {
+  
 }
 .custom-link{
     text-decoration: none;
@@ -279,6 +354,17 @@ const handleUserInfo = () => {
 .custom-link:hover{
     color: #000 !important;
     text-shadow: 0 0 3px #e6e6e6;
+}
+:deep(.search-input .el-input__wrapper){
+    border-radius: 20px;
+    width: 100px;
+    transition: all 0.2s ease-in-out;
+}
+:deep(.search-input-expanded .el-input__wrapper){
+    border-radius: 20px;
+    width: 200px;
+    transition: all 0.2s ease-in-out;
+
 }
 </style>
 

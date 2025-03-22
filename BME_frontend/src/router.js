@@ -24,7 +24,9 @@ import MedalWallComponent from './components/MedalWallComponent.vue';
 
 import MedalView from './views/MedalView.vue';
 import StudentGroupsComponent from './components/StudentGroupsComponent.vue';
-
+import StudentGroupsDetails from './components/StudentGroupsDetails.vue';
+import StudentGroupRank from './components/StudentGroupRank.vue';
+import StudentGroupTask from './components/StudentGroupTask.vue';
 
 const router = createRouter({
     history: createWebHistory(),
@@ -80,6 +82,28 @@ const router = createRouter({
                     path: '/user-center/my-groups',
                     name: 'my-groups',
                     component: StudentGroupsComponent,
+                },
+                {
+                    path: '/user-center/student-group-details',
+                    name: 'student-group-details',
+                    component: StudentGroupsDetails,
+                    children: [
+                        {
+                            path: '/user-center/student-group-details',
+                            name: 'student-group-details-default',
+                            component: StudentGroupRank,
+                        },
+                        {
+                            path: '/user-center/student-group-details/rank',
+                            name: 'student-group-details-rank',
+                            component: StudentGroupRank,
+                        },
+                        {
+                            path: '/user-center/student-group-details/tasks',
+                            name: 'student-group-details-tasks',
+                            component: StudentGroupTask,
+                        }
+                    ]
                 }
             ]
         },

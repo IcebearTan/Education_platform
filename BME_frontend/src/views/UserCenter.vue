@@ -78,7 +78,7 @@ nextTick(() => {
 <template>
     <div class="common-layout">
         <el-container>
-            <el-header>
+            <el-header style="display: flex; justify-content: center; align-items: center; border-bottom: solid 1px #e6e6e6; padding-bottom: 1px;">
                 <MenuComponent/>
             </el-header>
             <el-main style="min-height: 100vh; background-color: #fff; width: 1200px; margin: auto;" >
@@ -93,6 +93,9 @@ nextTick(() => {
 
 
 <style scoped>
+.common-layout{
+    /* background-color: #f5f5f5 */
+}
 .el-menu--horizontal>.el-menu-item:nth-child(1) {
     margin-right: auto;
 }

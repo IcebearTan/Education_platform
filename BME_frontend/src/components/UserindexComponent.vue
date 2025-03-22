@@ -59,7 +59,7 @@ onMounted(() => {
     </el-col>
 
     <el-col :span="18">
-      <div style="display: flex;">
+      <div style="display: flex; margin-bottom: 10px;">
         <div class="right-side" style="margin-left: 0;">
           <UserIndexGroupComponent />
         </div>
@@ -93,7 +93,7 @@ onMounted(() => {
 .right-side{
   border-radius: 10px;
 
-  box-shadow: #d3dce6 0px 0px 10px 0px;
+  box-shadow: #e7edf5 0px 0px 10px 0px;
   height: 200px;
   width: 50%;
 
@@ -102,7 +102,7 @@ onMounted(() => {
 
 .medal-card{
   border-radius: 10px;
-  box-shadow: #d3dce6 0px 0px 10px 0px;
+  box-shadow: #e7edf5 0px 0px 10px 0px;
   color: #555;
 
   height: 200px;
@@ -136,9 +136,9 @@ onMounted(() => {
 }
 
 .left-side{
-  border-radius: 5px;
+  border-radius: 10px;
 
-  box-shadow: #d3dce6 0px 0px 10px 0px;
+  box-shadow: #e7edf5 0px 0px 10px 0px;
 
   height: 100vh;
   width: 90%;

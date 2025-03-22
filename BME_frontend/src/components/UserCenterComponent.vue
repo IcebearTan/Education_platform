@@ -82,6 +82,7 @@ onMounted(() => {
 </script>
 
 <template>
+  <!--  -->
   <el-row>
     <el-col :span="6">
       <div class="left-side">
@@ -104,8 +105,8 @@ onMounted(() => {
         >
           <div class="functionSection">
             <el-menu-item index="/user-center/user-info" @click="router.push('/user-center/user-info')">
-              <el-icon><document /></el-icon>
-              <span>个人信息</span>
+              <el-icon><user /></el-icon>
+              <span>账户设置</span>
             </el-menu-item>
             <el-menu-item index="/user-center/my-groups" @click="router.push('/user-center/my-groups')">
               <el-icon><DataLine /></el-icon>
@@ -119,7 +120,7 @@ onMounted(() => {
         </el-menu>
       </div>
     </el-col>
-    <el-col :span="18">
+    <el-col :span="18" style="padding-left: 20px;">
       <router-view :User_Info="User_Info"></router-view>
     </el-col>
   </el-row>
