@@ -7,6 +7,8 @@ import { ElMessage } from 'element-plus'
 import { useRouter } from 'vue-router'
 import { useStore } from 'vuex';
 
+const store = useStore()
+
 import AvatarUploadComponent from './AvatarUploadComponent.vue';
 
 const splitStringBySpace = (str) => {
@@ -17,9 +19,33 @@ const joinArrayWithSpace = (arr) => {
   return arr.join(' ');  // 使用空格连接数组元素
 };
 
+const fetchAvatar = async () => {
+  await api({
+      url: "/user/user_avatars",
+      method: "get",
+  }).then((res) => {
+      if (res.data.code == 200) {
+          store.commit('setAvatar', res.data.User_Avatar)
+          console.log(this.store.state.avatar)
+      }
+  })
+}
+
+const fetchUserInfo = async () => {
+  await api({
+      url: "/user/user_index",
+      method: "get",
+  }).then((res) => {
+      if (res.data.code == 200) {
+          store.commit('setUser', res.data)
+          console.log(store.state.user)
+      }
+  })
+}
+
 onMounted(() => {
   setTimeout(() => {
-    console.log(props.User_Info.User_Sex)
+    // console.log(props.User_Info.User_Sex)
     form.username = props.User_Info.User_Name
     form.gender = props.User_Info.User_Sex
     form.institution = props.User_Info.Institute
@@ -38,6 +64,7 @@ const props = defineProps({
   }
 })
 
+// const ruleFormRef = ref<FormInstance>();
 const form = reactive({
   username: '',
   gender: '',
@@ -47,6 +74,8 @@ const form = reactive({
   GithubId: '',
   tags: [],
 })
+
+const formRef = ref(null)
 
 const rules = {
   username: [
@@ -82,31 +111,42 @@ nextTick(() => {
 })
 
 const onSubmit = () => {
-  console.log(form)
-  api({
-    url: '/user/user/edit',
-    method: 'post',
-    data: {
-      Github_Id: form.GithubId,
-      Institute: form.institution,
-      Introduction: form.introduction,
-      Major: form.major,
-      Sex: form.gender,
-      Skill_Tags: joinArrayWithSpace(form.tags),
-      User_Name: form.username
-    }
-  }).then(res => {
-    console.log(res)
-    if (res.data.code === 200) {
-      ElMessage({ type: 'success', message: '用户信息修改成功！正在审核！' })
-      // window.location.reload()
+  // console.log(form)
+  formRef.value.validate((valid) => {
+    if (valid) {
+      api({
+        url: '/user/user/edit',
+        method: 'post',
+        data: {
+          Github_Id: form.GithubId,
+          Institute: form.institution,
+          Introduction: form.introduction,
+          Major: form.major,
+          Sex: form.gender,
+          Skill_Tags: joinArrayWithSpace(form.tags),
+          User_Name: form.username
+        }
+      }).then(res => {
+        console.log(res)
+        if (res.data.code === 200) {
+          setTimeout(() => {
+            window.location.reload()
+          }, 500)
+          fetchAvatar()
+          fetchUserInfo()
+          ElMessage({ type: 'success', message: '用户信息修改成功！正在审核！' })
+        } else {
+          ElMessage({ type: 'error', message: '用户信息修改失败！' })
+        }
+      }).catch(err => {
+        console.log(err)
+        ElMessage({ type: 'error', message: '未知的错误！' })
+      })
     } else {
       ElMessage({ type: 'error', message: '用户信息修改失败！' })
     }
-  }).catch(err => {
-    console.log(err)
-    ElMessage({ type: 'error', message: '未知的错误！' })
   })
+  
 }
 </script>
 
@@ -122,7 +162,7 @@ const onSubmit = () => {
         <div style="width: 100%; text-align: center; margin-top: 10px; color: #999;">上传头像</div>
       </div>
       <div class="infoContainer">
-        <el-form :model="form" label-width="auto" style="width: 90%;" label-position="top" size="large" :rules="rules">
+        <el-form ref="formRef" :model="form" label-width="auto" style="width: 90%;" label-position="top" size="large" :rules="rules">
           <el-row :gutter="20">
             <el-col :span="12">
               <el-form-item label="昵称" prop="username">

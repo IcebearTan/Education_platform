@@ -1,181 +1,189 @@
 <script>
+import { ref, reactive } from 'vue';
 import api from '../api';
-import md5 from 'js-md5'
+import md5 from 'js-md5';
+import { ElMessage } from 'element-plus';
 
 export default {
+  setup() {
+    // 注册表单数据
+    const registerForm = reactive({
+      username: "",
+      password: "",
+      confirmPassword: "",
+      email: "",
+      code: ""
+    });
 
-    data() {
-        return {
-            registerForm: {
-                username: "",
-                password: "",
-                confirmPassword: "",
-                email: "",
-                code: ""
-            },
+    const registerFormRef = ref(null);
 
-            // 验证码倒数模块
-            getCode: '获取验证码',
-            isGeting: false,
-            count: 60,
-            disable: false,
+    // 验证码倒数模块
+    const getCode = ref('获取验证码');
+    const isGeting = ref(false);
+    const count = ref(60);
+    const disable = ref(false);
 
-
-            rules: {
-                username: [
-                    { required: true, message: "请输入用户名", trigger: "blur" },
-                    { min: 4, max: 15, message: "用户名长度需要在4-15个字符之间", trigger: "blur" },
-                    {
-                        validator: (rule, value, callback) => {
-                            if ('\u4000' <= value && value <= '\u9fa5') {
-                                callback(new Error('用户名不能包含中文'));
-                            } else {
-                                callback();
-                            }
-                        },
-                        trigger: 'blur'
-                    }
-                ],
-                password: [
-                    { required: true, message: "请输入用户密码", trigger: "blur" },
-                    { min: 6, message: "用户密码长度需要至少8个字符", trigger: "blur" },
-                ],
-                confirmPassword: [
-                    { required: true, message: '请再次输入密码', trigger: 'blur' },
-                    {
-                        validator: (rule, value, callback) => {
-                            if (value === '') {
-                                callback(new Error('请再次输入密码'));
-                            } else if (value !== this.registerForm.password) {
-                                callback(new Error('两次输入密码不一致!'));
-                            } else {
-                                callback();
-                            }
-                        },
-                        trigger: 'blur'
-                    }
-                ],
-                email: [
-                    { required: true, message: "请输入邮箱", trigger: "blur" },
-                    { type: "email", message: "请输入正确的邮箱格式", trigger: ["blur", "change"] },
-                ],
-                code: [
-                    { required: true, message: "请输入验证码", trigger: "submit" }
-                ]
+    // 表单验证规则
+    const rules = reactive({
+      username: [
+        { required: true, message: "请输入用户名", trigger: "blur" },
+        { min: 4, max: 15, message: "用户名长度需要在4-15个字符之间", trigger: "blur" },
+        {
+          validator: (rule, value, callback) => {
+            if ('\u4000' <= value && value <= '\u9fa5') {
+              callback(new Error('用户名不能包含中文'));
+            } else {
+              callback();
             }
-        }
-    },
-
-    methods: {
-        validateForm() {
-            if (!this.registerForm.username) {
-                alert('请填写用户名');
-                return false;
-            }
-
-            if (!this.registerForm.password) {
-                alert('请填写密码');
-                return false;
-            }
-
-            if (!this.registerForm.confirmPassword) {
-                alert('请再次输入密码');
-                return false;
-            }
-
-            if (!this.registerForm.email) {
-                alert('请填写邮箱');
-                return false;
-            }
-
-            return true;
+          },
+          trigger: 'blur',
         },
-
-        async submitEmail() {
-            if (!this.validateForm()) {
-                return;
+      ],
+      password: [
+        { required: true, message: "请输入用户密码", trigger: "blur" },
+        { min: 6, message: "用户密码长度需要至少8个字符", trigger: "blur" },
+      ],
+      confirmPassword: [
+        { required: true, message: '请再次输入密码', trigger: 'blur' },
+        {
+          validator: (rule, value, callback) => {
+            if (value === '') {
+              callback(new Error('请再次输入密码'));
+            } else if (value !== registerForm.password) {
+              callback(new Error('两次输入密码不一致!'));
+            } else {
+              callback();
             }
-
-            // 向后端请求验证码发送
-            api({
-                url: "/auth/captcha/email",
-                method: "post",
-                data: {
-                    User_Email: this.registerForm.email,
-                },
-            }).then((res) => {
-                if (res.data.code == 200) {
-                    console.log(res.data.token, 'token')
-                    // 将数据存入浏览器
-                    localStorage.setItem("token", res.data.token)
-                }
-            })
-
-            // 按钮倒数
-            var countDown = setInterval(() => {
-                if (this.count < 1) {
-                    this.isGeting = false
-                    this.disable = false
-                    this.getCode = '获取验证码'
-                    this.count = 61
-                    clearInterval(countDown)
-                } else {
-                    this.isGeting = true
-                    this.disable = true
-                    this.getCode = this.count-- + 's后重发'
-                }
-            }, 1000)
-
-
-            this.$message({
-                message: '验证码已发送到您的邮箱，请查收',
-                type: 'success'
-            });
+          },
+          trigger: 'blur',
         },
+      ],
+      email: [
+        { required: true, message: "请输入邮箱", trigger: "blur" },
+        { type: "email", message: "请输入正确的邮箱格式", trigger: ["blur", "change"] },
+      ],
+      code: [
+        { required: true, message: "请输入验证码", trigger: "submit" }
+      ]
+    });
 
-        async submitForm() {
-            if (!this.validateForm()) {
-                return;
-            }
+    // 验证表单
+    const validateForm = () => {
+      if (!registerForm.username) {
+        alert('请填写用户名');
+        return false;
+      }
+      if (!registerForm.password) {
+        alert('请填写密码');
+        return false;
+      }
+      if (!registerForm.confirmPassword) {
+        alert('请再次输入密码');
+        return false;
+      }
+      if (!registerForm.email) {
+        alert('请填写邮箱');
+        return false;
+      }
+      return true;
+    };
 
-            const User_Password = md5(this.registerForm.password)
+    // 提交验证码
+    const submitEmail = async () => {
+      if (!validateForm()) {
+        return;
+      }
 
-            // 向后端发送注册信息，暂时打印至控制台
-            api({
-                url: "/auth/register",
-                method: "post",
-                data: {
-                    User_Name: this.registerForm.username,
-                    User_Password: User_Password,
-                    User_Email: this.registerForm.email,
-                    User_Captcha: this.registerForm.code,
-                },
-            }).then((res) => {
-                if (res.data.code == 200) {
-                    console.log(res.data.token, 'token')
-                    // 将数据存入浏览器
-                    localStorage.setItem("token", res.data.token)
-                    this.$message({
-                        message: '注册成功',
-                        type: 'success'
-                    });
-                    this.$router.push('/login')
-                } else {
-                    this.$message({
-                        message: '注册失败',
-                        type: 'error'
-                    });
-                }
-            }).catch((err) => {
-                this.$message({
-                    message: '注册失败',
-                    type: 'error'
-                });
-            })
-
-            
+      // 向后端请求验证码发送
+      api({
+        url: "/auth/captcha/email",
+        method: "post",
+        data: {
+          User_Email: registerForm.email,
+        },
+      }).then((res) => {
+        if (res.data.code == 200) {
+          console.log(res.data.token, 'token');
+          localStorage.setItem("token", res.data.token);
         }
-    }
+      });
+
+      // 按钮倒数
+      const countDown = setInterval(() => {
+        if (count.value < 1) {
+          isGeting.value = false;
+          disable.value = false;
+          getCode.value = '获取验证码';
+          count.value = 61;
+          clearInterval(countDown);
+        } else {
+          isGeting.value = true;
+          disable.value = true;
+          getCode.value = `${count.value--}s后重发`;
+        }
+      }, 1000);
+
+      // 提示消息
+      ElMessage({
+        message: '验证码已发送到您的邮箱，请查收',
+        type: 'success'
+      });
+    };
+
+    // 提交注册表单
+    const submitForm = async () => {
+      if (!validateForm()) {
+        return;
+      }
+
+      const User_Password = md5(registerForm.password);
+
+      // 向后端发送注册信息
+      api({
+        url: "/auth/register",
+        method: "post",
+        data: {
+          User_Name: registerForm.username,
+          User_Password: User_Password,
+          User_Email: registerForm.email,
+          User_Captcha: registerForm.code,
+        },
+      }).then((res) => {
+        if (res.data.code == 200) {
+          console.log(res.data.token, 'token');
+          localStorage.setItem("token", res.data.token);
+          ElMessage({
+            message: '注册成功',
+            type: 'success'
+          });
+          this.$router.push('/login');
+        } else {
+          ElMessage({
+            message: '注册失败',
+            type: 'error'
+          });
+        }
+      }).catch((err) => {
+        ElMessage({
+          message: '注册失败',
+          type: 'error'
+        });
+      });
+    };
+
+    return {
+      registerForm,
+      getCode,
+      isGeting,
+      count,
+      disable,
+      rules,
+      validateForm,
+      submitEmail,
+      submitForm,
+      registerFormRef
+    };
+  }
 };
 </script>
 
@@ -187,7 +195,7 @@ export default {
                 <span style="font-size: 25px; margin-bottom: 20px; font-weight: bold;">注册账号</span>
             </el-header>
             <el-main>
-                <el-form ref="registerForm" style="max-width: 600px" :model="registerForm" status-icon :rules="rules"
+                <el-form ref="registerFormRef" style="max-width: 600px" :model="registerForm" status-icon :rules="rules"
                     label-width="auto" class="demo-ruleForm">
                     <el-form-item prop="username">
                         <el-input v-model="registerForm.username" type="text" autocomplete="off" placeholder="输入用户名" class="input"/>
