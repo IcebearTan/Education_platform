@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router';
 import api from '../api';
 
 import AttenceRankComponent from './AttenceRankComponent.vue';
+import DailyAttendence from './DailyAttendence.vue';
 
 // 定义响应式数据
 const articles = ref([]);
@@ -68,7 +69,9 @@ onMounted(() => {
           </div>
         </el-card>
       </div>
-      <div style="width: 20%;margin-right: 20px;"></div>
+      <div style="width: 20%;margin-right: 20px;">
+        <DailyAttendence />
+      </div>
       
     </div>
     </div>
