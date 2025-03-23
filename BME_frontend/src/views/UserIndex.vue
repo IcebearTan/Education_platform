@@ -45,7 +45,7 @@ export default {
             }
         })
     }
-    
+
 };
 </script>
 
@@ -78,18 +78,15 @@ onMounted(() => {
 <template>
     <div class="common-layout">
         <el-container>
-            <el-header style="display: flex; justify-content: center; align-items: center; border-bottom: solid 1px #e6e6e6; padding-bottom: 1px;">
-                <MenuComponent/>
+            <el-header
+                style="display: flex; justify-content: center; align-items: center; border-bottom: solid 1px #e6e6e6; padding-bottom: 1px;">
+                <MenuComponent />
             </el-header>
-            <el-main style="min-height: 100vh; width: 1300px; margin: auto; ">
-                <div style="position: relative; display: flex; margin-top: 10px; margin-bottom: 15px;">
+            <el-main style="min-height: 100vh; width: 1300px; margin: auto; overflow: hidden;">
+                <div style="position: relative; display: flex; margin-top: 20px; margin-bottom: 15px;">
                     <div style="margin-right: 10px;">
-                        <el-avatar @click="visible = !visible"
-                            shape="square"
-                            size="large"
-                            class="avatar"
-                            :src="User_Avatar" alt="image"
-                        />
+                        <el-avatar @click="visible = !visible" shape="square" size="large" class="avatar"
+                            :src="User_Avatar" alt="image" />
                     </div>
 
                     <div style="margin-left: 10px;">
@@ -121,16 +118,16 @@ onMounted(() => {
 }
 
 .footer {
-  font-size: 15px;
+    font-size: 15px;
 
-  display: flex;
-  padding: 10px;
-  background-color: #f5f5f5;
+    display: flex;
+    padding: 10px;
+    background-color: #f5f5f5;
 
-  margin: 0;
+    margin: 0;
 
-  width: 100%;
-  
-  color: #bababa;
+    width: 100%;
+
+    color: #bababa;
 }
 </style>

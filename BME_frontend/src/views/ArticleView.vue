@@ -56,7 +56,7 @@ export default {
 <template>
   <div>
     <el-container class="common-layout">
-      <el-header>
+      <el-header style="display: flex; justify-content: center; align-items: center; border-bottom: solid 1px #e6e6e6; padding-bottom: 1px;">
         <MenuComponent />
       </el-header>
       <el-main style="padding-left: 20px; min-height: 100vh; display: flex; justify-content: center;">
