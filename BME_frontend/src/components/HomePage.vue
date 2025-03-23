@@ -52,7 +52,7 @@ onMounted(() => {
     <h1 class="secondTitle">最新资讯</h1>
     <div class="content-container">
       <div style="width: 20%; margin-left: 20px;"><AttenceRankComponent /></div>
-      <div style="display: flex; flex-direction: column; align-items: center;width: 80%;">
+      <div style="display: flex; flex-direction: column; align-items: center;width: 60%;">
         <el-card v-for="article in reversedArticles" :key="article.Article_Id" @click="goToArticle(article.Article_Id)" class="article-card">
           <div slot="header" class="article-header">
             <h3 class="article-title">{{ article.Article_Title }}</h3>
