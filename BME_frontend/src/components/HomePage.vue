@@ -1,37 +1,43 @@
-<script>
-import { RouterLink } from 'vue-router';
+<script setup>
+import { ref, computed, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import api from '../api';
 
-export default {
-  name: 'HomePage',
-  data() {
-    return {
-      articles: [], // 存储文章数据
-    };
-  },
-  created() {
-    this.fetchArticles();
-  },
-  methods: {
-    async fetchArticles() {
-      api({
-        url: '/article/list',
-        method: 'get',
-      }).then((response) => {
-        // console.log(response.data);
-        this.articles = response.data;
-      })
-    },
-    goToArticle(articleId) {
-      this.$router.push({ path: '/article', query: { Article_Id: articleId } });
-    }
-  },
-  computed: {
-    reversedArticles() {
-      return this.articles.slice().reverse();
-    }
+import AttenceRankComponent from './AttenceRankComponent.vue';
+
+// 定义响应式数据
+const articles = ref([]);
+
+// 路由实例
+const router = useRouter();
+
+// 获取文章列表的方法
+const fetchArticles = async () => {
+  try {
+    const response = await api({
+      url: '/article/list',
+      method: 'get',
+    });
+    articles.value = response.data;
+  } catch (error) {
+    console.error('Failed to fetch articles:', error);
   }
 };
+
+// 跳转到文章详情的方法
+const goToArticle = (articleId) => {
+  router.push({ path: '/article', query: { Article_Id: articleId } });
+};
+
+// 计算属性：倒序文章列表
+const reversedArticles = computed(() => {
+  return articles.value.slice().reverse();
+});
+
+// 在组件挂载时调用获取文章的方法
+onMounted(() => {
+  fetchArticles();
+});
 </script>
 
 <template style="background-color: brown;">
@@ -43,36 +49,38 @@ export default {
   
   <div style="display: flex; justify-content: center; align-items: center; flex-wrap: wrap;">
     <h1 class="secondTitle">最新资讯</h1>
-    <div>
-      <el-card v-for="article in reversedArticles" :key="article.Article_Id" @click="goToArticle(article.Article_Id)" class="article-card">
-        <div slot="header" class="article-header">
-          <h3 class="article-title">{{ article.Article_Title }}</h3>
-        </div>
-        <div class="article-body">
-          <p class="article-summary">{{ article.Article_Introduction }}</p>
-        </div>
-        <div class="article-footer">
-          <span class="publish-time">{{ article.Article_Time }}</span>
-          <div class="article-stats">
-            <span class="like-count"> 0</span>
-            <span class="view-count"> 0</span>
+    <div class="content-container">
+      <div style="width: 20%; margin-left: 20px;"><AttenceRankComponent /></div>
+      <div style="display: flex; flex-direction: column; align-items: center;width: 80%;">
+        <el-card v-for="article in reversedArticles" :key="article.Article_Id" @click="goToArticle(article.Article_Id)" class="article-card">
+          <div slot="header" class="article-header">
+            <h3 class="article-title">{{ article.Article_Title }}</h3>
           </div>
-        </div>
-      </el-card>
-      <!-- <div style="border: solid 2px #444; border-radius: 20px;">
-        <iframe
-        src="http://172.25.56.83:3380/chat/share?shared_id=c5832400021c11f0bd7e96b002ae6e83&from=chat&auth=NjYzYwNDE0MDMyZDExZjBiYzZjOTZiMD"
-        style="width: 100%; height: 100%; min-height: 600px; border-radius: 20px;"
-        frameborder="0"
-        >
-        </iframe>
-      </div> -->
+          <div class="article-body">
+            <p class="article-summary">{{ article.Article_Introduction }}</p>
+          </div>
+          <div class="article-footer">
+            <span class="publish-time">{{ article.Article_Time }}</span>
+            <div class="article-stats">
+              <span class="like-count"> 0</span>
+              <span class="view-count"> 0</span>
+            </div>
+          </div>
+        </el-card>
+      </div>
+      <div style="width: 20%;margin-right: 20px;"></div>
+      
     </div>
     </div>
     
 </template>
 
 <style scoped>
+.content-container{
+  width: 100%;
+  display: flex;
+}
+
 
 .box-card:hover {
   transform: translateY(-3px);
