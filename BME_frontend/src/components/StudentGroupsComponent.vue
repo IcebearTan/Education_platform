@@ -64,9 +64,23 @@ export default defineComponent({
       },100)
       
     }
+
+    const options = [
+      {
+        value: '学习小组',
+        label: '学习小组',
+      },
+      {
+        value: '项目小组',
+        label: '项目小组',
+      },
+    ]
+    const value = ref('学习小组')
     
     return {
       toGroupDetails,
+      options,
+      value,
     }
   },
 })
