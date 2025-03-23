@@ -145,9 +145,9 @@ const hoverDay = ref(null);
           <span style="font-size: 14px; color: gray; font-weight: lighter;">最高连续： {{ streakDays }} 天</span>
         </div>
       </div>
-      <!-- <div class="month-labels">
+      <div class="month-labels">
         <span v-for="month in visibleMonths" :key="month">{{ month }}</span>
-      </div> -->
+      </div> 
       <div class="calendar-grid">
         <div 
           v-for="(day, index) in calendarDays"
@@ -202,10 +202,10 @@ const hoverDay = ref(null);
 .calendar-grid {
   display: grid;
   grid-auto-flow: column;
-  grid-template-rows: repeat(8, 12px);
+  grid-template-rows: repeat(7, 12px);
   grid-auto-columns: 10px; 
-  gap: 5px; 
-  padding: 10px 35px 20px 30px;
+  gap: 6px; 
+  padding: 10px 35px 20px 40px;
 }
 
 .day-cell {
@@ -252,6 +252,6 @@ background-color: #5fc9fb;
   font-size: 0.9em;
   order: 3; 
   /* margin-top: 10px; */
-  padding: 25px 40px 0px 40px;
+  padding: 25px 60px 0px 60px;
 }
 </style>
