@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="rank-container">
     <div class="title">出勤热榜</div>
     <div class="student-container">
         <div class="single-student-container" v-for="(user, index) in users" :key="index">
@@ -66,6 +66,10 @@ const users = reactive([
 </script>
 
 <style scoped>
+.rank-container{
+    margin-left: auto;
+    width: 275px;
+}
 .title{
   font-size: 20px;
   font-weight: bold;

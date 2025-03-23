@@ -321,22 +321,6 @@ onUnmounted(() => {
 .check-button{
   width: 220px;
 }
-/* button{
-  margin-left:28px;
-  background-color: #f8f9fa;
-  border: 2px solid #e2e4e4;
-  border-radius:6px;
-  width:60px;
-  height:30px;
-  transition:0.2s;
-}
-
-button:hover{
-  transform:scale(1.2);
-  border:1px solid #4fc3f7;
-  cursor:pointer;
-} */
- 
 
 .month-labels {
   display: flex;
