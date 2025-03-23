@@ -83,7 +83,7 @@ onMounted(() => {
                 <MenuComponent />
             </el-header>
             <el-main style="min-height: 100vh; width: 1300px; margin: auto; overflow: hidden;">
-                <div style="position: relative; display: flex; margin-top: 20px; margin-bottom: 15px;">
+                <div style="position: relative; display: flex; margin-top: 15px; margin-bottom: 15px;">
                     <div style="margin-right: 10px;">
                         <el-avatar @click="visible = !visible" shape="square" size="large" class="avatar"
                             :src="User_Avatar" alt="image" />

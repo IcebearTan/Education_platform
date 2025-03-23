@@ -42,11 +42,11 @@ export default defineComponent({
     const router = useRouter()
 
     const goback = () => {
-      router.back()
+      router.push('/user-center/my-groups')
     }
 
     const toRank = () => {
-      if (router.currentRoute.value.path !== '/user-center/student-group-details') {
+      if (router.currentRoute.value.path !== '/user-center/student-group-details' && router.currentRoute.value.path !== '/user-center/student-group-details/rank') {
         router.push('/user-center/student-group-details/rank')
       } else {
         ElMessage({
@@ -57,7 +57,7 @@ export default defineComponent({
       }
     }
     const toTasks = () => {
-      if (router.currentRoute.value.path !== '/user-center/student-group-details') {
+      if (router.currentRoute.value.path !== '/user-center/student-group-details/tasks') {
         router.push('/user-center/student-group-details/tasks')
       } else {
         ElMessage({
