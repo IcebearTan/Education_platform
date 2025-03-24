@@ -146,6 +146,7 @@ onMounted(() => {
 .homeMainContainer{
   /* padding-left: 20px; */
   min-height: 100vh;
+  min-width: 1200px;
   /* background-color: rgba(129, 51, 33, 0.898); */
   background-color: rgb(255, 255, 255);
   
