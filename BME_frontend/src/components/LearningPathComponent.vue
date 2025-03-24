@@ -1,10 +1,8 @@
 <template>
   <div class="container"> 
-    <div style="height: 100%; width: 280px; display: flex; align-items: center;">
-      <div>
-        <div class="title">探索学习路径</div>
-        <div class="subtitle">成为卓越工程师</div>
-      </div>
+    <div style="height: 100%; width: 280px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+      <div class="title">探索学习路径</div>
+      <div class="subtitle">成为卓越工程师</div>
     </div>
     
 

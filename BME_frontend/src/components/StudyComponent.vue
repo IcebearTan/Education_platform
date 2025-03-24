@@ -46,7 +46,11 @@ onMounted(() => {
 
 <template>
     <div class="headContainer">
-        <LearningPathComponent />
+        <!-- 这里强制设置了缩放 -->
+        <div style="min-width: 1500px;">
+            <LearningPathComponent />
+        </div>
+        
     </div>
     <div class="mainContainer">
         <div style="width: 1300px;">
