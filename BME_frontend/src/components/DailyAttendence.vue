@@ -18,18 +18,19 @@
               </div>
           </div>
           <div class="stats-container"> <!-- 统计容器 -->
-              <div v-show="!isVisible">
+              <div v-if="!isVisible">
                 <el-button class="check-button" @click="checkln(nowday)" type="success" plain>打卡</el-button>
               </div>
-              <div>
-                <div v-show="isVisible">
-                  <div class="stat-item">
-                    <div class="document">
-                      <span class="continuous-days">连续打卡 {{ continuousDays }} 天</span>
-                    </div>
+              <div v-else>
+                <div class="stat-item">
+                  <div class="document">
+                    <span class="continuous-days">连续打卡 {{ continuousDays }} 天</span>
                   </div>
                 </div>
               </div>
+              <!-- <div>
+                
+              </div> -->
           </div>
           <div class="month-labels">
               <span 
