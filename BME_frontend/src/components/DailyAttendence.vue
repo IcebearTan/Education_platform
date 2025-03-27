@@ -19,13 +19,11 @@
           </div>
           <div class="stats-container"> <!-- 统计容器 -->
               <div v-if="!isVisible">
-                <el-button class="check-button" @click="checkln(nowday)" type="success" plain>打卡</el-button>
+                <el-button class="check-button" @click="open" type="success" plain>签到</el-button>
               </div>
-              <div v-else>
-                <div class="stat-item">
-                  <div class="document">
-                    <span class="continuous-days">连续打卡 {{ continuousDays }} 天</span>
-                  </div>
+              <div v-else class="stat-item" @click="openCheckOut">
+                <div class="document">
+                  <span class="continuous-days">已签到 {{ calculateDuration() }}</span>
                 </div>
               </div>
               <!-- <div>
@@ -34,23 +32,22 @@
           </div>
           <div class="month-labels">
               <span 
-                  v-for="(month, index) in visibleMonths" 
-                  :key="month"
-                  :style="{left: monthStartIndices[index]*2.4 + 'px'}">{{ month }}</span>
+                v-for="(month, index) in visibleMonths" 
+                :key="month"
+                :style="{left: monthStartIndices[index]*2.4 + 'px'}">{{ month }}</span>
           </div>
       </div>
       <div class="calendar-grid">
-          <div 
-              v-for="(day, index) in calendarDays"
-              :key="index"
-              class="day-cell"
-              :class="{ 'checked': isChecked(day.date), 'today': isToday(day.date) }"
-              :title="getTooltipText(day)"
-              @mouseover="hoverDay = day.date"
-              @mouseleave="hoverDay = null"
-          >
-              <div v-if="isToday(day.date)" class="today-marker"></div>
-          </div>
+        <div 
+            v-for="(day, index) in formeCheckStatus"
+            :key="index"
+            class="day-cell"
+            :class="{ 'checked': isChecked(formeCheckStatus[index].status), 'today': isToday(day.date) }"
+            :title="formeCheckStatus[index].date + ' ' + formeCheckStatus[index].total_hours + 'h'"
+        >
+            <div v-if="isToday(formeCheckStatus[index].date)" class="today-marker"></div>
+        </div>
+        
       </div>
   </div>
 </template>
@@ -58,6 +55,54 @@
 <script setup>
 import { ref, computed } from 'vue';
 import { onMounted, onUnmounted } from 'vue';
+import { ElMessage, ElMessageBox } from 'element-plus'
+
+import api from '../api';
+
+// 获取打卡状态
+const formeCheckStatus = ref([]);
+// 可见月份标签
+const visibleMonths = ref([]);
+// 生成日历数据
+const monthStartIndices = ref([0]);
+const fetchCheckStatus = async () => {
+  try {
+      const res = await api({
+          url: '/records',
+          method: 'get'
+      });
+    // console.log(res.data);
+    formeCheckStatus.value = [
+      ...res.data.previous_month.records,
+      ...res.data.current_month.records,
+    ];
+    monthStartIndices.value.push(res.data.current_month.records.length)
+
+    // 提取月份
+    const previousMonthName = extractMonth(res.data.previous_month.month_name);
+    const currentMonthName = extractMonth(res.data.current_month.month_name);
+    visibleMonths.value = [
+      previousMonthName,
+      currentMonthName
+    ];
+    // console.log(visibleMonths.value);
+
+    
+  } catch (error) {
+      console.error(error);
+  }
+}
+// 提取月份的函数
+const extractMonth = (monthName) => {
+  // 使用正则表达式匹配月份
+  const match = monthName.match(/(\d+)月/);
+  if (match && match[1]) {
+    return `${match[1]}月`;
+  } else {
+    console.error("月份格式不正确:", monthName);
+    return monthName; // 返回原始值，避免出错
+  }
+};
 
 // 修正获取当前日期
 const now = new Date();
@@ -100,134 +145,242 @@ const props = defineProps({
   }
 });
 
-const hoverDay = ref(null);
-const monthsToShow = 2; // 显示最近2个月
 
-// 生成日历数据
-const monthStartIndices = ref([]);
-const calendarDays = computed(() => {
-  const days = [];
-  const today = new Date();
-  monthStartIndices.value = [];
+// const calendarDays = computed(() => {
+//   const days = [];
+//   const today = new Date();
+//   monthStartIndices.value = [];
 
-  for (let i = 0; i < monthsToShow ; i++) {
-    const date = new Date(today.getFullYear(), today.getMonth() + i, 1);
-    const year = date.getFullYear();
-    const month = date.getMonth();
+//   for (let i = 0; i < monthsToShow ; i++) {
+//     const date = new Date(today.getFullYear(), today.getMonth() + i, 1);
+//     const year = date.getFullYear();
+//     const month = date.getMonth();
 
-    //记录每个月的起始索引
-    monthStartIndices.value.push(days.length);
+//     //记录每个月的起始索引
+//     monthStartIndices.value.push(days.length);
 
-    // 生成当月所有天数
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-    for (let d = 1; d <= daysInMonth; d++) {
-      const currentDate = new Date(year, month, d);
-      days.push({
-        date: currentDate,
-        count: props.attendanceData[currentDate.toLocaleDateString('en-CA')] || 0
-      });
-    }
-  }
-return days;
-});
-
-// 可见月份标签
-const visibleMonths = computed(() => {
-  return [...new Set(calendarDays.value.map(day => 
-      `${day.date.getMonth() + 1}月`
-  ))];
-});
+//     // 生成当月所有天数
+//     const daysInMonth = new Date(year, month + 1, 0).getDate();
+//     for (let d = 1; d <= daysInMonth; d++) {
+//       const currentDate = new Date(year, month, d);
+//       days.push({
+//         date: currentDate,
+//         count: props.attendanceData[currentDate.toLocaleDateString('en-CA')] || 0
+//       });
+//     }
+//   }
+// return days;
+// });
 
 // 从本地加载打卡数据
-const loadDataFromLocalStorage = () => {
-  const savedChecklnStatus = localStorage.getItem('checklnStatus');
-  if (savedChecklnStatus) {
-      checklnStatus.value = JSON.parse(savedChecklnStatus);
-  }
-  const savedContinuousDays = localStorage.getItem('continuousDays');
-  if (savedContinuousDays) {
-      continuousDays.value = parseInt(savedContinuousDays);
-  }
-  // 获取上次打卡日期
-  const lastCheckedDate = localStorage.getItem('lastCheckedDate');
-  if (lastCheckedDate) {
-      const [lastYear, lastMonth, lastDay] = lastCheckedDate.split('-').map(Number);
-      const currentDate = new Date();
-      const currentYear = currentDate.getFullYear();
-      const currentMonth = currentDate.getMonth() + 1;
-      const currentDay = currentDate.getDate();
-      // 判断是否为同一天
-      if (lastYear === currentYear && lastMonth === currentMonth && lastDay === currentDay) {
-          isVisible.value = true; // 同一天，已打卡，显示连续打卡天数
-      } else {
-          // 新的一天，重置连续打卡逻辑
-          if (!checklnStatus.value[nowday.value]) {
-              continuousDays.value = 0;
-          }
-      }
-  }
-}
+// const loadDataFromLocalStorage = () => {
+//   const savedChecklnStatus = localStorage.getItem('checklnStatus');
+//   if (savedChecklnStatus) {
+//       checklnStatus.value = JSON.parse(savedChecklnStatus);
+//   }
+//   const savedContinuousDays = localStorage.getItem('continuousDays');
+//   if (savedContinuousDays) {
+//       continuousDays.value = parseInt(savedContinuousDays);
+//   }
+//   // 获取上次打卡日期
+//   const lastCheckedDate = localStorage.getItem('lastCheckedDate');
+//   if (lastCheckedDate) {
+//       const [lastYear, lastMonth, lastDay] = lastCheckedDate.split('-').map(Number);
+//       const currentDate = new Date();
+//       const currentYear = currentDate.getFullYear();
+//       const currentMonth = currentDate.getMonth() + 1;
+//       const currentDay = currentDate.getDate();
+//       // 判断是否为同一天
+//       if (lastYear === currentYear && lastMonth === currentMonth && lastDay === currentDay) {
+//           isVisible.value = true; // 同一天，已打卡，显示连续打卡天数
+//       } else {
+//           // 新的一天，重置连续打卡逻辑
+//           if (!checklnStatus.value[nowday.value]) {
+//               continuousDays.value = 0;
+//           }
+//       }
+//   }
+// }
 // 将打卡数据保存到本地
-const saveDataToLocalStorage = () => {
-  localStorage.setItem('checklnStatus', JSON.stringify(checklnStatus.value));
-  localStorage.setItem('continuousDays', continuousDays.value.toString());
-  const currentDate = new Date();
-  const currentYear = currentDate.getFullYear();
-  const currentMonth = currentDate.getMonth() + 1;
-  const currentDay = currentDate.getDate();
-  // 保存当前日期作为上次打卡日期
-  localStorage.setItem('lastCheckedDate', `${currentYear}-${currentMonth}-${currentDay}`);
-}
+// const saveDataToLocalStorage = () => {
+//   localStorage.setItem('checklnStatus', JSON.stringify(checklnStatus.value));
+//   localStorage.setItem('continuousDays', continuousDays.value.toString());
+//   const currentDate = new Date();
+//   const currentYear = currentDate.getFullYear();
+//   const currentMonth = currentDate.getMonth() + 1;
+//   const currentDay = currentDate.getDate();
+//   // 保存当前日期作为上次打卡日期
+//   localStorage.setItem('lastCheckedDate', `${currentYear}-${currentMonth}-${currentDay}`);
+// }
 
 // 打卡显示情况
 const isVisible = ref(false);
+const checkIsVisible = () => {
+  // console.log(localStorage.getItem('isChecked'));
+  if (localStorage.getItem('isChecked') === "true" && nowTime.value - checkTime.value <= 4 * 60 * 60 * 1000) {
+    console.log();
+    isVisible.value = true;
+    getCheckTime();
+  } else {
+    isVisible.value = false;
+  }
+}
 
 const checklnStatus = ref({}); // 记录打卡状态
 const continuousDays = ref(0); // 连续打卡天数
 
-const isChecked = (date) => {
-  return checklnStatus.value[date.toLocaleDateString('en-CA')];
+const isChecked = (status) => {
+  // return checklnStatus.value[date.toLocaleDateString('en-CA')];
+  if (status === "进行中" || status === "已完成") {
+      return true;
+  } else {
+      return false;
+  }
 }
 
-const checkln = (day) => {
-  const userInput = prompt('请输入今日验证码:');
-  const correctInput = '1234';
-  if (userInput === correctInput) { 
-      if (day === nowday.value) {
-          const dateKey = new Date(nowyear.value, nowmonth.value - 1, day).toLocaleDateString('en-CA');
-          if (!isChecked(new Date(nowyear.value, nowmonth.value - 1, day))) {
-              checklnStatus.value[dateKey] = true;
-              if (continuousDays.value === 0 || checklnStatus.value[new Date(nowyear.value, nowmonth.value - 1, day - 1).toLocaleDateString('en-CA')]) {
-                  continuousDays.value++;
-              } else {
-                  continuousDays.value = 1;
-              }
-              isVisible.value = true;
-              alert('今日打卡成功！');
-              saveDataToLocalStorage(); // 保存数据
-          }
-      }
-  } else {
-      alert('验证码错误，打卡失败！');
+const nowTime = ref(new Date());
+const checkTime = ref(null);
+const timeDiff = ref(null);
+
+const getCheckTime = () => {
+  const storedCheckTime = localStorage.getItem('CheckTime');
+  if (storedCheckTime) {
+    checkTime.value = new Date(storedCheckTime);
   }
+};
+const calculateDuration = () => {
+  if (!checkTime.value) return;
+
+  const duration = nowTime.value - checkTime.value;
+  const hours = Math.floor(duration / (1000 * 60 * 60));
+  const minutes = Math.floor((duration % (1000 * 60 * 60)) / (1000 * 60));
+  const seconds = Math.floor((duration % (1000 * 60)) / 1000);
+
+  return `${hours}h ${minutes}m ${seconds}s`;
+};
+
+// 提交签到函数
+const submitCheckCode = async (code) => {
+  try {
+      const res = await api({
+        url: '/check',
+        method: 'post',
+        data: {
+          "check_code": code
+        }
+      });
+      if (res.status === 200) {
+        ElMessage({
+          type: 'success',
+          message: '签到成功！请在4小时内签退！',
+        })
+        fetchCheckStatus();
+        localStorage.setItem('isChecked', true);
+        localStorage.setItem('CheckTime', new Date().toLocaleString());
+        checkIsVisible();
+      } else {
+        ElMessage({
+          type: 'error',
+          message: res
+        })
+      }
+  } catch (error) {
+    ElMessage({
+      type: 'error',
+      message: error
+    })
+  }
+}
+const submitCheckOutCode = async (code) => {
+  try {
+      const res = await api({
+        url: '/check',
+        method: 'post',
+        data: {
+          "check_code": code
+        }
+      });
+      if (res.status === 200) {
+        ElMessage({
+          type: 'success',
+          message: '签退成功！今日累计时长：114514分钟',
+        })
+        fetchCheckStatus();
+        localStorage.setItem('isChecked', false);
+        checkIsVisible();
+      } else {
+        ElMessage({
+          type: 'error',
+          message: res
+        })
+      }
+  } catch (error) {
+    ElMessage({
+      type: 'error',
+      message: error
+    })
+  }
+}
+
+const open = () => {
+  ElMessageBox.prompt('请输入签到码', '签到', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    lockScroll: false,
+  })
+    .then(({ value }) => {
+      submitCheckCode(value);
+    })
+    .catch(() => {
+      ElMessage({
+        type: 'info',
+        message: '取消签到',
+      })
+    })
+}
+const openCheckOut = () => {
+  ElMessageBox.prompt('请输入签退码', '签退', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    lockScroll: false,
+  })
+    .then(({ value }) => {
+      submitCheckOutCode(value);
+    })
+    .catch(() => {
+      ElMessage({
+        type: 'info',
+        message: '取消签退',
+      })
+    })
 }
 
 const isToday = (date) => {
   const now = new Date();
-  return date.getFullYear() === now.getFullYear() && 
-      date.getMonth() === now.getMonth() && 
-      date.getDate() === now.getDate();
+  date = new Date(date);
+
+  return now.getFullYear() === date.getFullYear() && now.getMonth() === date.getMonth() && now.getDate() === date.getDate();
 }
 
 const getTooltipText = (day) => {
-  return  `${day.date.getFullYear()}-${day.date.getMonth() + 1}-${day.date.getDate()}`;
+  // return  `${day.date.getFullYear()}-${day.date.getMonth() + 1}-${day.date.getDate()}`;
 }
 
 onMounted(() => {
-  loadDataFromLocalStorage(); // 加载本地数据
+  // loadDataFromLocalStorage(); // 加载本地数据
+  // console.log(isVisible.value);
+  fetchCheckStatus();
+  getCheckTime(); // 获取上次签到时间
+  checkIsVisible(); // 检查是否显示打卡
+  
+  setInterval(() => {
+    nowTime.value = new Date();
+  }, 1000)
+
+  // console.log(checklnStatus.value);
 });
 onUnmounted(() => {
-  saveDataToLocalStorage(); // 保存数据
+  // saveDataToLocalStorage(); // 保存数据
 });
 </script>
 
@@ -305,7 +458,16 @@ onUnmounted(() => {
   background: #faf8f8;
   padding: 8px 16px;
   border-radius: 6px;
+  border: #ffffff solid 1px;
+
+  transition: all 0.132s ease-in-out;
+
   /* box-shadow: 0 0px 2px #4fc3f7; */
+}
+
+.stat-item:hover {
+  border: #4fc3f7 solid 1px;
+  cursor: pointer;
 }
 
 .document{
@@ -356,6 +518,7 @@ onUnmounted(() => {
   overflow: hidden;
   justify-content: center;
 }
+
 
 .day-cell {
   position: relative;
