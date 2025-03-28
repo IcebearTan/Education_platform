@@ -28,7 +28,7 @@ export default {
             method: "get",
         }).catch((error) => {
             // if (error.response.status == 422){
-            ElMessage.error('登录失效，请重新登录')
+            // ElMessage.error('登录失效，请重新登录')
             router.push('/login')
             // }
 
@@ -38,7 +38,7 @@ export default {
             // }
 
             if (res.data.code == 200) {
-                console.log(res)
+                // console.log(res)
                 this.username = res.data.User_Name
                 this.user_email = res.data.User_Email
                 this.uid = res.data.User_Id

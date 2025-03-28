@@ -20,7 +20,7 @@ export default defineComponent({
                 url: '/user/group',
                 method: 'get',
             }).then((res) => {
-                console.log(res);
+                // console.log(res);
                 groupList.value = res.data.group;
                 teacher.value = res.data.teacher;
             }).catch((err) => {

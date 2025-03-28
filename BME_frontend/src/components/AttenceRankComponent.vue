@@ -2,14 +2,14 @@
   <div class="rank-container">
     <div class="title">出勤热榜</div>
     <div class="student-container">
-        <div class="single-student-container" v-for="(user, index) in users" :key="index">
+        <div class="single-student-container" v-for="(user, index) in userRanks" :key="index">
             <div :class="{'index': true, 'index-gold': index === 0, 'index-silver': index === 1, 'index-bronze': index === 2}">{{ index + 1 }}</div>
             <div class="block">
                 <el-avatar :size="40" src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png" />
             </div>
-            <div class="username">{{ user.username }}</div>
+            <div class="username">{{ user.user_name }}</div>
             <div class="progress">
-                <div class="label">114次</div>
+                <div class="label">{{ user.total_hours }} h</div>
             </div>
         </div>
     </div>
@@ -18,7 +18,8 @@
 
 <script setup>
 import { defineComponent } from 'vue'
-import { reactive } from 'vue';
+import { reactive, ref, onMounted } from 'vue';
+import api from '../api';
 
 const users = reactive([
     {
@@ -63,11 +64,28 @@ const users = reactive([
     }
 ])
 
+const userRanks = ref([])
+
+const fetchUsersRank = async () => {
+    try {
+        const response = await api({
+            url: '/records_top10',
+            method: 'get'
+        })
+        userRanks.value = response.data
+    } catch (error) {
+        console.log(error)
+    }
+}
+
+onMounted(() => {
+    fetchUsersRank();
+})
 </script>
 
 <style scoped>
 .rank-container{
-    margin-left: auto;
+    /* margin-left: auto; */
     width: 275px;
 }
 .title{

@@ -26,11 +26,12 @@ onMounted(() => {
   }).catch((error) => {
     ElMessage.error('登录失效，请重新登录')
     router.push('/login')
+    console.log(error)
 
   }).then((res) => {
     if (res.data.code == 200) {
       User_Info.value = res.data
-      console.log(User_Info.value)
+      // console.log(User_Info.value)
     }
   }
   )
