@@ -79,17 +79,18 @@ const formRef = ref(null)
 
 const rules = {
   username: [
-    { message: '请输入昵称', trigger: 'blur' },
-    { min: 4, max: 15, message: '昵称长度需要在4-15个字符之间', trigger: 'blur' },
+    { message: '请输入真实姓名', trigger: 'blur' },
+    { min: 2, max: 15, message: '姓名长度需要在2-15个字符之间', trigger: 'blur' },
     {
       validator: (rule, value, callback) => {
-          if ('\u4000' <= value && value <= '\u9fa5') {
-              callback(new Error('用户名不能包含中文'));
-          } else {
-              callback();
-          }
+        const isChinese = /^[\u4e00-\u9fa5]+$/.test(value);
+        if (!isChinese) {
+          callback(new Error('用户名必须为中文'));
+        } else {
+          callback();
+        }
       },
-      trigger: 'blur'
+      trigger: 'blur',
     },
   ]
 }
@@ -165,8 +166,8 @@ const onSubmit = () => {
         <el-form ref="formRef" :model="form" label-width="auto" style="width: 90%;" label-position="top" size="large" :rules="rules">
           <el-row :gutter="20">
             <el-col :span="12">
-              <el-form-item label="昵称" prop="username">
-                <el-input v-model="form.username" placeholder="输入你的昵称" clearable/>
+              <el-form-item label="姓名" prop="username">
+                <el-input v-model="form.username" placeholder="输入你的真实姓名" clearable/>
               </el-form-item>
             </el-col>
             <el-col :span="12">

@@ -26,12 +26,13 @@ export default {
     // 表单验证规则
     const rules = reactive({
       username: [
-        { required: true, message: "请输入用户名", trigger: "blur" },
-        { min: 4, max: 15, message: "用户名长度需要在4-15个字符之间", trigger: "blur" },
+        { required: true, message: "请输入真实姓名", trigger: "blur" },
+        { min: 2, max: 15, message: "姓名长度需要在2-15个字符之间", trigger: "blur" },
         {
           validator: (rule, value, callback) => {
-            if ('\u4000' <= value && value <= '\u9fa5') {
-              callback(new Error('用户名不能包含中文'));
+            const isChinese = /^[\u4e00-\u9fa5]+$/.test(value);
+            if (!isChinese) {
+              callback(new Error('用户名必须为中文'));
             } else {
               callback();
             }
@@ -198,7 +199,7 @@ export default {
                 <el-form ref="registerFormRef" style="max-width: 600px" :model="registerForm" status-icon :rules="rules"
                     label-width="auto" class="demo-ruleForm">
                     <el-form-item prop="username">
-                        <el-input v-model="registerForm.username" type="text" autocomplete="off" placeholder="输入用户名" class="input"/>
+                        <el-input v-model="registerForm.username" type="text" autocomplete="off" placeholder="输入真实姓名" class="input"/>
                     </el-form-item>
                     <el-form-item prop="password">
                         <el-input v-model="registerForm.password" type="password" autocomplete="off" placeholder="输入密码" class="input" show-password/>
