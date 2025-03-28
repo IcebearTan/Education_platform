@@ -94,10 +94,14 @@ const fetchUserAvatars = async (id) => {
                 }
             });
             // 假设 API 返回一个包含头像 URL 的对象
-            userAvatars.value.push(`data:image/png;base64,${response.data.User_Avatar}`); // 将头像 URL 添加到数组中
+            if (response.data.User_Avatar) {
+                userAvatars.value.push(`data:image/png;base64,${response.data.User_Avatar}`); // 将头像 URL 添加到数组中
+            } else {
+                userAvatars.value.push('https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png'); // 默认头像
+            }
         } catch (error) {
             console.log(`Error fetching avatar for user ${userId}:`, error);
-            userAvatars.value.push(null); // 出错时使用默认头像或 null
+            userAvatars.value.push('https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png'); // 出错时使用默认头像或 null
         }
     }
     console.log("User Avatars:", userAvatars.value);
