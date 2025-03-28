@@ -46,13 +46,16 @@ onMounted(() => {
     <img src="../assets/Logo_NewYear.png" alt="BME Logo" width="250px" class="largeLogo"/>
     <h1 class="largeTitle">卓越工程师训练营</h1>
   </div>
-  <div style="display: flex; justify-content: center; align-items: center; color: #666; font-size: 20px;">中山大学生物医学工程医工融合科创协会在线教育平台</div>
+  <div style="display: flex; justify-content: center; align-items: center; color: #888; font-size: 20px;">中山大学生物医学工程医工融合科创协会在线教育平台</div>
   
   <div style="display: flex; justify-content: center; align-items: center; flex-wrap: wrap;">
-    <h1 class="secondTitle">最新资讯</h1>
+    
     <div class="content-container">
-      <div style="width: 20%; margin-left: 20px;"><AttenceRankComponent /></div>
-      <div style="display: flex; flex-direction: column; align-items: center;width: 60%;">
+      <div style="width: 0%; margin-left: 20px;"></div>
+      <div style="display: flex; flex-direction: column; align-items: center;width: 80%;">
+        <div style="width: 880px;">
+          <h1 class="secondTitle">最新资讯</h1>
+        </div>
         <el-card v-for="article in reversedArticles" :key="article.Article_Id" @click="goToArticle(article.Article_Id)" class="article-card">
           <div slot="header" class="article-header">
             <h3 class="article-title">{{ article.Article_Title }}</h3>
@@ -69,8 +72,13 @@ onMounted(() => {
           </div>
         </el-card>
       </div>
-      <div style="width: 20%;margin-right: 20px;">
-        <DailyAttendence />
+      <div style="width: 20%;margin-right: 20px; margin-top: 20px;">
+        <div>
+          <DailyAttendence />
+        </div>
+        <div style="margin-top: 20px;">
+          <AttenceRankComponent />
+        </div>
       </div>
       
     </div>
@@ -98,11 +106,14 @@ onMounted(() => {
 }
 .secondTitle {
   width: 100%;
-  text-align: center;
+  /* text-align: center; */
   margin: 30px;
+  margin-left: 10px;
+  margin-bottom: 20px;
   font-size: 30px;
 
-  color: rgb(244, 203, 138);
+  /* color: rgb(244, 203, 138); */
+  color: #555;
 }
 
 .largeLogo{

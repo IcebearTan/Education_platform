@@ -22,43 +22,16 @@ const fetchYearAttendanceData = async () => {
 
   } catch (error) {
     console.error('Error fetching year attendance data:', error);
-    ElMessage.error('获取年度出勤数据失败');
+    // ElMessage.error('获取年度出勤数据失败');
   }
 };
-
-
-
 
 onMounted(() => {
   fetchYearAttendanceData();
 })
-// 本地定义示例数据
-const attendanceData = ref({
-  '2025-06-15': 2,
-  '2025-01-14': 2,
-  '2025-02-14': 2,
-  '2025-04-14': 2,
-  '2025-05-14': 2,
-  '2025-07-14': 2,
-  '2025-08-14': 2,
-  '2025-09-14': 2,
-  '2025-10-14': 2,
-  '2025-11-14': 2,
-  '2025-12-14': 2,
-  [new Date().toLocaleDateString('en-CA')]: 2 // 今日数据
-});
 
 // 累计出勤天数
-// const currentYearDays = computed(() => {
-//   const currentYear = new Date().getFullYear();
-//   return Object.keys(attendanceData.value).reduce((total, dateStr) => {
-//     const date = new Date(dateStr);
-//     if (date.getFullYear() === currentYear) {
-//       return total + (attendanceData.value[dateStr] > 0 ? 1 : 0);
-//     }
-//     return total;
-//   }, 0);
-// });
+
 const currentYearDays = computed(() => {
   return yearAttendenceData.value.reduce((total, record) => {
     return total + (record.total_hours > 0 ? 1 : 0);
@@ -66,35 +39,6 @@ const currentYearDays = computed(() => {
 })
 
 // 最高连续出勤天数
-// const streakDays = computed(() => {
-//   const dates = Object.keys(attendanceData.value).sort();
-//   let maxStreak = 0;
-//   let currentStreak = 0;
-//   let prevDate = null;
-
-//   dates.forEach(dateStr => {
-//     const currentDate = new Date(dateStr);
-//     if (prevDate) {
-//       // 计算日期差（考虑时区问题）
-//       const timeDiff = currentDate.getTime() - prevDate.getTime();
-//       const dayDiff = Math.floor(timeDiff / (1000 * 3600 * 24));
-
-//       if (dayDiff === 1) {
-//         currentStreak++;
-//       } else if (dayDiff > 1) {
-//         currentStreak = 1; // 重新开始计数
-//       }
-//     } else {
-//       currentStreak = 1;
-//     }
-
-//     maxStreak = Math.max(maxStreak, currentStreak);
-//     prevDate = currentDate;
-//   });
-
-//   return maxStreak;
-// });
-
 const streakDays = computed(() => {
   let maxStreak = 0;
   let currentStreak = 0;

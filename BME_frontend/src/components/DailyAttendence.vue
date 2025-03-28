@@ -1,5 +1,5 @@
 <template>
-  <div class="calendar-container">
+  <div class="calendar-container" :style="{ height: checkLogin() ? '100%' : '100px' }">
       <div class="calendar-header">
           <div class="week-calendar">
               <div 
@@ -17,18 +17,21 @@
                   <div class="day-number">{{ day.date.getDate() }}</div>
               </div>
           </div>
-          <div class="stats-container"> <!-- 统计容器 -->
+          <div v-if="checkLogin()" class="stats-container"> <!-- 统计容器 -->
               <div v-if="!isVisible">
-                <el-button class="check-button" @click="open" type="success" plain>签到</el-button>
+                <el-button class="check-button" @click="open" type="success" plain>
+                  <div v-if="isTodayChecked()">今日已累计 {{ toayTotal }} 小时</div>
+                  <div v-else>签到</div>
+                </el-button>
               </div>
               <div v-else class="stat-item" @click="openCheckOut">
                 <div class="document">
                   <span class="continuous-days">已签到 {{ calculateDuration() }}</span>
                 </div>
               </div>
-              <!-- <div>
-                
-              </div> -->
+          </div>
+          <div v-else class="stats-container">
+            <el-button class="check-button" @click="router.push('/login')" type="primary" plain>登录/注册</el-button>
           </div>
           <div class="month-labels">
               <span 
@@ -45,7 +48,7 @@
             :class="{ 'checked': isChecked(formeCheckStatus[index].status), 'today': isToday(day.date) }"
             :title="formeCheckStatus[index].date + ' ' + formeCheckStatus[index].total_hours + 'h'"
         >
-            <div v-if="isToday(formeCheckStatus[index].date)" class="today-marker"></div>
+            <div v-if="isToday(formeCheckStatus[index].date, index)" class="today-marker"></div>
         </div>
         
       </div>
@@ -56,8 +59,38 @@
 import { ref, computed } from 'vue';
 import { onMounted, onUnmounted } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { useRouter } from 'vue-router';
 
 import api from '../api';
+
+const router = useRouter();
+
+const checkLogin = () => {
+  const token = localStorage.getItem('token');
+  if (!token) {
+    return false; // 未登录
+  }
+  return true; // 已登录
+}
+const isTodayChecked = () => {
+  const checkTime = localStorage.getItem('CheckTime');
+  if (checkTime) {
+    const checkDate = new Date(checkTime);
+    const today = new Date();
+    return checkDate.getDay() === today.getDay();
+  }
+  return false;
+}
+const toayTotal = computed(() => {
+  const today = new Date();
+  const todayDateString = today.toISOString().split('T')[0]; // 获取今天的日期字符串，例如 "2025-03-28"
+
+  // 在 formeCheckStatus 数组中查找今天的记录
+  const todayRecord = formeCheckStatus.value.find(record => record.date === todayDateString);
+
+  // 如果找到今天的记录，则返回 total_hours，否则返回 0
+  return todayRecord ? todayRecord.total_hours : 0;
+});
 
 // 获取打卡状态
 const formeCheckStatus = ref([]);
@@ -144,74 +177,6 @@ const props = defineProps({
       default: () => ({})
   }
 });
-
-
-// const calendarDays = computed(() => {
-//   const days = [];
-//   const today = new Date();
-//   monthStartIndices.value = [];
-
-//   for (let i = 0; i < monthsToShow ; i++) {
-//     const date = new Date(today.getFullYear(), today.getMonth() + i, 1);
-//     const year = date.getFullYear();
-//     const month = date.getMonth();
-
-//     //记录每个月的起始索引
-//     monthStartIndices.value.push(days.length);
-
-//     // 生成当月所有天数
-//     const daysInMonth = new Date(year, month + 1, 0).getDate();
-//     for (let d = 1; d <= daysInMonth; d++) {
-//       const currentDate = new Date(year, month, d);
-//       days.push({
-//         date: currentDate,
-//         count: props.attendanceData[currentDate.toLocaleDateString('en-CA')] || 0
-//       });
-//     }
-//   }
-// return days;
-// });
-
-// 从本地加载打卡数据
-// const loadDataFromLocalStorage = () => {
-//   const savedChecklnStatus = localStorage.getItem('checklnStatus');
-//   if (savedChecklnStatus) {
-//       checklnStatus.value = JSON.parse(savedChecklnStatus);
-//   }
-//   const savedContinuousDays = localStorage.getItem('continuousDays');
-//   if (savedContinuousDays) {
-//       continuousDays.value = parseInt(savedContinuousDays);
-//   }
-//   // 获取上次打卡日期
-//   const lastCheckedDate = localStorage.getItem('lastCheckedDate');
-//   if (lastCheckedDate) {
-//       const [lastYear, lastMonth, lastDay] = lastCheckedDate.split('-').map(Number);
-//       const currentDate = new Date();
-//       const currentYear = currentDate.getFullYear();
-//       const currentMonth = currentDate.getMonth() + 1;
-//       const currentDay = currentDate.getDate();
-//       // 判断是否为同一天
-//       if (lastYear === currentYear && lastMonth === currentMonth && lastDay === currentDay) {
-//           isVisible.value = true; // 同一天，已打卡，显示连续打卡天数
-//       } else {
-//           // 新的一天，重置连续打卡逻辑
-//           if (!checklnStatus.value[nowday.value]) {
-//               continuousDays.value = 0;
-//           }
-//       }
-//   }
-// }
-// 将打卡数据保存到本地
-// const saveDataToLocalStorage = () => {
-//   localStorage.setItem('checklnStatus', JSON.stringify(checklnStatus.value));
-//   localStorage.setItem('continuousDays', continuousDays.value.toString());
-//   const currentDate = new Date();
-//   const currentYear = currentDate.getFullYear();
-//   const currentMonth = currentDate.getMonth() + 1;
-//   const currentDay = currentDate.getDate();
-//   // 保存当前日期作为上次打卡日期
-//   localStorage.setItem('lastCheckedDate', `${currentYear}-${currentMonth}-${currentDay}`);
-// }
 
 // 打卡显示情况
 const isVisible = ref(false);
@@ -303,7 +268,7 @@ const submitCheckOutCode = async (code) => {
       if (res.status === 200) {
         ElMessage({
           type: 'success',
-          message: '签退成功！今日累计时长：114514分钟',
+          message: '签退成功！',
         })
         fetchCheckStatus();
         localStorage.setItem('isChecked', false);
@@ -355,11 +320,17 @@ const openCheckOut = () => {
     })
 }
 
-const isToday = (date) => {
+const todayIndex = ref(0);
+const isToday = (date, index) => {
   const now = new Date();
   date = new Date(date);
+  if (now.getFullYear() === date.getFullYear() && now.getMonth() === date.getMonth() && now.getDate() === date.getDate()) {
+    return true;
+    todayIndex.value = index;
 
-  return now.getFullYear() === date.getFullYear() && now.getMonth() === date.getMonth() && now.getDate() === date.getDate();
+  } else {
+    return false;
+  }
 }
 
 const getTooltipText = (day) => {
@@ -388,7 +359,7 @@ onUnmounted(() => {
 .calendar-container {
   position: relative;
   font-family: Arial, sans-serif;
-  max-width: 220px; 
+  max-width: 220px;
   width: 100%;     
   padding: 10px; 
   background: #fff;
