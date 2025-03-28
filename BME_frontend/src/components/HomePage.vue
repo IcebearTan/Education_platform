@@ -35,6 +35,8 @@ const reversedArticles = computed(() => {
   return articles.value.slice().reverse();
 });
 
+const dialogVisible = ref(true);
+
 // 在组件挂载时调用获取文章的方法
 onMounted(() => {
   fetchArticles();
@@ -42,6 +44,11 @@ onMounted(() => {
 </script>
 
 <template style="background-color: brown;">
+  <div class="marquee-container">
+    <div class="marquee-content">
+      <span>！！由于线上打卡制作完成，请大家把自己的昵称改成真实姓名！！</span>
+    </div>
+  </div>
   <div style="display: flex; justify-content: center; align-items: center;">
     <img src="../assets/Logo_NewYear.png" alt="BME Logo" width="250px" class="largeLogo"/>
     <h1 class="largeTitle">卓越工程师训练营</h1>
@@ -83,10 +90,35 @@ onMounted(() => {
       
     </div>
     </div>
-    
 </template>
 
 <style scoped>
+.marquee-container {
+  width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  background-color: #f0f0f0;
+  color: #333;
+  font-size: 16px;
+  padding: 10px 0;
+}
+
+.marquee-content {
+  display: inline-block;
+  padding-left: 100%; /* Start the text off screen */
+  animation: marquee 15s linear infinite; /* Adjust speed as needed */
+}
+
+@keyframes marquee {
+  0% {
+    transform: translateX(0%);
+  }
+
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
 .content-container{
   width: 100%;
   display: flex;
