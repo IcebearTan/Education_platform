@@ -80,14 +80,15 @@ const handleClose = (key, keyPath) => {
           <el-menu active-text-color="#ffd04b" background-color="#545c64" class="el-menu-vertical-demo"
             :default-active=activeIndex text-color="#fff" @open="handleOpen" @close="handleClose">
             <div class="title">训练营<br>后台管理系统</div>
-            <el-sub-menu index="1" disabled>
+            <el-sub-menu index="1">
               <template #title>
                 <el-icon>
                   <location />
                 </el-icon>
                 <span>用户管理</span>
               </template>
-              <el-menu-item index="/user-manage" @click="router.push('/user-manage')">管理用户</el-menu-item>
+              <el-menu-item index="/user-manage/users" @click="router.push('/user-manage/users')">管理用户</el-menu-item>
+              <el-menu-item index="/user-manage/attendence" @click="router.push('/user-manage/attendence')">考勤管理</el-menu-item>
             </el-sub-menu>
             <el-sub-menu index="2" >
               <template #title>

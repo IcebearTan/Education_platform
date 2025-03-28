@@ -8,8 +8,29 @@ import { ElMessage } from 'element-plus'
 import { useRouter } from 'vue-router'
 import { useStore } from 'vuex';
 
+//获取年度出勤数据
+const yearAttendenceData = ref([]);
+
+const fetchYearAttendanceData = async () => {
+  try {
+    const response = await api({
+      url: '/records/yearly',
+      method: 'get'
+    })
+    yearAttendenceData.value = response.data;
+    // console.log(yearAttendenceData.value)
+
+  } catch (error) {
+    console.error('Error fetching year attendance data:', error);
+    ElMessage.error('获取年度出勤数据失败');
+  }
+};
+
+
+
+
 onMounted(() => {
-  
+  fetchYearAttendanceData();
 })
 // 本地定义示例数据
 const attendanceData = ref({
@@ -27,62 +48,87 @@ const attendanceData = ref({
   [new Date().toLocaleDateString('en-CA')]: 2 // 今日数据
 });
 
-// 定义每个月的颜色
-// const monthColors = [
-//   '#b9e7fc', // 一月
-//   '#a6e2fe', // 二月
-//   '#8dd7f9', // 三月
-//   '#85d4f8', // 四月
-//   '#7fd3fa', // 五月
-//   '#70cef9', // 六月
-//   '#66caf8', // 七月
-//   '#5fc9fb', // 八月
-//   '#41c1fd', // 九月
-//   '#2ebbfc', // 十月
-//   '#19b6ff', // 十一月
-//   '#03acfb'  // 十二月
-// ];
 // 累计出勤天数
+// const currentYearDays = computed(() => {
+//   const currentYear = new Date().getFullYear();
+//   return Object.keys(attendanceData.value).reduce((total, dateStr) => {
+//     const date = new Date(dateStr);
+//     if (date.getFullYear() === currentYear) {
+//       return total + (attendanceData.value[dateStr] > 0 ? 1 : 0);
+//     }
+//     return total;
+//   }, 0);
+// });
 const currentYearDays = computed(() => {
-  const currentYear = new Date().getFullYear();
-  return Object.keys(attendanceData.value).reduce((total, dateStr) => {
-    const date = new Date(dateStr);
-    if (date.getFullYear() === currentYear) {
-      return total + (attendanceData.value[dateStr] > 0 ? 1 : 0);
-    }
-    return total;
+  return yearAttendenceData.value.reduce((total, record) => {
+    return total + (record.total_hours > 0 ? 1 : 0);
   }, 0);
-});
+})
 
 // 最高连续出勤天数
+// const streakDays = computed(() => {
+//   const dates = Object.keys(attendanceData.value).sort();
+//   let maxStreak = 0;
+//   let currentStreak = 0;
+//   let prevDate = null;
+
+//   dates.forEach(dateStr => {
+//     const currentDate = new Date(dateStr);
+//     if (prevDate) {
+//       // 计算日期差（考虑时区问题）
+//       const timeDiff = currentDate.getTime() - prevDate.getTime();
+//       const dayDiff = Math.floor(timeDiff / (1000 * 3600 * 24));
+
+//       if (dayDiff === 1) {
+//         currentStreak++;
+//       } else if (dayDiff > 1) {
+//         currentStreak = 1; // 重新开始计数
+//       }
+//     } else {
+//       currentStreak = 1;
+//     }
+
+//     maxStreak = Math.max(maxStreak, currentStreak);
+//     prevDate = currentDate;
+//   });
+
+//   return maxStreak;
+// });
+
 const streakDays = computed(() => {
-  const dates = Object.keys(attendanceData.value).sort();
   let maxStreak = 0;
   let currentStreak = 0;
   let prevDate = null;
 
-  dates.forEach(dateStr => {
-    const currentDate = new Date(dateStr);
-    if (prevDate) {
-      // 计算日期差（考虑时区问题）
-      const timeDiff = currentDate.getTime() - prevDate.getTime();
-      const dayDiff = Math.floor(timeDiff / (1000 * 3600 * 24));
-      
-      if (dayDiff === 1) {
-        currentStreak++;
-      } else if (dayDiff > 1) {
-        currentStreak = 1; // 重新开始计数
-      }
-    } else {
-      currentStreak = 1;
-    }
-    
-    maxStreak = Math.max(maxStreak, currentStreak);
-    prevDate = currentDate;
-  });
+  yearAttendenceData.value.forEach(record => {
+    const currentDate = new Date(record.date);
 
+    if (record.total_hours > 0) { // 只有出勤的日期才参与连续天数计算
+      if (prevDate) {
+        const timeDiff = currentDate.getTime() - prevDate.getTime();
+        const dayDiff = Math.floor(timeDiff / (1000 * 3600 * 24));
+
+        if (dayDiff === 1) {
+          currentStreak++;
+        } else {
+          maxStreak = Math.max(maxStreak, currentStreak);
+          currentStreak = 1; // 重新开始计数
+        }
+      } else {
+        currentStreak = 1;
+      }
+
+      prevDate = currentDate;
+    } else {
+      maxStreak = Math.max(maxStreak, currentStreak);
+      currentStreak = 0; // 中断连续出勤
+      prevDate = null; // 重置 prevDate
+    }
+
+    maxStreak = Math.max(maxStreak, currentStreak); // 每次循环都更新 maxStreak
+  });
   return maxStreak;
-});
+})
 
 // 生成日历数据
 const calendarDays = computed(() => {
@@ -123,12 +169,13 @@ const hasAttendance = (day) => day.count > 0;
 
 // 工具提示文本
 const getTooltipText = (day) => {
-  return `${day.date.toLocaleDateString()}`;
+  // return `${day.date.toLocaleDateString()}`;
 };
 
 // 判断是否是今天
 const isToday = (date) => {
   const today = new Date();
+  date = new Date(date);
   return date.toDateString() === today.toDateString();
 };
 
@@ -141,7 +188,7 @@ const hoverDay = ref(null);
       <div class="calendarHeader">
         <div style="font-size: 18px;">出勤日历</div>
         <div>
-          <span style="margin-right: 10px; font-size: 14px; color: gray; font-weight: lighter;">累计出勤： {{ currentYearDays }} 天</span>
+          <span style="margin-right: 20px; font-size: 14px; color: gray; font-weight: lighter;">累计出勤： {{ currentYearDays }} 天</span>
           <span style="font-size: 14px; color: gray; font-weight: lighter;">最高连续： {{ streakDays }} 天</span>
         </div>
       </div>
@@ -150,16 +197,16 @@ const hoverDay = ref(null);
       </div> 
       <div class="calendar-grid">
         <div 
-          v-for="(day, index) in calendarDays"
+          v-for="(day, index) in yearAttendenceData"
           :key="index"
           class="day-cell"
-          :class="{ 'has-attendance': day.count > 0 }"
+          :class="{ 'has-attendance': yearAttendenceData[index].total_hours > 0 }"
           :style="{ 'background-color': day.count > 0 ? day.color : '' }"
-          :title="getTooltipText(day)"
+          :title="yearAttendenceData[index].date"
           @mouseover="hoverDay = day.date"
           @mouseleave="hoverDay = null"
         >
-          <div v-if="isToday(day.date)" class="today-marker"></div>
+          <div v-if="isToday(yearAttendenceData[index].date)" class="today-marker"></div>
         </div>
       </div>
     </div>
@@ -175,17 +222,18 @@ const hoverDay = ref(null);
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   margin-right: 10px; */
   /* margin-top: 10px; */
-  margin-bottom: 10px;
+  margin-bottom: 15px;
 }
 .calendarCard{
   /* width: 100%; */
-  height: 250px;
+  height: 242px;
   background-color: #fff;
-  border-radius: 5px;
+  border-radius: 10px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 
   margin-right: 10px;
   padding: 10px;
+  padding-bottom: 0;
 }
 .calendarHeader{
   height: 40px;
@@ -205,7 +253,7 @@ const hoverDay = ref(null);
   grid-template-rows: repeat(7, 12px);
   grid-auto-columns: 10px; 
   gap: 6px; 
-  padding: 10px 35px 20px 40px;
+  padding: 10px 35px 0px 40px;
 }
 
 .day-cell {

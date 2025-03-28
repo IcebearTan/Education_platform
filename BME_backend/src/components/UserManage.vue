@@ -1,4 +1,206 @@
-<script>
+<script setup>
+import api from '../api';
+import { ref, reactive, onMounted } from 'vue';
+import { ElMessage, ElMessageBox } from 'element-plus';
+
+const formInline = reactive({
+  key: ''
+});
+const dialogFormVisible = ref(false);
+const users = ref([]);
+
+const action = ref('edit');
+
+const handleSearch = () => {
+  
+};
+
+const tableLabel = ref([
+  {
+    prop: 'User_Id',
+    label: '用户id',
+    width: 80
+  },
+  {
+    prop: 'User_Name',
+    label: '用户名',
+    width: 250
+  },
+  {
+    prop: 'User_Mode',
+    label: '用户权限',
+    width: 150
+  },
+  {
+    prop: 'join_time',
+    label: '入营时间',
+    width: 250
+  },
+  {
+    prop: 'User_Email',
+    label: '用户邮箱',
+    width: 250
+  }
+])
+
+const fetchUsers = async () => {
+  try {
+    const response = await api({
+      url: '/user/user_list',
+      method: 'get',
+    })
+    users.value = response.data;
+    //我觉得需要一个状态判断，如果获取失败，则显示一个提示信息
+  } catch (error) {
+    ElMessage({
+        message: 'Unpredicted error',
+        type: 'warning'
+      });
+  }
+}
+
+onMounted(() => {
+  fetchUsers();
+})
+</script>
+
+<template>
+  <div style="width: 100%; height: 100%; position: relative; overflow: hidden;">
+    <div class="header-container">
+      <div class="l-container">用户列表</div>
+      <div class="r-container">
+        <el-form :inline="true" class="form-inline" :model="formInline">
+          <el-form-item label="用户查询" style="margin: 0; align-items: center;">
+            <el-input placeholder=" 输入用户名" v-model="formInline.key"></el-input>
+          </el-form-item>
+          <el-form-item style="margin: 0; align-items: center; margin-right: 20px; margin-left: 10px;">
+            <el-button type="primary" @click="handleSearch">
+              <el-icon>
+                <Search />
+              </el-icon>
+            </el-button>
+          </el-form-item>
+        </el-form>
+      </div>
+    </div>
+
+    <div style="margin: 20px;">
+      <div class="table">
+        <el-table :data="users" style="width: 100%; max-height: 700px; overflow-y: auto;">
+          <el-table-column v-for="item in tableLabel" :key="item.prop" :prop="item.prop" :label="item.label"
+            :width="item.width ? item.width : 125" />
+          <el-table-column fixed="right" label="Operations" min-width="120">
+            <template #="scoped">
+              <el-button type="primary" size="small" @click="handleEdit(scoped.row)">编辑</el-button>
+              <el-button type="danger" size="small" @click="handleDelete(scoped.row)">删除</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+      </div>
+
+      <!-- <el-pagination @current-change="handlePageChange" :current-page="currentPage" :page-size="pageSize"
+        :total="totalItems" layout="prev, pager, next" style="position:absolute; bottom: 0; margin-bottom: 20px;">
+      </el-pagination> -->
+    </div>
+
+    <el-dialog v-model="dialogFormVisible" :title="action == 'add' ? '新增课程' : '编辑用户'" width="500">
+      <el-form :model="form" :rules="rules" ref="formRef">
+        <el-form-item label="用户名" :label-width="formLabelWidth" prop="username">
+          <el-input v-model="form.username" autocomplete="off" />
+        </el-form-item>
+        <el-form-item label="用户密码" :label-width="formLabelWidth" prop="password">
+          <el-input v-model="form.password" autocomplete="off" type="password" show-password />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="handleCancle">取消</el-button>
+          <el-button type="primary" @click="handleSubmit">确认</el-button>
+        </div>
+      </template>
+    </el-dialog>
+  </div>
+</template>
+
+<style scoped>
+.header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  margin: 10px;
+  height: 40px;
+
+  .l-container {
+    display: inline-block;
+
+    font-size: 30px;
+    font-weight: 900;
+
+    margin-left: 20px;
+
+    color: #3b5cd5;
+  }
+
+  .r-container {
+    display: flex;
+    align-items: center;
+
+    .form-inline {
+      display: flex;
+      justify-content: center;
+
+      .el-form-item {
+        text-align: center;
+      }
+
+      margin: 0;
+    }
+
+    /* font-size: 30px;
+    font-weight: 900;
+
+    margin-left: 20px;
+
+    color: #08e397; */
+  }
+}
+
+.default-card {
+  display: inline-block;
+  width: 350px;
+
+  margin: 20px;
+
+  cursor: pointer;
+}
+
+.default-card:hover {
+  transform: translateY(-10px);
+  box-shadow: #c4c4c4 0px 0px 10px;
+}
+
+.loading {
+  margin-left: 30px;
+  font-size: 20px;
+  font-weight: 900;
+
+  color: #4f4f4f;
+}
+
+.details {
+  color: #767676;
+}
+
+.create-button {
+  display: inline-block;
+  margin-bottom: 5px;
+
+  margin-left: 10px;
+}
+</style>
+
+<!-- <script>
 import api from '../api';
 import { md5 } from 'js-md5';
 import { ElMessage, ElMessageBox } from 'element-plus';
@@ -29,7 +231,7 @@ export default {
       ],
       tableLabel: [
         {
-          prop: 'id',
+          prop: 'User_Id',
           label: '用户id',
           width: '200px',
         },
@@ -39,8 +241,8 @@ export default {
           width: '300px',
         },
         {
-          prop: 'is_admin',
-          label: '管理员权限',
+          prop: 'User_Mode',
+          label: '用户权限',
           width: '300px',
         },
       ],
@@ -239,140 +441,4 @@ export default {
 
   }
 };
-</script>
-
-<template>
-  <div style="width: 100%; height: 100%; position: relative; overflow: hidden;">
-    <div class="header-container">
-      <div class="l-container">用户列表</div>
-      <div class="r-container">
-        <el-form :inline="true" class="form-inline" :model="formInline">
-          <el-form-item label="用户查询" style="margin: 0; align-items: center;">
-            <el-input placeholder=" 输入用户名" v-model="formInline.key"></el-input>
-          </el-form-item>
-          <el-form-item style="margin: 0; align-items: center; margin-right: 20px; margin-left: 10px;">
-            <el-button type="primary" @click="handleSearch">
-              <el-icon>
-                <Search />
-              </el-icon>
-            </el-button>
-          </el-form-item>
-        </el-form>
-      </div>
-    </div>
-
-    <div style="margin: 20px;">
-      <div class="table">
-        <el-table :data="users" style="width: 100%; max-height: 500px; overflow-y: auto;">
-          <el-table-column v-for="item in tableLabel" :key="item.prop" :prop="item.prop" :label="item.label"
-            :width="item.width ? item.width : 125" />
-          <el-table-column fixed="right" label="Operations" min-width="120">
-            <template #="scoped">
-              <el-button type="primary" size="small" @click="handleEdit(scoped.row)">编辑</el-button>
-              <el-button type="danger" size="small" @click="handleDelete(scoped.row)">删除</el-button>
-            </template>
-          </el-table-column>
-        </el-table>
-      </div>
-
-      <el-pagination @current-change="handlePageChange" :current-page="currentPage" :page-size="pageSize"
-        :total="totalItems" layout="prev, pager, next" style="position:absolute; bottom: 0; margin-bottom: 20px;">
-      </el-pagination>
-    </div>
-
-    <el-dialog v-model="dialogFormVisible" :title="action == 'add' ? '新增课程' : '编辑用户'" width="500">
-      <el-form :model="form" :rules="rules" ref="formRef">
-        <el-form-item label="用户名" :label-width="formLabelWidth" prop="username">
-          <el-input v-model="form.username" autocomplete="off" />
-        </el-form-item>
-        <el-form-item label="用户密码" :label-width="formLabelWidth" prop="password">
-          <el-input v-model="form.password" autocomplete="off" type="password" show-password />
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <div class="dialog-footer">
-          <el-button @click="handleCancle">取消</el-button>
-          <el-button type="primary" @click="handleSubmit">确认</el-button>
-        </div>
-      </template>
-    </el-dialog>
-  </div>
-</template>
-
-<style scoped>
-.header-container {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-
-  margin: 10px;
-  height: 40px;
-
-  .l-container {
-    display: inline-block;
-
-    font-size: 30px;
-    font-weight: 900;
-
-    margin-left: 20px;
-
-    color: #3b5cd5;
-  }
-
-  .r-container {
-    display: flex;
-    align-items: center;
-
-    .form-inline {
-      display: flex;
-      justify-content: center;
-
-      .el-form-item {
-        text-align: center;
-      }
-
-      margin: 0;
-    }
-
-    /* font-size: 30px;
-    font-weight: 900;
-
-    margin-left: 20px;
-
-    color: #08e397; */
-  }
-}
-
-.default-card {
-  display: inline-block;
-  width: 350px;
-
-  margin: 20px;
-
-  cursor: pointer;
-}
-
-.default-card:hover {
-  transform: translateY(-10px);
-  box-shadow: #c4c4c4 0px 0px 10px;
-}
-
-.loading {
-  margin-left: 30px;
-  font-size: 20px;
-  font-weight: 900;
-
-  color: #4f4f4f;
-}
-
-.details {
-  color: #767676;
-}
-
-.create-button {
-  display: inline-block;
-  margin-bottom: 5px;
-
-  margin-left: 10px;
-}
-</style>
+</script> -->
