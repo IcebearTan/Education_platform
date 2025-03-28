@@ -1,11 +1,11 @@
 <template>
   <div class="rank-container">
-    <div class="title">出勤热榜</div>
+    <div class="title">出勤月榜</div>
     <div class="student-container">
         <div class="single-student-container" v-for="(user, index) in userRanks" :key="index">
             <div :class="{'index': true, 'index-gold': index === 0, 'index-silver': index === 1, 'index-bronze': index === 2}">{{ index + 1 }}</div>
             <div class="block">
-                <el-avatar :size="40" src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png" />
+                <el-avatar :size="40" :src="userAvatars[index]" />
             </div>
             <div class="username">{{ user.user_name }}</div>
             <div class="progress">
@@ -65,6 +65,8 @@ const users = reactive([
 ])
 
 const userRanks = ref([])
+const userIds = ref([])
+const userAvatars = ref([]) // 用于存储用户头像
 
 const fetchUsersRank = async () => {
     try {
@@ -73,10 +75,34 @@ const fetchUsersRank = async () => {
             method: 'get'
         })
         userRanks.value = response.data
+        userIds.value = response.data.map(user => user.user_id)
+        await fetchUserAvatars();
+        console.log(userIds.value)
     } catch (error) {
         console.log(error)
     }
 }
+const fetchUserAvatars = async (id) => {
+    userAvatars.value = []; // 初始化头像数组
+    for (const userId of userIds.value) {
+        try {
+            const response = await api({
+                url: '/user/user_avatars_id',
+                method: 'get',
+                params: { // 使用 params 传递单个 ID
+                    User_Id: userId
+                }
+            });
+            // 假设 API 返回一个包含头像 URL 的对象
+            userAvatars.value.push(`data:image/png;base64,${response.data.User_Avatar}`); // 将头像 URL 添加到数组中
+        } catch (error) {
+            console.log(`Error fetching avatar for user ${userId}:`, error);
+            userAvatars.value.push(null); // 出错时使用默认头像或 null
+        }
+    }
+    console.log("User Avatars:", userAvatars.value);
+}
+
 
 onMounted(() => {
     fetchUsersRank();
