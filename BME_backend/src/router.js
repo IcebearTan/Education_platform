@@ -5,6 +5,7 @@ import LoginView from './views/LoginView.vue'
 import RegisterView from './views/RegisterView.vue'
 
 import UserManage from './components/UserManage.vue'
+import UserAttendence from './components/UserAttendence.vue'
 import ArticleManage from './components/ArticleManage.vue'
 import ArticleCreate from './components/ArticleCreate.vue'
 import EditorView from './views/EditorView.vue';
@@ -26,9 +27,14 @@ const router = createRouter({
             component: HomeView,
             children: [
                 {
-                    path: '/user-manage',
-                    name: 'user_manage',
+                    path: '/user-manage/users',
+                    name: 'user_manage_users',
                     component: UserManage
+                },
+                {
+                    path: '/user-manage/attendence',
+                    name: 'user_manage_attendence',
+                    component: UserAttendence
                 },
                 {
                     path: '',
