@@ -58,4 +58,4 @@
 
 ## 致谢
 - 感谢 Jerry 提供后端开发支持
-- 感谢 yinginging 等人前端开发团队贡献
+- 感谢 xiaojieanchor, sabrina 等人前端开发团队贡献
