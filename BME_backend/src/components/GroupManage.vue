@@ -3,13 +3,17 @@
 
     <el-dialog v-model="appendGruopDialogVisible" title="新建小组" width="500">
     <el-form :model="form">
-      <el-form-item class="buildGroup" label="小组名称" :label-width="140">
+      <el-form-item class="GroupInput" label="小组名称" :label-width="140">
         <el-input v-model="form.name" autocomplete="off" />
       </el-form-item>
-      <el-form-item class="buildGroup" label="小组类别" :label-width="140" >
-        <el-input v-model="form.type" autocomplete="off" placeholder="study/project"/>
+      
+      <el-form-item class="GroupInput" label="小组类别" :label-width="140" >
+        <el-select v-model="form.type" placeholder="study/project">
+          <el-option label="study" value="study" />
+          <el-option label="project" value="project" />
+      </el-select>
       </el-form-item>
-      <el-form-item class="buildGroup" label="组员信息" :label-width="140" >
+      <el-form-item class="GroupInput" label="组员信息" :label-width="140" >
         <el-input v-model="form.student" autocomplete="off" placeholder="请输入学生编号，不同编号间用空格隔开"/>
       </el-form-item>
     </el-form>
@@ -17,6 +21,38 @@
       <div class="dialog-footer">
         <el-button @click="appendGruopDialogVisible = false">取消</el-button>
         <el-button type="primary" @click="configBuildGroup">
+          应用
+        </el-button>
+      </div>
+    </template>
+  </el-dialog>
+
+  <el-dialog v-model="appendMemberDialogVisible" title="添加组员" width="500">
+    <el-form :model="form">
+      <el-form-item class="GroupInput" label="组员信息" :label-width="140">
+        <el-input v-model="form.student" autocomplete="off" placeholder="请输入学生编号，不同编号间用空格隔开"/>
+      </el-form-item>
+    </el-form>
+    <template #footer>
+      <div class="dialog-footer">
+        <el-button @click="appendMemberDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="configAppendGroup">
+          应用
+        </el-button>
+      </div>
+    </template>
+  </el-dialog>
+
+  <el-dialog v-model="deleteMemberDialogVisible" title="删除组员" width="500">
+    <el-form :model="form">
+      <el-form-item class="GroupInput" label="组员信息" :label-width="140">
+        <el-input v-model="form.student" autocomplete="off" placeholder="请输入学生编号，不同编号间用空格隔开"/>
+      </el-form-item>
+    </el-form>
+    <template #footer>
+      <div class="dialog-footer">
+        <el-button @click="deleteMemberDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="configDeleteGroup">
           应用
         </el-button>
       </div>
@@ -50,32 +86,12 @@
             :width="item.width ? item.width : 125" :align="item.align" />
           <el-table-column fixed="right" label="Operations" min-width="120">
             <template #="scoped">
-              <el-button type="primary" size="small"  @click ="appendMember(scope.row)">增加成员</el-button>
-              <el-button type="danger" size="small" @click ="deleteMember(scope.row)">删除成员</el-button>
+              <el-button type="primary" size="small"  @click ="appendMember(scoped.row)">添加组员</el-button>
+              <el-button type="danger" size="small" @click ="deleteMember(scoped.row)">删除组员</el-button>
             </template>
           </el-table-column>
         </el-table>
       </div>
-
-      <el-dialog v-model="appendMemberDialogVisible" title="新建小组" width="500">
-    <el-form :model="form">
-      <el-form-item class="buildGroup" label="小组名称" :label-width="140">
-        <el-input v-model="form.name" autocomplete="off" />
-      </el-form-item>
-    </el-form>
-    <template #footer>
-      <div class="dialog-footer">
-        <el-button @click="appendMemberDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="configBuildGroup">
-          应用
-        </el-button>
-      </div>
-    </template>
-  </el-dialog>
-
-      <el-pagination
-        :total="totalItems" layout="prev, pager, next" style="position:absolute; bottom: 0; margin-bottom: 20px;">
-      </el-pagination>
     </div>
   </div>
 </template>
@@ -84,8 +100,7 @@
 import api from '../api';
 import { onBeforeMount } from 'vue';
 import { ref, reactive} from 'vue';
-import { md5 } from 'js-md5';
-import { ElDialog ,ElMessage, ElMessageBox } from 'element-plus';
+import { ElDialog, ElMessage } from 'element-plus';
 
 const appendGruopDialogVisible = ref(false)
 const appendMemberDialogVisible = ref(false)
@@ -176,6 +191,27 @@ const form = reactive({
   student:''
 })
 
+const tempForm = reactive({
+  name: '',
+  type: '',
+  student:[]
+})
+
+function clearForm()
+{
+  form.name = '';
+  form.type = '';
+  form.student = '';
+}
+function clearTempForm()
+{
+  tempForm.name = '';
+  tempForm.type = '';
+  tempForm.student = [];
+}
+
+
+
 async function BuildGroup()
 {
   const studentString = form.student; // 获取输入的学生 ID 字符串
@@ -196,27 +232,105 @@ async function BuildGroup()
   catch (error) {
     console.error('Failed to add group:', error);
   }
+
 }
 
 async function configBuildGroup()
 {
   await BuildGroup();
   appendGruopDialogVisible.value = false;
+  clearForm(); // 清空表单
 }
 
-async function appendMember(group)
+function appendMember(group)
 {
+  // console.log(group);
+  
+  appendMemberDialogVisible.value = true;
+
+  tempForm.name = group.group_name,
+  tempForm.type = group.group_type,
+  tempForm.student.push(...group.group.map(item => ({student_id: item.Student_Id}))) // 将对象数组赋值给 Group_member
 
 }
-async function deleteMember(group)
-{
 
+async function configAppendGroup()
+{
+  const studentString = form.student;
+  const studentArray = studentString.split(" ").map(id => ({ student_id: id }));
+
+  const returnGroup = {
+    Group_Name: tempForm.name,
+    Group_Type: tempForm.type,
+    Group_member: [...tempForm.student, ...studentArray], // 将对象数组赋值给 Group_member
+  };
+
+  try{
+    // console.log(returnGroup);
+    const response = await api.post('/user/group_add', returnGroup);
+    console.log(response);
+    ElMessage.success('添加组员成功');
+  }
+  catch (error) {
+    console.error('Failed to add member:', error);
+  }
+
+  appendMemberDialogVisible.value = false;
+  clearTempForm(); // 清空临时表单
+  clearForm(); // 清空表单
+}
+
+function deleteMember(group)
+{
+  // console.log(group);
+  
+  deleteMemberDialogVisible.value = true;
+
+  tempForm.name = group.group_name,
+  tempForm.type = group.group_type,
+  tempForm.student.push(...group.group.map(item => ({student_id: item.Student_Id}))) // 将对象数组赋值给 Group_member
+}
+
+async function configDeleteGroup()
+{
+  const studentString = form.student;
+  const studentArray = studentString.split(" ").map(id => ({ student_id: id }));
+
+  tempForm.student = tempForm.student.filter(
+  tempStudent => !studentArray.some(
+    student => String(student.student_id) === String(tempStudent.student_id) // 确保比较的是 student_id 的值
+  )
+);
+
+  console.log('studentArray:', studentArray);
+  console.log(tempForm.student);
+  
+
+  const returnGroup = {
+    Group_Name: tempForm.name,
+    Group_Type: tempForm.type,
+    Group_member: [...tempForm.student], // 将对象数组赋值给 Group_member
+  };
+
+  try{
+    // console.log(returnGroup);
+    const response = await api.post('/user/group_add', returnGroup);
+    console.log("组员飞飞");
+    ElMessage.success('删除组员成功');
+  }
+  catch (error) {
+    console.error('Failed to delete member:', error);
+  }
+
+  deleteMemberDialogVisible.value = false;
+  clearTempForm(); // 清空临时表单
+  clearForm(); // 清空表单
 }
 </script>
 
 <style scoped>
 
-.buildGroup {
+.GroupInput {
   margin-top: 20px;
   font-size: 20px;
   font-weight: 900;
