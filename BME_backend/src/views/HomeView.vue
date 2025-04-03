@@ -2,7 +2,7 @@
 import { RouterView } from "vue-router";
 import { useStore } from 'vuex'
 import { useRouter } from 'vue-router'
-import { Document } from '@element-plus/icons-vue';
+import { Document, User, ChatLineRound} from '@element-plus/icons-vue';
 
 export default {
   name: "HomeView",
@@ -83,7 +83,7 @@ const handleClose = (key, keyPath) => {
             <el-sub-menu index="1">
               <template #title>
                 <el-icon>
-                  <location />
+                  <User />
                 </el-icon>
                 <span>用户管理</span>
               </template>
@@ -99,6 +99,15 @@ const handleClose = (key, keyPath) => {
               </template>
               <el-menu-item index="/article/manage" @click="router.push('/article/manage')">管理文章</el-menu-item>
               <el-menu-item index="/article/create" @click="router.push('/article/create')" disabled>草稿箱</el-menu-item>
+            </el-sub-menu>
+            <el-sub-menu index="4" >
+              <template #title>
+                <el-icon>
+                  <ChatLineRound />
+                </el-icon>
+                <span>小组管理</span>
+              </template>
+              <el-menu-item index="/group/manage" @click="router.push('/group/manage')">管理小组</el-menu-item>
             </el-sub-menu>
             <el-sub-menu index="3" disabled>
               <template #title>
