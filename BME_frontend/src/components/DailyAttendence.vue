@@ -1,5 +1,5 @@
 <template>
-  <div class="calendar-container" :style="{ height: checkLogin() ? '100%' : '100px' }">
+  <div v-if="!isloading" class="calendar-container" :style="{ height: checkLogin() ? '100%' : '100px' }">
       <div class="calendar-header">
           <div class="week-calendar">
               <div 
@@ -26,7 +26,8 @@
               </div>
               <div v-else class="stat-item" @click="openCheckOut">
                 <div class="document">
-                  <span class="continuous-days">已签到 {{ calculateDuration() }}</span>
+                  <span class="continuous-days">本次已签到 {{ calculateThisTimeDuration() }}</span>
+                  <span class="continuous-days" style="display: block;">今日总签到 {{ calculateThisDayDuration() }}</span>
                 </div>
               </div>
           </div>
@@ -53,17 +54,24 @@
         
       </div>
   </div>
+  <div v-else class="calendar-container" :style="{ height: checkLogin() ? '100%' : '100px' }">
+     isloading...
+  </div>
 </template>
 
 <script setup>
 import { ref, computed } from 'vue';
-import { onMounted, onUnmounted } from 'vue';
+import { onMounted, onUnmounted, watch} from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useRouter } from 'vue-router';
 
 import api from '../api';
+import { el, fa } from 'element-plus/es/locale/index.mjs';
 
 const router = useRouter();
+
+const isloading = ref(true); // 是否加载完成
+const isMasterBrowser = ref(true); // 本次加载是否为主浏览器，主浏览器的标志为存在checkTime
 
 const checkLogin = () => {
   const token = localStorage.getItem('token');
@@ -72,8 +80,14 @@ const checkLogin = () => {
   }
   return true; // 已登录
 }
-const isTodayChecked = () => {
+
+async function isTodayChecked(){
   const checkTime = localStorage.getItem('CheckTime');
+
+  if(todayRecord.status === "进行中" || todayRecord.status === "已完成"){
+    return true; // 已签到
+  }
+
   if (checkTime) {
     const checkDate = new Date(checkTime);
     const today = new Date();
@@ -86,7 +100,7 @@ const toayTotal = computed(() => {
   const todayDateString = today.toISOString().split('T')[0]; // 获取今天的日期字符串，例如 "2025-03-28"
 
   // 在 formeCheckStatus 数组中查找今天的记录
-  const todayRecord = formeCheckStatus.value.find(record => record.date === todayDateString);
+  todayRecord = formeCheckStatus.value.find(record => record.date === todayDateString);
 
   // 如果找到今天的记录，则返回 total_hours，否则返回 0
   return todayRecord ? todayRecord.total_hours : 0;
@@ -104,11 +118,12 @@ const fetchCheckStatus = async () => {
           url: '/records',
           method: 'get'
       });
-    // console.log(res.data);
+    // console.log("data:",res.data);
     formeCheckStatus.value = [
       ...res.data.previous_month.records,
       ...res.data.current_month.records,
     ];
+
     monthStartIndices.value.push(res.data.current_month.records.length)
 
     // 提取月份
@@ -124,7 +139,47 @@ const fetchCheckStatus = async () => {
   } catch (error) {
       console.error(error);
   }
+  isloading.value = false; // 设置加载状态为 false
 }
+
+let todayRecord = {}; // 记录今天的打卡状态
+
+async function getLatesetCheckStatus() {
+  const today = new Date();
+  const todayDateString = today.toISOString().split('T')[0]; // 获取今天的日期字符串，例如 "2025-03-28"
+  todayRecord = formeCheckStatus.value.find(record => record.date === todayDateString);  // 在 formeCheckStatus 数组中查找今天的记录
+  console.log(todayRecord);
+  
+  if(todayRecord.status === "进行中"){
+    const storedCheckTime = localStorage.getItem('CheckTime');
+    if (storedCheckTime) {
+      checkTime.value = new Date(storedCheckTime);
+    }
+    if(!storedCheckTime) {
+      isMasterBrowser.value = false;
+      console.log("没有签到时间");
+      localStorage.setItem('isChecked', true);
+      localStorage.setItem('lastingTime', new Date().toLocaleString());
+      lastingTime.value = new Date();
+      isVisible.value = true;
+      ElMessage({
+      message: '本次登录为不同浏览器，故本次已签到的时间不会累计显示，但实际签到时间正常',
+      type: 'warning', // 类型：success, warning, info, error
+      duration: 3000, // 显示时间（毫秒），默认 3000
+      showClose: true, // 是否显示关闭按钮});
+    })
+    }
+    else if(nowTime.value - checkTime.value > 4 * 60 * 60 * 1000) {
+      localStorage.setItem('isChecked', false);
+      isVisible.value = false;
+    }
+  }
+  else if(todayRecord.status === "已完成"){
+    console.log("已完成");
+    isVisible.value = false;
+  }
+}
+
 // 提取月份的函数
 const extractMonth = (monthName) => {
   // 使用正则表达式匹配月份
@@ -180,6 +235,7 @@ const props = defineProps({
 
 // 打卡显示情况
 const isVisible = ref(false);
+
 const checkIsVisible = () => {
   // console.log(localStorage.getItem('isChecked'));
   if (localStorage.getItem('isChecked') === "true" && nowTime.value - checkTime.value <= 4 * 60 * 60 * 1000) {
@@ -205,6 +261,8 @@ const isChecked = (status) => {
 
 const nowTime = ref(new Date());
 const checkTime = ref(null);
+const freshTime = ref(null);
+const lastingTime = ref(null);
 const timeDiff = ref(null);
 
 const getCheckTime = () => {
@@ -213,10 +271,46 @@ const getCheckTime = () => {
     checkTime.value = new Date(storedCheckTime);
   }
 };
-const calculateDuration = () => {
-  if (!checkTime.value) return;
+const calculateThisTimeDuration = () => {
+  if (!checkTime.value && !lastingTime.value) return;
 
-  const duration = nowTime.value - checkTime.value;
+  let duration = 0; // 初始化持续时间
+
+  if(isMasterBrowser.value)
+  {
+    duration = nowTime.value - checkTime.value;
+  }
+
+  else{
+    duration = nowTime.value - lastingTime.value; // 计算时间差
+  }
+
+  const hours = Math.floor(duration / (1000 * 60 * 60));
+  const minutes = Math.floor((duration % (1000 * 60 * 60)) / (1000 * 60));
+  const seconds = Math.floor((duration % (1000 * 60)) / 1000);
+
+  return `${hours}h ${minutes}m ${seconds}s`;
+};
+
+function parseDurationToMilliseconds(duration) {
+  const hourMatch = duration.match(/(\d+)小时/); // 匹配小时
+  const minuteMatch = duration.match(/(\d+)分钟/); // 匹配分钟
+
+  const hours = hourMatch ? parseInt(hourMatch[1], 10) : 0; // 提取小时数
+  const minutes = minuteMatch ? parseInt(minuteMatch[1], 10) : 0; // 提取分钟数
+
+  return (hours * 60 * 60 * 1000) + (minutes * 60 * 1000); // 转换为毫秒
+}
+
+const calculateThisDayDuration = () => {
+  if (!checkTime.value && !lastingTime.value) return;
+
+  const totalDurationMilliseconds = parseDurationToMilliseconds(todayRecord.total_duration);
+
+  let duration = 0; // 初始化持续时间
+
+  duration = nowTime.value - freshTime.value + totalDurationMilliseconds;
+
   const hours = Math.floor(duration / (1000 * 60 * 60));
   const minutes = Math.floor((duration % (1000 * 60 * 60)) / (1000 * 60));
   const seconds = Math.floor((duration % (1000 * 60)) / 1000);
@@ -242,7 +336,10 @@ const submitCheckCode = async (code) => {
         fetchCheckStatus();
         localStorage.setItem('isChecked', true);
         localStorage.setItem('CheckTime', new Date().toLocaleString());
-        checkIsVisible();
+        // checkIsVisible();  签到后不会出现该函数中的超出4小时的情况，所以直接设置可见性
+        isMasterBrowser.value = true;
+        isVisible.value = true;
+        getCheckTime();
       } else {
         ElMessage({
           type: 'error',
@@ -272,7 +369,8 @@ const submitCheckOutCode = async (code) => {
         })
         fetchCheckStatus();
         localStorage.setItem('isChecked', false);
-        checkIsVisible();
+        // checkIsVisible();  签退使不会出现其它可能，故直接更改可见性
+        isVisible.value = false;
       } else {
         ElMessage({
           type: 'error',
@@ -318,6 +416,27 @@ const openCheckOut = () => {
         message: '取消签退',
       })
     })
+  
+//   else{
+//     ElMessageBox.confirm(
+//   `本次登录为不同浏览器，请返回上次签到的浏览器进行签退
+//    若要强制签退请选择确定（当前签到的时长都会清零）`, // 弹窗内容
+//   '警告', // 弹窗标题
+//   {
+//     confirmButtonText: '确定',
+//     cancelButtonText: '取消',
+//     type: 'warning', // 弹窗类型：success, warning, info, error
+//     showClose: true, // 是否显示关闭按钮
+//   }
+// )
+//   .then(() => {
+//     // 用户点击“确定”后的逻辑
+//     localStorage.setItem('isChecked', false);
+//     isVisible.value = false;
+//   })
+//   .catch(() => {
+//   });
+//   }
 }
 
 const todayIndex = ref(0);
@@ -348,11 +467,19 @@ onMounted(() => {
     nowTime.value = new Date();
   }, 1000)
 
+  freshTime.value = new Date();
   // console.log(checklnStatus.value);
 });
 onUnmounted(() => {
   // saveDataToLocalStorage(); // 保存数据
 });
+
+watch(isloading, (newValue) => {
+  if (!newValue) {
+    getLatesetCheckStatus(); // 获取最新打卡状态
+  }
+});
+
 </script>
 
 <style scoped>

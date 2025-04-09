@@ -99,6 +99,7 @@
             <template #="scoped">
               <el-button type="primary" size="small"  @click ="appendMember(scoped.row)">添加组员</el-button>
               <el-button type="danger" size="small" @click ="deleteMember(scoped.row)">删除组员</el-button>
+              <el-button type="danger" size="small" @click ="deleteGroup(scoped.row)">删除小组</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -111,7 +112,7 @@
 import api from '../api';
 import { onBeforeMount } from 'vue';
 import { ref, reactive} from 'vue';
-import { ElDialog, ElMessage } from 'element-plus';
+import { ElDialog, ElMessage, ElMessageBox} from 'element-plus';
 
 const appendGruopDialogVisible = ref(false)
 const appendMemberDialogVisible = ref(false)
@@ -342,6 +343,22 @@ async function configDeleteGroup()
   await getGroupList(); // 重新获取小组列表
 }
 
+function deleteGroup(group)
+{
+  ElMessageBox.confirm(
+  `你确定要删除该小组吗？`, // 弹窗标题
+  {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning', // 弹窗类型：success, warning, info, error
+    showClose: true, // 是否显示关闭按钮
+  }
+).then(() => {
+  console.log("删除该组");
+}
+).catch(() => {})
+}
+
 function filterObjectsByMatchingValues(array1, array2, key1, key2) {
   return array1.filter(obj1 =>
     array2.some(obj2 => {
@@ -417,6 +434,8 @@ async function search() {
 
   clearForm(); // 清空搜索框
 }
+
+
 
 </script>
 

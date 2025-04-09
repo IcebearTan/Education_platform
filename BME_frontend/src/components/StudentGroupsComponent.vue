@@ -20,73 +20,212 @@
         </div>
       </div>
       <div class="groups-container">
-        <div class="group-card" @click="toGroupDetails()">
-          <div class="cover-container">
-            <div class="cover">C语言程序设计</div>
+        <el-form :model="form" ref="formRef" class="transparent-form">
+          <div v-if="isLoading" class="scroll-container" @scroll="handleScroll"> 加载中…… </div>
+          <div v-else class="scroll-container" @scroll="handleScroll">
+            <GroupCard
+              v-for="(group, index) in Groups"
+              :key="index"
+              :group="group"
+            />
           </div>
-          <div class="detail-container">
-            <div class="group-title">C语言9组</div>
-            <div class="group-member">
-              <div class="instructor">
-                <img src="../assets/ice_bear_avatar.jpg" alt="" class="avatar"/>
-                <div>导师：Jie Luo</div>
-              </div>
-              <div class="students">
-                <div class="avatars">
-                  <img src="../assets/ice_bear_avatar.jpg" alt="" class="avatar"/>
-                  <img src="../assets/Jerry_Scintilla_avatar.jpg" alt="" class="avatar"/>
-                  <img src="../assets/ice_bear_avatar.jpg" alt="" class="avatar"/>
-                  <img src="../assets/Jerry_Scintilla_avatar.jpg" alt="" class="avatar"/>
-                </div>
-                <div>Icebear、Labor 等 6 名学生在内</div>
-              </div>
-            </div>
-          </div>
-        </div>
+      </el-form>
       </div>
     </div>
   </div>
 </template>
 
-<script>
-import { defineComponent } from 'vue'
+
+<script setup>
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
-
-
-export default defineComponent({
-  setup(props, context) {
-    const router = useRouter()
-
-    const toGroupDetails = () => {
-      setTimeout(() => {
-        router.push('/user-center/student-group-details')
-      },100)
-      
-    }
-
-    const options = [
-      {
-        value: '学习小组',
-        label: '学习小组',
-      },
-      {
-        value: '项目小组',
-        label: '项目小组',
-      },
-    ]
-    const value = ref('学习小组')
+import GroupCard from './GroupCard.vue'
+import { onBeforeMount, watch } from 'vue'
+import api from '../api';
     
-    return {
-      toGroupDetails,
-      options,
-      value,
-    }
+const form = ref({});
+
+const isLoading = ref(true);
+
+const options = [
+  {
+    value: '全部小组',
+    label: '全部小组',
   },
-})
+  {
+    value: '学习小组',
+    label: '学习小组',
+  },
+  {
+    value: '项目小组',
+    label: '项目小组',
+  }
+]
+
+const value = ref('全部小组')
+
+let Groups = ref([]);
+
+async function getGroupList()
+{
+  // console.log('Fetching Groups...');
+  try {
+  Groups.value.length = 0; // 清空之前的组数据
+
+  const res = await api.get(`/user/group`);
+
+  // 检查 project_groups 是否存在并且是数组
+  if (Array.isArray(res.data.project_group)) {
+    res.data.project_group.forEach(group => {
+      group.group_type = 'project'; // 给 group 加上类型标签
+      if (group.students.length > 0) {
+        group.student = ''; // 初始化组员字符串
+        for (let i = 0; i < group.students.length; i++) {
+          group.student += group.students[i].Student_Id + ':' + group.students[i].Student + ','; // 拼接组员的姓名和 ID
+        }
+        group.student = group.student.slice(0, -1); // 去掉最后一个逗号
+      } else {
+        group.student = '无'; // 如果没有组员，则显示无
+      }
+    });
+    Groups.value.push(...res.data.project_group);
+  } else {
+    console.warn("project_groups is not an array or is undefined");
+  }
+
+  // 检查 study_groups 是否存在并且是数组
+  if (Array.isArray(res.data.study_group)) {
+    res.data.study_group.forEach(group => {
+      group.group_type = 'study'; // 给 group 加上类型标签
+      if (group.students.length > 0) {
+        group.student = ''; // 初始化组员字符串
+        for (let i = 0; i < group.students.length; i++) {
+          group.student += group.students[i].Student_Id + ':' + group.students[i].Student + ','; // 拼接组员的姓名和 ID
+        }
+        group.student = group.student.slice(0, -1); // 去掉最后一个逗号
+      } else {
+        group.student = '无'; // 如果没有组员，则显示无
+      }
+    });
+    Groups.value.push(...res.data.study_group);
+  } else {
+    console.warn("study_groups is not an array or is undefined");
+  }
+
+} catch (error) {
+  console.error("Error fetching data:", error);
+}finally {
+      }
+}
+
+onBeforeMount(async () => {
+  isLoading.value = true; // 设置加载状态为 true
+  await getGroupList();
+  foreFilter(); // 调用搜索函数
+  isLoading.value = false; // 设置加载状态为 false
+});
+
+watch(value, () => {
+  search();
+});
+
+// 定义 search 函数
+async function search() {
+  // console.log(`Searching for groups of type: ${value.value}`);
+  // 根据 value 的值筛选 Groups
+  if (value.value === '全部小组') {
+    isLoading.value = true; // 设置加载状态为 true
+    await getGroupList(); // 加载所有小组
+    foreFilter();
+    isLoading.value = false; // 设置加载状态为 false
+  } 
+  else {
+    isLoading.value = true; // 设置加载状态为 true
+    await getGroupList(); // 先加载所有小组
+    foreFilter();
+
+    const searchValue = ref(''); // 定义一个变量来存储搜索值
+
+    switch(value.value) {
+      case '学习小组':
+        searchValue.value = "study";
+        break;
+      case '项目小组':
+        searchValue.value = 'project';
+        break;
+    }
+    Groups.value = Groups.value.filter(group => group.group_type === searchValue.value);
+    // console.log(Groups.value);
+    isLoading.value = false; // 设置加载状态为 false
+  }
+}
+
+
+function filterObjectsByMatchingValues(groups, validUserId) {
+  // 筛选符合条件的组
+  return groups.filter(group => {
+    // 检查 teacher_id 是否匹配
+    if (group.teacher_id === validUserId) {
+      return true;
+    }
+
+    // 检查 group.Student_Id 是否匹配
+    if (group.students.some(student => student.Student_Id === validUserId)) {
+      return true;
+    }
+
+    // 如果都不匹配，则过滤掉
+    return false;
+  });
+}
+
+function foreFilter() {
+  // 从 localStorage 获取数据
+  const myAppDataString = localStorage.getItem('my-app');
+  
+  // 检查数据是否存在
+  if (!myAppDataString) {
+    console.error("No data found in localStorage for 'my-app'");
+    return;
+  }
+
+  // 解析 JSON 数据
+  let myAppData;
+  try {
+    myAppData = JSON.parse(myAppDataString); // 将字符串解析为对象
+  } catch (error) {
+    console.error("Failed to parse 'my-app' data:", error);
+    return;
+  }
+
+  // 检查数据结构是否正确
+  if (!myAppData.user || !myAppData.user.User_Id) {
+    console.error("Invalid data structure in 'my-app':", myAppData);
+    return;
+  }
+
+  // 解构并移除 User_Id 的前导零
+  const { User_Id } = myAppData.user;
+  const validUserId = parseInt(User_Id, 10); // 转换为整数，自动去掉前导零
+
+  Groups.value = filterObjectsByMatchingValues(Groups.value, validUserId);
+}
+console.log("有问题请找谭谭");
+
 </script>
 
 <style scoped>
+.transparent-form {
+  height: 900px; /* 表单高度占满父级容器 */
+  min-height: 300px; /* 设置表单的最小高度 */
+  overflow: hidden; /* 防止内容溢出 */
+}
+
+.scroll-container {
+  height: 100%; /* 滚动容器高度占满父级容器 */
+  overflow-y: auto; /* 启用垂直滚动条 */
+  padding: 10px;
+}
+
 .student-group-container{
   width: 100%;
 

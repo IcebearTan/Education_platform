@@ -46,7 +46,7 @@ onMounted(() => {
 <template style="background-color: brown;">
   <div class="marquee-container">
     <div class="marquee-content">
-      <span>！！由于线上打卡制作完成，请大家把自己的昵称改成真实姓名！！</span>
+      <span>！！由于线上打卡制作完成，请大家把自己的昵称改成真实姓名！！ 如在使用网站时发现问题，可以将问题发送至"caozhx8@mail2.sysu.edu.cn"或"wujj258@mail2.sysu.edu.cn"</span>
     </div>
   </div>
   <div style="display: flex; justify-content: center; align-items: center;">

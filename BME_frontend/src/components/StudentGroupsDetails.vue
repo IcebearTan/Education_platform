@@ -29,52 +29,40 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import { defineComponent } from 'vue'
 import { ref } from 'vue'
 import { useRouter, RouterView } from 'vue-router'
 import { ElMessage } from 'element-plus'
 
-export default defineComponent({
-  components: {  },
-  setup(props, context) {
+const router = useRouter()
 
-    const router = useRouter()
+const goback = () => {
+  router.push('/user-center/my-groups')
+}
+const toRank = () => {
+  if (router.currentRoute.value.path !== '/user-center/student-group-details' && router.currentRoute.value.path !== '/user-center/student-group-details/rank') {
+    router.push('/user-center/student-group-details/rank')
+  } else {
+    ElMessage({
+      message: '当前页面已经是排行榜页面',
+      type: 'warning',
+      duration: 2000
+    })
+  }
+}
+const toTasks = () => {
+  if (router.currentRoute.value.path !== '/user-center/student-group-details/tasks') {
+    router.push('/user-center/student-group-details/tasks')
+  } else {
+    ElMessage({
+      message: '当前页面已经是任务页面',
+      type: 'warning',
+      duration: 2000
+    })
+  }
+}
 
-    const goback = () => {
-      router.push('/user-center/my-groups')
-    }
-
-    const toRank = () => {
-      if (router.currentRoute.value.path !== '/user-center/student-group-details' && router.currentRoute.value.path !== '/user-center/student-group-details/rank') {
-        router.push('/user-center/student-group-details/rank')
-      } else {
-        ElMessage({
-          message: '当前页面已经是排行榜页面',
-          type: 'warning',
-          duration: 2000
-        })
-      }
-    }
-    const toTasks = () => {
-      if (router.currentRoute.value.path !== '/user-center/student-group-details/tasks') {
-        router.push('/user-center/student-group-details/tasks')
-      } else {
-        ElMessage({
-          message: '当前页面已经是任务页面',
-          type: 'warning',
-          duration: 2000
-        })
-      }
-    }
-    
-    return {
-      goback,
-      toRank,
-      toTasks,
-    }
-  },
-})
 </script>
 
 <style scoped>
