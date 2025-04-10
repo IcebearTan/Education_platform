@@ -5,7 +5,10 @@ import api from '../api';
 
 import AttenceRankComponent from './AttenceRankComponent.vue';
 import DailyAttendence from './DailyAttendence.vue';
+<<<<<<< HEAD
 import updateAnnouncement from './updateAnnouncement.vue';
+=======
+>>>>>>> 182815e973cd3bd3377a97511b29e9cb6d5931ba
 
 // 定义响应式数据
 const articles = ref([]);
@@ -45,7 +48,10 @@ onMounted(() => {
 </script>
 
 <template style="background-color: brown;">
+<<<<<<< HEAD
     <updateAnnouncement />
+=======
+>>>>>>> 182815e973cd3bd3377a97511b29e9cb6d5931ba
   <div class="marquee-container">
     <div class="marquee-content">
       <span>！！由于线上打卡制作完成，请大家把自己的昵称改成真实姓名！！ 如在使用网站时发现问题，可以将问题发送至"caozhx8@mail2.sysu.edu.cn"或"wujj258@mail2.sysu.edu.cn"</span>

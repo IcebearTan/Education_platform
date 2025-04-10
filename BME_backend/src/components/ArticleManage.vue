@@ -213,7 +213,11 @@ export default {
 </script>
 
 <template>
+<<<<<<< HEAD
   <div class="selectable" style="width: 100%; height: 100%; position: relative; overflow: hidden;">
+=======
+  <div style="width: 100%; height: 100%; position: relative; overflow: hidden;">
+>>>>>>> 182815e973cd3bd3377a97511b29e9cb6d5931ba
     <div class="header-container">
       <div class="l-container">文章列表
         <el-button type="warning" @click="handleAdd" size="large" style="margin-left: 10px;">添加文章</el-button>
@@ -234,7 +238,11 @@ export default {
       </div>
     </div>
 
+<<<<<<< HEAD
     <div class="selectable" style="margin: 20px;">
+=======
+    <div style="margin: 20px;">
+>>>>>>> 182815e973cd3bd3377a97511b29e9cb6d5931ba
       <div class="table">
         <el-table :data="articles" style="width: 100%; max-height: 500px; overflow-y: auto;">
           <el-table-column v-for="item in tableLabel" :key="item.prop" :prop="item.prop" :label="item.label"
@@ -248,7 +256,11 @@ export default {
         </el-table>
       </div>
 
+<<<<<<< HEAD
       <el-pagination class="selectable" @current-change="handlePageChange" :current-page="currentPage" :page-size="pageSize"
+=======
+      <el-pagination @current-change="handlePageChange" :current-page="currentPage" :page-size="pageSize"
+>>>>>>> 182815e973cd3bd3377a97511b29e9cb6d5931ba
         :total="totalItems" layout="prev, pager, next" style="position:absolute; bottom: 0; margin-bottom: 20px;">
       </el-pagination>
     </div>
@@ -348,8 +360,11 @@ export default {
 
   margin-left: 10px;
 }
+<<<<<<< HEAD
 .selectable {
     user-select: text;
 }
 
+=======
+>>>>>>> 182815e973cd3bd3377a97511b29e9cb6d5931ba
 </style>
