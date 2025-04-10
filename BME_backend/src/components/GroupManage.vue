@@ -1,5 +1,5 @@
 <template>
-  <div style="width: 100%; height: 100%; position: relative; overflow: hidden;">
+  <div class="selectable" style="width: 100%; height: 100%; position: relative; overflow: hidden;">
 
     <el-dialog v-model="appendGruopDialogVisible" title="新建小组" width="500">
     <el-form :model="form" @submit.prevent>
@@ -27,7 +27,33 @@
     </template>
   </el-dialog>
 
-  <el-dialog v-model="appendMemberDialogVisible" title="添加组员" width="500">
+  <el-dialog v-model="configGruopDialogVisible" title="编辑小组" width="500">
+    <el-form :model="form" @submit.prevent>
+      <el-form-item class="GroupInput" label="小组名称" :label-width="140">
+        <el-input v-model="form.name" autocomplete="off" />
+      </el-form-item>
+      
+      <el-form-item class="GroupInput" label="小组类别" :label-width="140" >
+        <el-select v-model="form.type" placeholder="study/project">
+          <el-option label="study" value="study" />
+          <el-option label="project" value="project" />
+      </el-select>
+      </el-form-item>
+      <el-form-item class="GroupInput" label="组员信息" :label-width="140" >
+        <el-input v-model="form.student" @keyup.enter="configConfigGroup" autocomplete="off" placeholder="请输入学生编号，不同编号间用空格隔开"/>
+      </el-form-item>
+    </el-form>
+    <template #footer>
+      <div class="dialog-footer">
+        <el-button @click="appendGruopDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="configConfigGroup">
+          应用
+        </el-button>
+      </div>
+    </template>
+  </el-dialog>
+
+  <!-- <el-dialog v-model="appendMemberDialogVisible" title="添加组员" width="500">
     <el-form :model="form" @submit.prevent>
       <el-form-item class="GroupInput" label="组员信息" :label-width="140">
         <el-input v-model="form.student" @keyup.enter="configAppendGroup" autocomplete="off" placeholder="请输入学生编号，不同编号间用空格隔开"/>
@@ -57,9 +83,9 @@
         </el-button>
       </div>
     </template>
-  </el-dialog>
+  </el-dialog> -->
 
-    <div class="header-container">
+    <div class="header-container selectable">
       <div class="l-container">小组列表
       <el-button class="config" size="large" @click="appendGruopDialogVisible = true" >新建小组</el-button>
      </div>
@@ -90,15 +116,16 @@
       </div>
     </div>
 
-    <div style="margin: 20px;">
+    <div class="selectable" style="margin: 20px;">
       <div class="table">
         <el-table :data="Groups" style="width: 100%; max-height: 500px; overflow-y: auto;">
           <el-table-column v-for="item in tableLabel" :key="item.prop" :prop="item.prop" :label="item.label"
             :width="item.width ? item.width : 125" :align="item.align" />
           <el-table-column fixed="right" label="Operations" min-width="120">
             <template #="scoped">
-              <el-button type="primary" size="small"  @click ="appendMember(scoped.row)">添加组员</el-button>
-              <el-button type="danger" size="small" @click ="deleteMember(scoped.row)">删除组员</el-button>
+              <el-button type="primary" size="small"  @click ="configGroup(scoped.row)">编辑小组</el-button>
+              <!-- <el-button type="primary" size="small"  @click ="appendMember(scoped.row)">添加组员</el-button>
+              <el-button type="danger" size="small" @click ="deleteMember(scoped.row)">删除组员</el-button> -->
               <el-button type="danger" size="small" @click ="deleteGroup(scoped.row)">删除小组</el-button>
             </template>
           </el-table-column>
@@ -117,7 +144,7 @@ import { ElDialog, ElMessage, ElMessageBox} from 'element-plus';
 const appendGruopDialogVisible = ref(false)
 const appendMemberDialogVisible = ref(false)
 const deleteMemberDialogVisible = ref(false)
-
+const configGruopDialogVisible = ref(false)
 
 let tableLabel = ref([
   {
@@ -343,7 +370,64 @@ async function configDeleteGroup()
   await getGroupList(); // 重新获取小组列表
 }
 
-function deleteGroup(group)
+function configGroup(group) {
+  // 打开编辑小组的对话框
+  configGruopDialogVisible.value = true;
+
+  // 将传入的 group 信息赋值到表单中
+  form.name = group.group_name; // 小组名称
+  form.type = group.group_type; // 小组类型
+
+  // 将学生 ID 拼接成空格分隔的字符串
+  if (group.student && typeof group.student === 'string') {
+    const studentIds = group.student
+      .split(',') // 按逗号分隔
+      .map(item => item.split(':')[0]) // 提取学生 ID
+      .join(' '); // 用空格拼接
+    form.student = studentIds; // 赋值到表单
+  } else {
+    form.student = ''; // 如果没有学生信息，设置为空
+  }
+}
+
+async function configConfigGroup(){
+
+  const studentString = form.student; // 获取输入的学生 ID 字符串
+  const studentArray = studentString.split(" ").map(id => ({ student_id: id })); // 转换为对象数组
+
+  const returnGroup = {
+    Group_Name: form.name, // 小组名称
+    Group_Type: form.type, // 小组类型
+    Group_member: studentArray, // 小组成员（学生 ID 数组）
+  };
+
+  try {
+    // 打印 returnGroup 以便调试
+    console.log("Sending group data to backend:", returnGroup);
+
+    // 发送 POST 请求到后端
+    const response = await api.post('/user/group_add', returnGroup);
+
+    // 打印后端返回的响应
+    console.log("Response from backend:", response);
+
+    // 显示成功消息
+    ElMessage.success('小组信息提交成功');
+  } catch (error) {
+    // 捕获并打印错误
+    console.error('Failed to submit group data:', error);
+
+    // 显示错误消息
+    ElMessage.error('提交小组信息失败，请稍后重试');
+  }
+
+  // 清空表单并关闭对话框
+  appendGruopDialogVisible.value = false;
+  clearForm(); // 清空表单
+  await getGroupList(); // 重新获取小组列表
+}
+
+async function deleteGroup(group)
 {
   ElMessageBox.confirm(
   `你确定要删除该小组吗？`, // 弹窗标题
@@ -353,8 +437,18 @@ function deleteGroup(group)
     type: 'warning', // 弹窗类型：success, warning, info, error
     showClose: true, // 是否显示关闭按钮
   }
-).then(() => {
-  console.log("删除该组");
+).then(async () => {
+  try{
+    await api.post('/user/group/delete', {
+      Group_Id: group.group_id, // 传递小组 ID
+    });
+    console.log("小组飞飞");
+    ElMessage.success('删除小组成功');
+    await getGroupList(); // 重新获取小组列表
+  }
+  catch (error) {
+    console.error('Failed to delete group:', error);
+  }
 }
 ).catch(() => {})
 }
@@ -529,6 +623,10 @@ async function search() {
   border-radius: 4px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   z-index: 1000;
+}
+
+.selectable {
+    user-select: text;
 }
 
 </style>

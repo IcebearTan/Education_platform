@@ -213,7 +213,7 @@ export default {
 </script>
 
 <template>
-  <div style="width: 100%; height: 100%; position: relative; overflow: hidden;">
+  <div class="selectable" style="width: 100%; height: 100%; position: relative; overflow: hidden;">
     <div class="header-container">
       <div class="l-container">文章列表
         <el-button type="warning" @click="handleAdd" size="large" style="margin-left: 10px;">添加文章</el-button>
@@ -234,7 +234,7 @@ export default {
       </div>
     </div>
 
-    <div style="margin: 20px;">
+    <div class="selectable" style="margin: 20px;">
       <div class="table">
         <el-table :data="articles" style="width: 100%; max-height: 500px; overflow-y: auto;">
           <el-table-column v-for="item in tableLabel" :key="item.prop" :prop="item.prop" :label="item.label"
@@ -248,7 +248,7 @@ export default {
         </el-table>
       </div>
 
-      <el-pagination @current-change="handlePageChange" :current-page="currentPage" :page-size="pageSize"
+      <el-pagination class="selectable" @current-change="handlePageChange" :current-page="currentPage" :page-size="pageSize"
         :total="totalItems" layout="prev, pager, next" style="position:absolute; bottom: 0; margin-bottom: 20px;">
       </el-pagination>
     </div>
@@ -348,4 +348,8 @@ export default {
 
   margin-left: 10px;
 }
+.selectable {
+    user-select: text;
+}
+
 </style>

@@ -169,7 +169,7 @@ async function getLatesetCheckStatus() {
       showClose: true, // 是否显示关闭按钮});
     })
     }
-    else if(nowTime.value - checkTime.value > 4 * 60 * 60 * 1000) {
+    else if(nowTime.value - checkTime.value > 6 * 60 * 60 * 1000) {
       localStorage.setItem('isChecked', false);
       isVisible.value = false;
     }
@@ -331,12 +331,12 @@ const submitCheckCode = async (code) => {
       if (res.status === 200) {
         ElMessage({
           type: 'success',
-          message: '签到成功！请在4小时内签退！',
+          message: '签到成功！请在6小时内签退！',
         })
         fetchCheckStatus();
         localStorage.setItem('isChecked', true);
         localStorage.setItem('CheckTime', new Date().toLocaleString());
-        // checkIsVisible();  签到后不会出现该函数中的超出4小时的情况，所以直接设置可见性
+        // checkIsVisible();  签到后不会出现该函数中的超出6小时的情况，所以直接设置可见性
         isMasterBrowser.value = true;
         isVisible.value = true;
         getCheckTime();
