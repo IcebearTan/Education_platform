@@ -1,9 +1,5 @@
 <template>
-<<<<<<< HEAD
   <div class="selectable" style="width: 100%; height: 100%; position: relative; overflow: hidden;">
-=======
-  <div style="width: 100%; height: 100%; position: relative; overflow: hidden;">
->>>>>>> 182815e973cd3bd3377a97511b29e9cb6d5931ba
 
     <el-dialog v-model="appendGruopDialogVisible" title="新建小组" width="500">
     <el-form :model="form" @submit.prevent>
@@ -31,7 +27,6 @@
     </template>
   </el-dialog>
 
-<<<<<<< HEAD
   <el-dialog v-model="configGruopDialogVisible" title="编辑小组" width="500">
     <el-form :model="form" @submit.prevent>
       <el-form-item class="GroupInput" label="小组名称" :label-width="140">
@@ -59,9 +54,6 @@
   </el-dialog>
 
   <!-- <el-dialog v-model="appendMemberDialogVisible" title="添加组员" width="500">
-=======
-  <el-dialog v-model="appendMemberDialogVisible" title="添加组员" width="500">
->>>>>>> 182815e973cd3bd3377a97511b29e9cb6d5931ba
     <el-form :model="form" @submit.prevent>
       <el-form-item class="GroupInput" label="组员信息" :label-width="140">
         <el-input v-model="form.student" @keyup.enter="configAppendGroup" autocomplete="off" placeholder="请输入学生编号，不同编号间用空格隔开"/>
@@ -91,15 +83,9 @@
         </el-button>
       </div>
     </template>
-<<<<<<< HEAD
   </el-dialog> -->
 
     <div class="header-container selectable">
-=======
-  </el-dialog>
-
-    <div class="header-container">
->>>>>>> 182815e973cd3bd3377a97511b29e9cb6d5931ba
       <div class="l-container">小组列表
       <el-button class="config" size="large" @click="appendGruopDialogVisible = true" >新建小组</el-button>
      </div>
@@ -130,25 +116,16 @@
       </div>
     </div>
 
-<<<<<<< HEAD
     <div class="selectable" style="margin: 20px;">
-=======
-    <div style="margin: 20px;">
->>>>>>> 182815e973cd3bd3377a97511b29e9cb6d5931ba
       <div class="table">
         <el-table :data="Groups" style="width: 100%; max-height: 500px; overflow-y: auto;">
           <el-table-column v-for="item in tableLabel" :key="item.prop" :prop="item.prop" :label="item.label"
             :width="item.width ? item.width : 125" :align="item.align" />
           <el-table-column fixed="right" label="Operations" min-width="120">
             <template #="scoped">
-<<<<<<< HEAD
               <el-button type="primary" size="small"  @click ="configGroup(scoped.row)">编辑小组</el-button>
               <!-- <el-button type="primary" size="small"  @click ="appendMember(scoped.row)">添加组员</el-button>
               <el-button type="danger" size="small" @click ="deleteMember(scoped.row)">删除组员</el-button> -->
-=======
-              <el-button type="primary" size="small"  @click ="appendMember(scoped.row)">添加组员</el-button>
-              <el-button type="danger" size="small" @click ="deleteMember(scoped.row)">删除组员</el-button>
->>>>>>> 182815e973cd3bd3377a97511b29e9cb6d5931ba
               <el-button type="danger" size="small" @click ="deleteGroup(scoped.row)">删除小组</el-button>
             </template>
           </el-table-column>
@@ -167,11 +144,7 @@ import { ElDialog, ElMessage, ElMessageBox} from 'element-plus';
 const appendGruopDialogVisible = ref(false)
 const appendMemberDialogVisible = ref(false)
 const deleteMemberDialogVisible = ref(false)
-<<<<<<< HEAD
 const configGruopDialogVisible = ref(false)
-=======
-
->>>>>>> 182815e973cd3bd3377a97511b29e9cb6d5931ba
 
 let tableLabel = ref([
   {
@@ -397,7 +370,6 @@ async function configDeleteGroup()
   await getGroupList(); // 重新获取小组列表
 }
 
-<<<<<<< HEAD
 function configGroup(group) {
   // 打开编辑小组的对话框
   configGruopDialogVisible.value = true;
@@ -456,9 +428,6 @@ async function configConfigGroup(){
 }
 
 async function deleteGroup(group)
-=======
-function deleteGroup(group)
->>>>>>> 182815e973cd3bd3377a97511b29e9cb6d5931ba
 {
   ElMessageBox.confirm(
   `你确定要删除该小组吗？`, // 弹窗标题
@@ -468,7 +437,6 @@ function deleteGroup(group)
     type: 'warning', // 弹窗类型：success, warning, info, error
     showClose: true, // 是否显示关闭按钮
   }
-<<<<<<< HEAD
 ).then(async () => {
   try{
     await api.post('/user/group/delete', {
@@ -481,10 +449,6 @@ function deleteGroup(group)
   catch (error) {
     console.error('Failed to delete group:', error);
   }
-=======
-).then(() => {
-  console.log("删除该组");
->>>>>>> 182815e973cd3bd3377a97511b29e9cb6d5931ba
 }
 ).catch(() => {})
 }
@@ -661,11 +625,8 @@ async function search() {
   z-index: 1000;
 }
 
-<<<<<<< HEAD
 .selectable {
     user-select: text;
 }
 
-=======
->>>>>>> 182815e973cd3bd3377a97511b29e9cb6d5931ba
 </style>
