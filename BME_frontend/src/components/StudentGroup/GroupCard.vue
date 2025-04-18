@@ -32,7 +32,7 @@
   <script setup lang="ts">
   import { defineProps , onBeforeMount, ref } from 'vue';
   import { useRouter } from 'vue-router'
-  import api from '../api';
+  import api from '../../api';
   
   // 定义接收的 props
   const props = defineProps({
