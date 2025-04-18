@@ -45,7 +45,7 @@
     </el-form>
     <template #footer>
       <div class="dialog-footer">
-        <el-button @click="appendGruopDialogVisible = false">取消</el-button>
+        <el-button @click="configGruopDialogVisible = false">取消</el-button>
         <el-button type="primary" @click="configConfigGroup">
           应用
         </el-button>
@@ -95,7 +95,7 @@
             <el-input 
             @focus="showHint = true"
             @blur="showHint = false" 
-            v-model="form.student" @keyup.enter="search" placeholder="搜索框">
+            v-model="searchQuery" @keyup.enter="search" placeholder="搜索框">
             </el-input>
             <div
             v-if="showHint"
@@ -180,6 +180,7 @@ let tableLabel = ref([
 ]);
 
 const showHint = ref(false);
+const searchQuery = ref('');
 
 let Groups = ref([]);
 
@@ -492,7 +493,7 @@ function filterGroupsByGroupName(groups, searchString) {
 }
 
 async function search() {
-  const searchString = form.student.trim(); // 获取用户输入的搜索字符串
+  const searchString = searchQuery.value.trim(); // 获取用户输入的搜索字符串
   if (!searchString) {
     await getGroupList(); // 如果输入为空，重置列表
     console.log("reset");
@@ -526,7 +527,7 @@ async function search() {
 
   console.log(Groups.value);
 
-  clearForm(); // 清空搜索框
+  searchQuery.value = ''; // 清空搜索框
 }
 
 

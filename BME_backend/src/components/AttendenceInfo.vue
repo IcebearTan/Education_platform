@@ -62,7 +62,12 @@ const tableLabel = ref([
     {
         prop: 'user_name',
         label: '用户名',
-        width: 400
+        width: 300
+    },
+    {
+        prop: 'student_id',
+        label: '学号',
+        width: 200
     },
     {
         prop: 'total_duration',
@@ -175,6 +180,7 @@ const fetchMonthAttendenceInfo = async () => {
                 return {
                     user_id: item.user_id,
                     user_name: item.user_name,
+                    student_id: item.student_id || '无', // 如果没有 student_id，默认值为 '无'
                     total_duration: record ? record.total_duration : '无', // 如果没有匹配项，默认值
                     total_hours: record ? record.total_hours : -1, // 如果没有匹配项，默认值
                 };
@@ -214,6 +220,7 @@ const fetchWeekAttendenceInfo = async (formattedWeekDate) => {
                     user_id: item.user_id,
                     user_name: item.user_name,
                     total_duration: record ? record.total_duration : '无', // 如果没有匹配项，默认值
+                    student_id: item.student_id || '无', // 如果没有 student_id，默认值为 '无'
                     total_hours: record ? record.total_hours : -1, // 如果没有匹配项，默认值
                 };
             });

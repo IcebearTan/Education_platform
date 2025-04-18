@@ -14,6 +14,7 @@ import CreateView from './views/CreateView.vue';
 import EditorComponent from './components/EditorComponent.vue';
 import EditorCreateComponent from './components/EditorCreateComponent.vue';
 import GroupManage from './components/GroupManage.vue';
+import LearningProgress from './components/LearningProgress.vue';
 
 const router = createRouter({
     history: createWebHistory("/admin/"),
@@ -52,6 +53,11 @@ const router = createRouter({
                     path: '/group/manage', // 修复路径，确保以 '/' 开头
                     name: 'group_manage',
                     component: GroupManage
+                },
+                {
+                    path: '/learningprgress/manage',
+                    name: 'learningprgress_manage',
+                    component: LearningProgress
                 }
             ]
         },
