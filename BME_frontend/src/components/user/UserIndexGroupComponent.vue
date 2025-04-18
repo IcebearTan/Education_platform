@@ -4,7 +4,7 @@ import { useStore } from 'vuex';
 import { useRouter } from 'vue-router';
 import { useRoute } from 'vue-router';
 import { ref, reactive, onMounted } from 'vue';
-import api from '../api';
+import api from '../../api';
 
 export default defineComponent({
     setup(props, context) {

@@ -1,7 +1,7 @@
 <script>
-import FindPasswordComponent from '../components/FindPasswordComponent.vue';
-import PageFooterComponent from '../components/PageFooterComponent.vue';
-import MenuPlainComponent from '../components/MenuPlainComponent.vue';
+import FindPasswordComponent from '../../components/auth/FindPasswordComponent.vue';
+import PageFooterComponent from '../../components/PageFooterComponent.vue';
+import MenuPlainComponent from '../../components/MenuPlainComponent.vue';
 
 
 export default {

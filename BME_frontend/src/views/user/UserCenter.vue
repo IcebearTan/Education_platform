@@ -1,9 +1,9 @@
 <script>
-import UserCenterComponent from "../components/UserCenterComponent.vue";
-import AdminindexComponent from "../components/AdminindexComponent.vue";
-import PageFooterComponent from "../components/PageFooterComponent.vue";
-import MenuComponent from "../components/MenuComponent.vue";
-import api from '../api';
+import UserCenterComponent from "../../components/user/UserCenterComponent.vue";
+import AdminindexComponent from "../../components/user/AdminindexComponent.vue";
+import PageFooterComponent from "../../components/PageFooterComponent.vue";
+import MenuComponent from "../../components/MenuComponent.vue";
+import api from '../../api';
 import { RouterLink } from "vue-router";
 
 export default {

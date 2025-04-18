@@ -1,11 +1,11 @@
 <script>
 import { RouterView } from "vue-router";
-import MenuComponent from "../components/MenuComponent.vue";
+import MenuComponent from "../../components/MenuComponent.vue";
 import { useStore } from 'vuex'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import api from "../api";
-import PageFooterComponent from "../components/PageFooterComponent.vue";
+import api from "../../api";
+import PageFooterComponent from "../../components/PageFooterComponent.vue";
 
 export default {
   name: "HomeView",

@@ -1,7 +1,7 @@
 <!-- 使用vue3语法 -->
 <script setup>
-import api from '../api';
-import CalendarComponent from './CalendarComponent.vue';
+import api from '../../api';
+import CalendarComponent from './../CalendarComponent.vue';
 import UserActivityComponent from './UserActivityComponent.vue';
 import { onMounted } from 'vue'
 import { ref } from 'vue'
@@ -78,7 +78,7 @@ onMounted(() => {
             </div>
           </span>
           <span style="display: flex; align-items: center; justify-content: center;">
-            <img src="../assets/image.png" class="medal-image" />
+            <img src="../../assets/image.png" class="medal-image" />
           </span>
         </div>
       </div>

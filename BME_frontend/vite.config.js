@@ -8,7 +8,10 @@ export default defineConfig({
   // base: '/dist/',
   resolve: {
     alias: {
-      '@': resolve(__dirname, 'src'),  // 将 '@' 映射到 'src' 目录
+      // '@': resolve(__dirname, 'src'),  // 将 '@' 映射到 'src' 目录
+      '@': resolve(__dirname, './src'),
+      '@components': resolve(__dirname, './src/components'),
+      '@views': resolve(__dirname, './src/views')
     },
   },
   server: {
