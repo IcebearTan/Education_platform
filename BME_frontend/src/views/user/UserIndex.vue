@@ -1,9 +1,9 @@
 <script>
-import UserindexComponent from "../components/UserindexComponent.vue";
-import AdminindexComponent from "../components/AdminindexComponent.vue";
-import PageFooterComponent from "../components/PageFooterComponent.vue";
-import MenuComponent from "../components/MenuComponent.vue";
-import api from '../api';
+import UserindexComponent from "../../components/user/UserindexComponent.vue";
+import AdminindexComponent from "../../components/user/AdminindexComponent.vue";
+import PageFooterComponent from "../../components/PageFooterComponent.vue";
+import MenuComponent from "../../components/MenuComponent.vue";
+import api from '../../api';
 import { RouterLink } from "vue-router";
 
 export default {
@@ -50,7 +50,7 @@ export default {
 </script>
 
 <script setup>
-import api from "../api";
+import api from "../../api";
 import { onMounted, ref } from "vue";
 import { ElMessage } from "element-plus";
 import { useRouter } from "vue-router";

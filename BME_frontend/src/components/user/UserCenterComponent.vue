@@ -1,6 +1,6 @@
 <!-- 使用vue3语法 -->
 <script setup>
-import api from '../api';
+import api from '../../api';
 import { ref, onMounted, reactive } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useRouter } from 'vue-router'

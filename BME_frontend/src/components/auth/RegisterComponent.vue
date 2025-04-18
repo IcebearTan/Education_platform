@@ -1,6 +1,6 @@
 <script>
 import { ref, reactive } from 'vue';
-import api from '../api';
+import api from '../../api';
 import md5 from 'js-md5';
 import { ElMessage } from 'element-plus';
 
@@ -192,7 +192,7 @@ export default {
     <div class="login-container">
         <el-container>
             <el-header>
-                <img style="width: 50px; position: relative; top: 15px;" src="../assets/Logo_NewYear.png" />
+                <img style="width: 50px; position: relative; top: 15px;" src="../../assets/Logo_NewYear.png" />
                 <span style="font-size: 25px; margin-bottom: 20px; font-weight: bold;">注册账号</span>
             </el-header>
             <el-main>
