@@ -23,10 +23,10 @@ import FindPasswordView from './views/FindPasswordView.vue'
 import MedalWallComponent from './components/MedalWallComponent.vue';
 
 import MedalView from './views/MedalView.vue';
-import StudentGroupsComponent from './components/StudentGroupsComponent.vue';
-import StudentGroupsDetails from './components/StudentGroupsDetails.vue';
-import StudentGroupRank from './components/StudentGroupRank.vue';
-import StudentGroupTask from './components/StudentGroupTask.vue';
+import StudentGroupsComponent from './components/StudentGroup/StudentGroupsComponent.vue';
+import StudentGroupsDetails from './components/StudentGroup/StudentGroupsDetails.vue';
+import StudentGroupRank from './components/StudentGroup/StudentGroupRank.vue';
+import StudentGroupTask from './components/StudentGroup/StudentGroupTask.vue';
 
 const router = createRouter({
     history: createWebHistory(),

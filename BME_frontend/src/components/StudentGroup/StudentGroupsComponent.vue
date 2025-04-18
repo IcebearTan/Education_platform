@@ -40,7 +40,7 @@
 import { ref } from 'vue'
 import GroupCard from './GroupCard.vue'
 import { onBeforeMount, watch } from 'vue'
-import api from '../api';
+import api from '../../api';
     
 const form = ref({});
 

@@ -3,8 +3,8 @@ import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import api from '../api';
 
-import AttenceRankComponent from './AttenceRankComponent.vue';
-import DailyAttendence from './DailyAttendence.vue';
+import AttenceRankComponent from './Attendence/AttenceRankComponent.vue';
+import DailyAttendence from './Attendence/DailyAttendence.vue';
 import updateAnnouncement from './updateAnnouncement.vue';
 
 // 定义响应式数据

@@ -19,7 +19,7 @@
 <script setup>
 import { defineComponent } from 'vue'
 import { reactive, ref, onMounted } from 'vue';
-import api from '../api';
+import api from '../../api';
 
 const users = reactive([
     {

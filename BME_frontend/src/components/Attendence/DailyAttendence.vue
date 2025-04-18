@@ -65,7 +65,7 @@ import { onMounted, onUnmounted, watch} from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useRouter } from 'vue-router';
 
-import api from '../api';
+import api from '../../api';
 import { el, fa } from 'element-plus/es/locale/index.mjs';
 
 const router = useRouter();
