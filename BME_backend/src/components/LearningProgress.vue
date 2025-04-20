@@ -1,53 +1,143 @@
 <template>
+    <div>
+    <el-dialog
+      v-model="pendcourseVisible"
+      title="课程进度设置"
+      width="30%"
+      :before-close="handleClose"
+    >
+      <div>
+        <!-- 课程名称下拉框 -->
+        <el-form label-width="80px">
+          <el-form-item label="课程名称">
+            <el-select
+              v-model="selectedCourse"
+              placeholder="请选择课程"
+              @change="handleCourseChange"
+            >
+              <el-option
+                v-for="course in courses"
+                :key="course.course_name"
+                :label="course.course_name"
+                :value="course"
+              />
+            </el-select>
+          </el-form-item>
+
+          <!-- 进度下拉框 -->
+          <el-form-item label="课程进度">
+            <el-select
+              v-model="selectedProgress"
+              placeholder="请选择进度"
+            >
+              <el-option
+                v-for="(chapter, index) in chapterOptions"
+                :key="index"
+                :label="`${chapter}/${selectedCourse.total}章节`"
+                :value="chapter"
+              />
+            </el-select>
+          </el-form-item>
+        </el-form>
+      </div>
+
+      <!-- 对话框底部按钮 -->
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="pendcourseVisible = false">取消</el-button>
+          <el-button type="primary" @click="handleConfirm">确认</el-button>
+        </span>
+      </template>
+    </el-dialog>
+  </div>
     <div class="selectable" style="width: 100%; height: 100%; position: relative; overflow: hidden;">
-        <el-dialog
-    title="提示"
-    v-model="dialogVisible"
-    width="30%"
-    :before-close="handleClose"
-    center
-  >
-    <div class="ranking-list" v-if="!isLoading">
-      <div class="scroll-container">
-        <!-- 用户列表 -->
-        <div
-          class="list-item"
-          v-for="(user, index) in users"
-          :key="index"
-        >
-          <div class="user-header">
-            <span class="user-name">{{ user.name }}</span>
-          </div>
-          <!-- 用户的所有进度条 -->
+      <el-dialog
+      :title="title"
+      v-model="dialogVisible"
+      width="30%"
+      :before-close="handleClose"
+      center
+    >
+      <!-- 动态加载提示 -->
+      <div v-if="isloading" class="loading-container">
+        loading...
+      </div>
+
+      <!-- 用户列表 -->
+      <div v-else class="ranking-list">
+        <div class="scroll-container">
+          <!-- 遍历每个用户 -->
           <div
-            class="progress-item"
-            v-for="(progress, pIndex) in user.progresses"
-            :key="pIndex"
+            class="list-item"
+            v-for="(user, index) in users"
+            :key="index"
           >
-            <div class="progress-chapter">{{ '第 ' + progress.chapter + ' 章' }}</div>
-            <div class="progress-bar-container">
-              <div class="progress-track">
-                <div
-                  class="progress-bar"
-                  :style="{ width: `${progress.percent}%` }"
-                ></div>
-              </div>
-              <el-button class="progress-button" type="primary" size="small">按键</el-button>
+            <!-- 用户名称 -->
+            <div class="user-header">
+              <span class="user-name">{{ user.name }}</span>
+              <el-button @click="pendCourse(user)">新增记录</el-button>
             </div>
+
+            <!-- 课程进度列表 -->
+            <div
+              class="progress-item"
+              v-for="(course, pIndex) in user.courses"
+              :key="pIndex"
+            >
+              <!-- 进度条标题 -->
+              <div class="progress-chapter">{{ course.course_name }}</div>
+
+              <!-- 进度条 -->
+              <div class="progress-bar-container">
+                <div class="progress-track">
+                  <!-- 动态设置进度条宽度 -->
+                  <div
+                    class="progress-bar"
+                    :style="{ width: `${(course.progress / course.total) * 100}%` }"
+                  ></div>
+                </div>
+
+                <!-- 下拉框和进度显示 -->
+                <div class="progress-details-container">
+                  <!-- 下拉框 -->
+                  <select
+                    v-model="course.currentChapter"
+                    @change="handleChapterChange(user, course)"
+                  >
+                    <option
+                      v-for="(chapter, cIndex) in course.chapters"
+                      :key="cIndex"
+                      :value="chapter"
+                    >
+                      {{ chapter }}
+                    </option>
+                  </select>
+
+                  <!-- 当前章节数显示 -->
+                  <span class="current-chapter-display">
+                    / {{ course.total }} 章节
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 如果用户没有课程记录，显示提示 -->
+            <div v-if="user.courses.length === 0" class="no-progress">
+              该用户暂无课程记录。
+            </div>
+            <div v-if="index < users.length - 1" class="user-separator"></div>
           </div>
         </div>
       </div>
-    </div>
-    <div v-else class="loading-container">loading...</div>
 
-    <span slot="footer" class="dialog-footer">
-      <el-button @click="dialogVisible = false">取 消</el-button>
-      <el-button type="primary" @click="dialogVisible = false">确 定</el-button>
-    </span>
-  </el-dialog>
+      <!-- 对话框底部按钮 -->
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="dialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="pendProgress">确 定</el-button>
+      </span>
+    </el-dialog>
         <div class="header-container selectable">
         <div class="l-container">学习进度（按小组分类）列表
-        <el-button class="config" size="large" @click="appendGruopDialogVisible = true" >新建小组</el-button>
         </div>
         <div class="r-container">
           <el-form :inline="true" class="form-inline" @submit.prevent>
@@ -91,119 +181,15 @@
       </div>
     </div>
   </template>
-  
-  <script>
-export default {
-  data() {
-    return {
-      dialogVisible: false,
-      isLoading: false,
-      users: [
-      {
-          rank: 4,
-          name: "用户 5",
-          progresses: [
-            { percent: 60, chapter: 1 }, // 第一个进度条
-            { percent: 40, chapter: 2 }, // 第二个进度条
-          ],
-        },
-        {
-          rank: 4,
-          name: "用户 5",
-          progresses: [
-            { percent: 60, chapter: 1 }, // 第一个进度条
-            { percent: 40, chapter: 2 }, // 第二个进度条
-          ],
-        },
-        {
-          rank: 4,
-          name: "用户 5",
-          progresses: [
-            { percent: 60, chapter: 1 }, // 第一个进度条
-            { percent: 40, chapter: 2 }, // 第二个进度条
-          ],
-        },
-        {
-          rank: 4,
-          name: "用户 5",
-          progresses: [
-            { percent: 60, chapter: 1 }, // 第一个进度条
-            { percent: 40, chapter: 2 }, // 第二个进度条
-          ],
-        },
-        {
-          rank: 4,
-          name: "用户 4",
-          progresses: [
-            { percent: 60, chapter: 1 }, // 第一个进度条
-            { percent: 40, chapter: 2 }, // 第二个进度条
-          ],
-        },
-        {
-          rank: 5,
-          name: "用户 5",
-          progresses: [
-            { percent: 50, chapter: 1 },
-            { percent: 70, chapter: 3 },
-          ],
-        },
-        {
-          rank: 6,
-          name: "用户 6",
-          progresses: [
-            { percent: 80, chapter: 1 },
-          ],
-        },
-        {
-          rank: 7,
-          name: "用户 7",
-          progresses: [
-            { percent: 30, chapter: 1 },
-            { percent: 20, chapter: 2 },
-          ],
-        },
-        {
-          rank: 8,
-          name: "用户 8",
-          progresses: [
-            { percent: 55, chapter: 1 },
-          ],
-        },
-        {
-          rank: 9,
-          name: "用户 9",
-          progresses: [
-            { percent: 25, chapter: 1 },
-            { percent: 65, chapter: 2 },
-          ],
-        },
-        {
-          rank: 10,
-          name: "用户 10",
-          progresses: [
-            { percent: 15, chapter: 1 },
-          ],
-        },
-      ],
-    };
-  },
-  methods: {
-    handleClose() {
-      this.dialogVisible = false;
-    },
-  },
-};
-</script>
 
   <script setup>
   import api from '../api';
   import { onBeforeMount } from 'vue';
-  import { ref, reactive} from 'vue';
+  import { ref } from 'vue';
   import { ElDialog, ElMessage, ElMessageBox} from 'element-plus';
   
-  const appendGruopDialogVisible = ref(false)
   const dialogVisible = ref(false)
-  const isloading = ref(false)
+  const isloading = ref(true)
   
   let tableLabel = ref([
     {
@@ -237,23 +223,88 @@ export default {
       align:'center'
     },
   ]);
+
+  let users = ref([]);
+  const title = ref('');
   
   const showHint = ref(false);
   const searchQuery = ref('');
   
   let Groups = ref([]);
+
+  const records = ref([]);
   
-  async function configProgress(group){
-    dialogVisible.value = true;
+async function getGroupProgress(group_id)
+  {
+    isloading.value = true;
     console.log('Fetching Progress data...');
-    try {
-        const res = await api.get(`/learningProgress/group?Group_Id=2`);
-        console.log(res);
-        
-    }catch (error) {
-    console.error("Error fetching data:", error);
+  try {
+    const res = await api.get(`/learningProgress/group?Group_Id=${selectedGroupid.value}`);
+    // console.log(res);
+
+    if (res && res.data) {
+      title.value = res.data.data.group_name;
+
+      users.value = res.data.data.result.map(user => {
+        return {
+          name: user.username,
+          id: user.user_id,
+          courses: user.records.map(record => {
+            return {
+              course_id: record.course_id,
+              course_name: record.course_name,
+              total: record.course_chapters,
+              progress: record.progress,
+              currentChapter: record.progress, // 设置默认的当前章节
+              chapters: Array.from({ length: record.course_chapters }, (_, i) => i + 1), // 假设章节从 1 到 total
+            };
+          }),
+        };
+      });
     }
+
+    // console.log('Processed data:', users.value);
+    isloading.value = false;
+  } catch (error) {
+    console.error("Error fetching data:", error);
   }
+  }
+
+  function configProgress(group) {
+  dialogVisible.value = true;
+  selectedGroupid.value = group.group_id;
+  getGroupProgress();
+  }
+
+// 处理章节选择变化的逻辑
+const handleChapterChange = (user, course) => {
+  console.log(course);
+  
+  console.log(`用户 ${user.name} 的课程 ${course.course_name} 选择了章节 ${course.currentChapter}`);
+
+  // 创建新的记录对象
+  const newRecord = {
+    Course_Id: course.course_id,
+    Progress: course.currentChapter,
+    User_Id: user.id,
+  };
+
+  // 根据 User_Id 和 Course_Id 找到对应的记录索引
+  const recordIndex = records.value.findIndex(
+    record =>
+      record.User_Id === user.id && record.Course_Id === course.course_id
+  );
+
+  if (recordIndex !== -1) {
+    // 如果已存在记录，则更新该记录
+    records.value[recordIndex].Progress = newRecord.Progress;
+  } else {
+    // 如果不存在记录，则添加新记录
+    records.value.push(newRecord);
+  }
+
+  console.log('更新后的 records:', records.value);
+};
 
   async function getGroupList()
   {
@@ -287,14 +338,38 @@ export default {
           });
           Groups.value.push(...res.data.project_groups);
           Groups.value.push(...res.data.study_groups);
-          console.log(res);
-          console.log(Groups);
+          // console.log(res);
+          // console.log("Groups:",Groups);
           
         } catch (error) {
           console.error("Error fetching data:", error);
   }
   }
   
+  async function pendProgress(){
+    if(records.value.length === 0) {
+      ElMessage.warning('当前修改的记录为空');
+      return;
+    }
+    else{
+      const returndata = {
+        Records: [...records.value]
+      }
+      console.log(returndata);
+      try {
+        await api.post('/learningProgress/update', returndata);
+        ElMessage.success('更新成功');
+        dialogVisible.value = false;
+        records.value.length = 0; // 清空记录数组
+      }
+      catch (error) {
+        console.error("Error updating data:", error);
+        ElMessage.error('更新失败，请稍后重试');
+      }
+    }
+
+  }
+
   onBeforeMount(async () => {
     await getGroupList();
   });
@@ -370,25 +445,126 @@ export default {
       Groups.value = Array.from(uniqueResults);
     }
   
-    console.log(Groups.value);
+    // console.log(Groups.value);
   
     searchQuery.value = ''; // 清空搜索框
   }
   
-  
+  // 新增课程进度模块
+  const pendcourseVisible = ref(false)
+  const isloading_pendcourse = ref(true)
+  // 当前选中的课程
+  const selectedCourse = ref(null);
+  // 当前选中的进度
+  const selectedProgress = ref(null);
+  // 根据选中的课程动态生成的进度选项
+  const chapterOptions = ref([]);
+  // 当前选中的用户id
+  const selectedUserId = ref(null);
+
+  const selectedGroupid = ref(null);
+
+  const courses = ref([
+  ]);
+
+  function claerForm () {
+    selectedCourse.value = null;
+    selectedProgress.value = null;
+    chapterOptions.value = [];
+    selectedUserId.value = null;
+  }
+
+  async function pendCourse(user){
+      pendcourseVisible.value = true;
+      isloading_pendcourse.value = true;
+      console.log('Fetching Course data...');
+      try {
+        const res = (await api.get(`/course/list`))['data'];
+        // console.log(res);
+        courses.value = res.map(course => {
+          return {
+            course_name: course.Course_title,
+            total: course.Course_Chapters,
+            course_id: course.Course_Id,
+          }
+        });
+        // console.log('Processed data:', courses.value);
+        selectedUserId.value = user.id;
+        isloading_pendcourse.value = false;
+      }
+    catch (error) {
+      console.error("Error fetching data:", error);
+      pendcourseVisible.value = false;
+    }
+  }
+
+    // 处理课程选择变化
+    const handleCourseChange = () => {
+      if (selectedCourse.value) {
+        // 根据选中的课程的总章节数生成进度选项
+        chapterOptions.value = Array.from(
+          { length: selectedCourse.value.total },
+          (_, index) => index + 1
+        );
+        // 默认选中第一个章节
+        selectedProgress.value = 1;
+      } else {
+        chapterOptions.value = [];
+        selectedProgress.value = null;
+      }
+    };
+
+    // 点击确认按钮时的处理逻辑
+  async function handleConfirm (){
+  // 检查课程、进度和用户 ID 是否都已选中
+  if (
+    selectedCourse.value &&
+    selectedProgress.value &&
+    selectedUserId.value
+  ) {
+    // 将选中的课程名称、课程进度和用户 ID 打包成一个对象
+    const record = {
+      Course_Id: selectedCourse.value.course_id,
+      Progress: selectedProgress.value,
+      User_Id: selectedUserId.value,
+    };
+    try {
+    // 发送 POST 请求到后端
+    await api.post('/learningProgress/update', record);
+
+    // 打印后端返回的响应
+    // console.log("Response from backend:", response);
+
+    // 显示成功消息
+    ElMessage.success('学习进度添加成功');
+
+    getGroupProgress();
+  } catch (error) {
+    // 捕获并打印错误
+    console.error('Failed to pend course progress:', error);
+
+    // 显示错误消息
+    ElMessage.error('学习进度添加失败，请稍后重试');
+  }
+    // 关闭弹窗
+    pendcourseVisible.value = false;
+    claerForm();
+  } else {
+    // 如果缺少必要信息，提示用户
+    ElMessage.warning('请选择课程、进度和确认用户 ID！');
+    claerForm();
+  }
+};
+
+    // 关闭弹窗
+    const handleClose = () => {
+      pendcourseVisible.value = false;
+    };
   
   </script>
   
 <style scoped>
-  
-  .GroupInput {
-    margin-top: 20px;
-    font-size: 20px;
-    font-weight: 900;
-    position: relative;
-    right: 40px;
-  }
-  
+
   .header-container {
     display: flex;
     justify-content: space-between;
@@ -425,42 +601,7 @@ export default {
     }
   }
   
-  .default-card {
-    display: inline-block;
-    width: 350px;
-  
-    margin: 20px;
-  
-    cursor: pointer;
-  }
-  
-  .default-card:hover {
-    transform: translateY(-10px);
-    box-shadow: #c4c4c4 0px 0px 10px;
-  }
-  
-  .config{
-    animation: backgroundChange 100s infinite;
-    margin-left: 10px;
-    color: #fff;
-  }
-  @keyframes backgroundChange {
-    0% {
-      background-color: #fc8803bf; /* 粉色 */
-    }
-    25% {
-      background-color: #ffc400; /* 浅橙色 */
-    }
-    50% {
-      background-color: #a2ff00; /* 紫色 */
-    }
-    75% {
-      background-color: #6a95da; /* 蓝色 */
-    }
-    100% {
-      background-color: #f898e5; /* 回到粉色 */
-    }
-  }
+
   
   .input-hint {
     background-color: #f9f9f9;
@@ -568,6 +709,12 @@ export default {
   display: flex;
   justify-content: flex-end; /* 按钮组右对齐 */
   margin-top: 10px;
+}
+.user-separator {
+  height: 1px;
+  width: 100%;
+  background-color: #ddd;
+  margin: 10px 0;
 }
   </style>
   
