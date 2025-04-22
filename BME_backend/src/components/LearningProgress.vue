@@ -4,7 +4,6 @@
       v-model="pendcourseVisible"
       title="课程进度设置"
       width="30%"
-      :before-close="handleClose"
     >
       <div>
         <!-- 课程名称下拉框 -->
@@ -55,7 +54,6 @@
       :title="title"
       v-model="dialogVisible"
       width="30%"
-      :before-close="handleClose"
       center
     >
       <!-- 动态加载提示 -->
@@ -556,10 +554,6 @@ const handleChapterChange = (user, course) => {
   }
 };
 
-    // 关闭弹窗
-    const handleClose = () => {
-      pendcourseVisible.value = false;
-    };
   
   </script>
   

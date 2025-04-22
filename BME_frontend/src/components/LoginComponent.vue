@@ -60,16 +60,28 @@ export default {
 
             const User_Password = md5(this.loginForm.password)
 
-            // 向后端请求用户信息
-            api({
+            //向后端请求用户信息
+            let res = null;
+
+            try{
+                res = await api({
                 url: "/auth/login",
                 method: "post",
                 data: {
                     User_Email: this.loginForm.email,
                     User_Password: User_Password
                 },
-            }).then(async (res) => {
-                if (res.data.code == 200) {
+            })
+            }
+            catch (error) {
+                if(error.response.data.code == 400 || error.response.data.code == 402){
+                    console.error(error);
+                    this.$message.error('密码错误或邮箱不存在');
+                }
+                return;
+            }
+
+            if (res.data.code == 200) {
                     console.log(res)
                     // 将数据存入浏览器
                     localStorage.setItem("token", res.data.token)
@@ -84,12 +96,37 @@ export default {
                         type: 'success'
                     });
                 }
-                if (res.data.code == 400) {
-                    console.log(res)
-                    console.log(User_Password)
-                    this.$message.error('密码错误或邮箱不存在');
-                }
-            })
+
+            // 原登陆逻辑
+            // api({
+            //     url: "/auth/login",
+            //     method: "post",
+            //     data: {
+            //         User_Email: this.loginForm.email,
+            //         User_Password: User_Password
+            //     },
+            // }).then(async (res) => {
+            //     if (res.data.code == 200) {
+            //         console.log(res)
+            //         // 将数据存入浏览器
+            //         localStorage.setItem("token", res.data.token)
+            //         this.store.commit('setUser', res.data)
+            //         await this.fetchAvatar()
+
+            //         this.$router.push('/')
+            //         console.log('登录成功')
+
+            //         this.$message({
+            //             message: '登录成功',
+            //             type: 'success'
+            //         });
+            //     }
+            //     if (res.response.data.code == 400) {
+            //         console.log(res)
+            //         console.log(User_Password)
+            //         this.$message.error('密码错误或邮箱不存在');
+            //     }
+            // })
             // alert('登录成功');
         }
     }

@@ -7,7 +7,7 @@ const LocalAPI_URL = 'http://localhost:5000';
 
 
 const api = axios.create({
-    baseURL: LocalAPI_URL,
+    baseURL: API_URL,
     headers: {
         'Content-Type': 'application/json'
     },
