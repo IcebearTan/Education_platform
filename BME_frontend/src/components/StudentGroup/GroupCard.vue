@@ -59,16 +59,16 @@
   // 跳转到小组详情页的方法
   const router = useRouter();
   const toGroupDetails = () => {
-      setTimeout(() => {
-        router.push({
-        path: '/user-center/student-group-details',
-        query: {
-          group: JSON.stringify(props.group), // 将 group 转为字符串
-          userAvatars: JSON.stringify(userAvatars.value) // 将 userAvatars 转为字符串
-        }
+    localStorage.setItem('userAvatars', JSON.stringify(userAvatars.value)); // 保存当前小组信息到 localStorage
+  setTimeout(() => {
+    router.push({
+      path: `/user-center/student-group-details/${props.group.id}`,
+      query: {
+        group: encodeURIComponent(JSON.stringify(props.group)),
+      },
     });
-      },100)
-    }
+  }, 100);
+};
 
   function proceStudentId(){
     if (props.group.students && Array.isArray(props.group.students)) {
@@ -114,6 +114,7 @@
                     User_Id: userId
                 }
             });
+            
             // 假设 API 返回一个包含头像 URL 的对象
             if (response.data.User_Avatar) {
                 userAvatars.value.push(`data:image/png;base64,${response.data.User_Avatar}`); // 将头像 URL 添加到数组中

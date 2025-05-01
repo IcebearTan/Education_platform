@@ -10,7 +10,7 @@ import ExamListComponent from './components/ExamListComponent.vue'
 
 import HomeView from './views/HomeView.vue'
 import LoginView from './views/LoginView.vue'
-import RegisterView from './views/RegisterView.vue'
+// import RegisterView from './views/RegisterView.vue'
 import ArticleView from './views/ArticleView.vue';
 import StudyView from './views/StudyView.vue'
 import ExamView from './views/ExamView.vue'
@@ -48,11 +48,11 @@ const router = createRouter({
             name: 'login',
             component: LoginView
         },
-        {
-            path: '/register',
-            name: 'register',
-            component: RegisterView
-        },
+        // {
+        //     path: '/register',
+        //     name: 'register',
+        //     component: RegisterViewd
+        // },
         {
             path: '/user',
             name: 'user',
@@ -89,9 +89,10 @@ const router = createRouter({
                     component: StudentGroupsDetails,
                     children: [
                         {
-                            path: '/user-center/student-group-details',
+                            path: '/user-center/student-group-details/:id',
                             name: 'student-group-details-default',
                             component: StudentGroupRank,
+                            props: route => ({ id: route.params.id }),
                         },
                         {
                             path: '/user-center/student-group-details/rank',

@@ -11,9 +11,9 @@
         <h3>亲爱的同学们：</h3>
         <p>此网站于4月10日晚12点完成更新，以下是本次更新内容：</p>
         <ul>
-          <li>🌟 线上打卡的最大签退时间延长至 <strong>6小时</strong>，要记得好好签退哦！</li>
-          <li>🔧 修改了签到系统的部分逻辑，现在重新登录会同步签到中的时间。</li>
-          <li>🎉 新增了网站的更新公告，会在每次网站更新后的第一次登录时显示。</li>
+          <li>🌟 修改了前台登陆样式，各位如果有时间可以去看看捏 </li>
+          <li>🔧 完成了个人主页的<strong>我的小组</strong>板块</li>
+          <li>✨ 新增了更新公告模块</li>
         </ul>
         <p>如有任何问题，请联系以下邮箱：</p>
         <p>
@@ -33,22 +33,44 @@
   const dialogVisible = ref(false);
   
   // 当前公告的唯一标识
-  const currentAnnouncementId = '20250410';
+  const currentAnnouncementId = '2025-04-20';
   
   // 检查是否需要显示公告
   const checkAndShowAnnouncement = () => {
     const storedAnnouncementId = localStorage.getItem('announcementId');
-    const lastCheckedDate = localStorage.getItem('lastCheckedDate');
     const token = localStorage.getItem('token'); // 检查是否登录
+    if (!token) return; // 如果没有登录，则不显示公告
+    const tokenCreateDate = getTokenCreateDate(token); // 获取token创建日期
+    console.log(tokenCreateDate);
+    
+    const lastRegisteredDate = tokenCreateDate ? new Date(tokenCreateDate.replace(/-/g, '/')) : null;
+    const currentAnnouncementDate = new Date(currentAnnouncementId.replace(/-/g, '/'));
+    
     if (
-      storedAnnouncementId !== currentAnnouncementId &&
-      String(lastCheckedDate) <= currentAnnouncementId &&
-      token
-    ) {
+      ((storedAnnouncementId !== currentAnnouncementId) &&
+      (!lastRegisteredDate || lastRegisteredDate < currentAnnouncementDate)
+    ) || !storedAnnouncementId) {
       dialogVisible.value = true;
       localStorage.setItem('announcementId', currentAnnouncementId);
     }
+    
   };
+
+  function getTokenCreateDate(token) {
+  if (!token) return '';
+  try {
+    const payload = token.split('.')[1];
+    const decoded = JSON.parse(atob(payload));
+    if (!decoded.iat) return '';
+    const date = new Date(decoded.iat * 1000);
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  } catch (e) {
+    return '';
+  }
+}
   
   // 关闭公告并记录已查看
   const closeDialog = () => {

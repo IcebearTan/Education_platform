@@ -39,7 +39,7 @@
 <script setup>
 import { ref } from 'vue'
 import GroupCard from './GroupCard.vue'
-import { onBeforeMount, watch } from 'vue'
+import { onBeforeMount, watch, onUnmounted } from 'vue'
 import api from '../../api';
     
 const form = ref({});
@@ -73,6 +73,7 @@ async function getGroupList()
 
   const res = await api.get(`/user/group`);
 
+  console.log(res.data);
   // 检查 project_groups 是否存在并且是数组
   if (Array.isArray(res.data.project_group)) {
     res.data.project_group.forEach(group => {
@@ -209,6 +210,12 @@ function foreFilter() {
 
   Groups.value = filterObjectsByMatchingValues(Groups.value, validUserId);
 }
+
+// onUnmounted(() => {
+//   // 清除localStorage中的用户头像列表
+//   localStorage.removeItem('userAvatars');
+// });
+
 console.log("有问题请找谭谭");
 
 </script>

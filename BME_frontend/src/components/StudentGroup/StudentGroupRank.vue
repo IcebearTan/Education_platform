@@ -53,10 +53,67 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: 'ModernRanking'
+<script setup>
+import { useRoute } from 'vue-router';
+import { onUnmounted, ref } from 'vue';
+import { onMounted } from 'vue';
+import api from '../../api';
+
+const group = ref(null);
+const userAvatars = ref([]);
+
+async function fetchGroupLearnProgress(group_id) {
+  try {
+    const response = await api.get(`/learningProgress/group?Group_Id=${group_id}`);
+    console.log(response);
+
+    // 获取接口返回的 result
+    const result = response.data.data.result || [];
+
+    // 遍历 group.value.students，将匹配的 result 合并到 student
+    if (group.value && Array.isArray(group.value.students)) {
+      group.value.students.forEach(student => {
+        // 查找 result 中 user_id === Student_Id 的项
+        const match = result.find(item => item.user_id === student.Student_Id);
+        if (match) {
+          // 合并 result 到 student
+          Object.assign(student, match);
+        }
+      });
+    }
+
+    console.log('合并后students:', group.value.students);
+  } catch (error) {
+    console.error('获取学习进度失败:', error);
+  }
 }
+onMounted(() => {
+
+  const route = useRoute();
+  
+  if (route.query.group) {
+    try {
+      group.value = JSON.parse(decodeURIComponent(route.query.group));
+      if (group.value) {
+        console.log('Group:', group.value);
+      }
+    } catch (error) {
+      console.error('解析group参数时出错:', error);
+    }
+  }
+
+  // 从localStorage中获取用户头像列表
+  userAvatars.value = localStorage.getItem('userAvatars');
+
+  fetchGroupLearnProgress(group.value.group_id);
+  // console.log('User Avatars:', userAvatars.value);
+});
+
+onUnmounted(() => {
+  // 清除localStorage中的用户头像列表
+  localStorage.removeItem('userAvatars');
+});
+
 </script>
 
 <style scoped>
