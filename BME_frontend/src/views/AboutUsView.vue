@@ -45,7 +45,7 @@ export default {
     //         }
     //     })
     // }
-    
+
 };
 </script>
 
@@ -66,9 +66,9 @@ const User_Avatar = ref('');
     <div class="common-layout">
         <el-container>
             <el-header>
-                <MenuComponent/>
+                <MenuComponent />
             </el-header>
-                <AboutUsComponent />
+            <AboutUsComponent />
             <el-footer class="page-footer">
                 <PageFooterComponent />
             </el-footer>
@@ -88,16 +88,16 @@ const User_Avatar = ref('');
 }
 
 .footer {
-  font-size: 15px;
+    font-size: 15px;
 
-  display: flex;
-  padding: 10px;
-  background-color: #f5f5f5;
+    display: flex;
+    padding: 10px;
+    background-color: #bababa;
 
-  margin: 0;
+    margin: 0;
 
-  width: 100%;
-  
-  color: #bababa;
+    width: 100%;
+
+    color: #bababa;
 }
 </style>

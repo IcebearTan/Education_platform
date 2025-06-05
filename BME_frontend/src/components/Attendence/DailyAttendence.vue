@@ -1,5 +1,5 @@
 <template>
-  <div v-if="!isloading" class="calendar-container" :style="{ height: checkLogin() ? '100%' : '100px' }">
+  <div v-if="!isloading" class="calendar-container" :style="{ height: checkLogin() ? 'auto' : '100px' }">
       <div class="calendar-header">
           <div class="week-calendar">
               <div 
@@ -38,10 +38,10 @@
               <span 
                 v-for="(month, index) in visibleMonths" 
                 :key="month"
-                :style="{left: monthStartIndices[index]*2.4 + 'px'}">{{ month }}</span>
+                :style="{left: monthStartIndices[index] * 16 + 'px'}">{{ month }}</span>
           </div>
       </div>
-      <div class="calendar-grid">
+      <div class="calendar-grid" v-if="formeCheckStatus.length > 0">
         <div 
             v-for="(day, index) in formeCheckStatus"
             :key="index"
@@ -54,7 +54,7 @@
         
       </div>
   </div>
-  <div v-else class="calendar-container" :style="{ height: checkLogin() ? '100%' : '100px' }">
+  <div v-else class="calendar-container" :style="{ height: checkLogin() ? 'auto' : '100px'  }">
      isloading...
   </div>
 </template>
@@ -497,11 +497,12 @@ watch(isloading, (newValue) => {
 .calendar-header {
   display: flex;
   flex-direction: column;
-  margin-bottom: 15px;
+  margin-bottom: 5px;
 }
 
 .week-calendar {
   display: flex;
+  justify-content: center;  /* 水平居中子元素 */
   margin-bottom: 5px;
   background: #ffffff;
   border-radius: 8px;
@@ -584,22 +585,21 @@ watch(isloading, (newValue) => {
 }
 
 .month-labels {
-  display: flex;
-  justify-content: space-between;
-  color: #969696;
-  font-size: 1rem;
-  font-weight:700;
-  order: 3; 
-  margin-bottom:10px;
-  margin-left:62px;
-  position:relative;
-  width:100%;
+  position: relative;
+  height: 20px;
+  margin-bottom: 10px;
+  margin-left: 62px;
+  overflow: visible;
+  z-index: 10; /* 确保月份不被格子遮盖 */
 }
 
 .month-labels span {
-    position: absolute;
-    top: 0;
-    white-space:nowrap;
+  position: absolute;
+  top: 0;
+  font-size: 12px;
+  background-color: white; /* 避免覆盖格子不清晰 */
+  padding: 0 4px;
+  z-index: 10;
 }
 
 .checked{
@@ -641,4 +641,40 @@ watch(isloading, (newValue) => {
   background: #ff6b6b;
   border-radius: 50%;
 }
+
+@media (max-width: 768px) {
+    .calendar-container {
+    width: 100%;
+    max-width: 480px;
+    padding: 16px;
+    margin: 0 auto;
+    box-sizing: border-box;
+    border: 1px solid #eee;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  }
+
+  .check-button {
+    width: 100% !important;
+    font-size: 16px;
+    margin: 10px 0;
+  }
+
+  .stats-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+  }
+
+  .stat-item {
+    width: 100%;
+    text-align: center;
+  }
+
+  .document {
+    font-size: 14px;
+  }
+}
+
 </style>    

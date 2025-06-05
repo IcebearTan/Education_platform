@@ -1,196 +1,209 @@
-<script>
-import { ref, onMounted } from "vue";
-import { useRoute } from "vue-router"; // 用来获取当前路由
+<script setup>// <--- 注意这里是 setup
+import { ref, onMounted, onUnmounted } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import MenuComponent from "../components/MenuComponent.vue";
+import MobileMenuComponent from "../components/MobileMenuComponent.vue";
 import PageFooterComponent from "../components/PageFooterComponent.vue";
 import ArticleDetailComponent from "../components/ArticleDetailComponent.vue";
+import { Expand } from '@element-plus/icons-vue'; // 只导入 Expand，因为模板中只用了它
 
-import api from '../api';
+// api 的导入如果 ArticleView 本身不直接调用，可以考虑移除
+// import api from '../api';
 
-export default {
-  name: "HomeView",
-  components: {
-    MenuComponent,
-    PageFooterComponent,
-    ArticleDetailComponent
-  },
-  setup() {
-    const route = useRoute(); // 获取当前路由
-    // const article = ref(''); // 使用 ref 创建响应式数据
+const route = useRoute();
+const router = useRouter();
+const Article_Id = ref(route.query.Article_Id);
 
-    const Article_Id = ref(route.query.Article_Id); // 获取查询参数中的 id
+// --- 响应式 Header 逻辑 ---
+const isMobile = ref(window.innerWidth <= 768);
+const isMobileMenuOpen = ref(false);
 
-    // // 获取文章
-    // const getArticle = async () => {
-    //   try {
-    //     const response = await api({
-    //       method: 'get',
-    //       url: '/article',
-    //       params: {
-    //         Article_Id: route.query.Article_Id // 从路由查询参数获取Article_Id
-    //       }
-    //     });
-    //     console.log(response.data);
-    //     article.value = JSON.parse(response.data.html_content); // 更新响应式数据
-    //     // console.log(article.value.html_content);
-    //   } catch (error) {
-    //     console.error(error);
-    //   }
-    // };
-
-    // // onMounted生命周期钩子
-    onMounted(async () => {
-      console.log(route.query.Article_Id); // 打印查询参数
-      // await getArticle(); // 获取文章数据
-    });
-
-    // 返回响应式的变量
-    return {
-      // article,
-      Article_Id
-    };
+const checkScreenSize = () => {
+  isMobile.value = window.innerWidth <= 768;
+  if (!isMobile.value) {
+    isMobileMenuOpen.value = false;
   }
 };
+
+const toggleMobileMenu = () => {
+  isMobileMenuOpen.value = !isMobileMenuOpen.value;
+};
+
+onMounted(() => {
+  console.log("Article ID from route query (ArticleView):", Article_Id.value);
+  checkScreenSize();
+  window.addEventListener('resize', checkScreenSize);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('resize', checkScreenSize);
+});
+// --- 响应式 Header 逻辑结束 ---
 </script>
 
 <template>
   <div>
     <el-container class="common-layout">
-      <el-header style="display: flex; justify-content: center; align-items: center; border-bottom: solid 1px #e6e6e6; padding-bottom: 1px;">
-        <MenuComponent />
+      <el-header class="header-container">
+        <!-- 桌面菜单 -->
+        <div v-if="!isMobile" class="desktop-menu-container">
+          <MenuComponent />
+        </div>
+        <!-- 移动端头部 -->
+        <div v-else class="mobile-header">
+          <div class="mobile-logo">
+            <img style="width: 40px; height: auto;" src="../assets/Logo_NewYear.png" @click="router.push('/')"
+              alt="Logo" />
+          </div>
+          <el-icon class="hamburger-icon" @click="toggleMobileMenu">
+            <Expand />
+          </el-icon>
+        </div>
       </el-header>
+
+      <!-- 移动端菜单 -->
+      <MobileMenuComponent v-if="isMobile && isMobileMenuOpen" @close="toggleMobileMenu" />
+
       <el-main style="padding-left: 20px; min-height: 100vh; display: flex; justify-content: center;">
         <div class="article-container">
-          <ArticleDetailComponent :id="Article_Id"/>
+          <ArticleDetailComponent :id="Article_Id" />
         </div>
-        <!-- <el-row style="display: flex; justify-content: center;">
-          <el-col :span="4" class="left-col">训练营学员滞销！帮帮我们！</el-col>
-          <el-col :span="14" class="main-col">
-            
-          </el-col>
-          <el-col :span="4" class="right-col">训练营学员滞销！帮帮我们！</el-col>
-        </el-row> -->
       </el-main>
       <el-footer class="page-footer">
-        <PageFooterComponent/>
+        <PageFooterComponent />
       </el-footer>
     </el-container>
   </div>
 </template>
 
 <style scoped>
-.el-menu--horizontal>.el-menu-item:nth-child(1) {
-    margin-right: auto;
+/* ... 你的样式保持不变 ... */
+/* --- 开始：从 HomeView/StudyView 复制的 Header 相关样式 --- */
+.header-container {
+  display: flex;
+  justify-content: center;
+  /* 桌面居中 */
+  align-items: center;
+  border-bottom: solid 1px #e6e6e6;
+  padding: 0;
+  /* 移除默认内边距 */
+  height: 60px;
+  /* 固定高度 */
+  position: relative;
+  /* 为了汉堡图标定位 */
 }
 
+.desktop-menu-container {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
 
-.common-layout{
+.mobile-header {
+  display: none;
+  /* 默认隐藏 */
+  width: 100%;
+  height: 100%;
+  padding: 0 15px;
+  /* 左右内边距 */
+  box-sizing: border-box;
+  display: flex;
+  justify-content: space-between;
+  /* Logo 左，图标右 */
+  align-items: center;
+}
+
+.mobile-logo img {
+  cursor: pointer;
+}
+
+.hamburger-icon {
+  display: none;
+  /* 默认隐藏 */
+  font-size: 24px;
+  /* 图标大小 */
+  cursor: pointer;
+  color: #606266;
+  /* 深灰色图标颜色 */
+}
+
+/* 媒体查询：当屏幕宽度小于等于 768px 时 */
+@media (max-width: 768px) {
+  .desktop-menu-container {
+    display: none;
+    /* 隐藏桌面菜单 */
+  }
+
+  .mobile-header {
+    display: flex;
+    /* 显示移动端头部 */
+  }
+
+  .hamburger-icon {
+    display: block;
+    /* 显示汉堡图标 */
+  }
+
+  .header-container {
+    justify-content: space-between;
+    /* 移动端两端对齐 */
+    padding: 0 15px;
+    /* 移动端内边距 */
+  }
+}
+
+/* --- 结束：复制的 Header 相关样式 --- */
+
+
+.common-layout {
   min-height: 100%;
   display: flex;
   flex-direction: column;
-  justify-content:space-between;
+  justify-content: space-between;
 }
 
-.article-container{
+.article-container {
   width: 1000px;
   min-height: 1000px;
 
   border-radius: 5px;
   box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
-  
-
 }
 
 .footer {
-  
   display: flex;
   padding: 10px;
   background-color: #f5f5f5;
-
   margin: 0;
-
   width: 100%;
-  
   color: #bababa;
 }
 
-.left-col {
-  background-image: url("../assets/LuMengXuan.jpg");
-  background-size: cover;
-  /* display: flex; */
-  /* justify-content: center; */
-
-  text-align: center;
-  padding: 10px;
-
-  height: 400px;
-
-  font-size: 60px;
-  font-weight: 900;
-  color: #ff0000;
-  /* color: #bb00ff; */
-
-  animation: jumpAnimation 0.5s infinite;
-
+/* 注释掉 ArticleView 原有的、可能与新 Header 冲突或不再需要的样式 */
+/*
+.el-menu--horizontal>.el-menu-item:nth-child(1) {
+    margin-right: auto;
 }
-
-.right-col {
-  background-image: url("../assets/ChenMinJie.jpg");
-  background-size: cover;
-
-  text-align: center;
-  padding: 10px;
-
-  height: 400px;
-
-  font-size: 60px;
-  font-weight: 900;
-  color: #ff0000;
-
-
-  animation: jumpAnimation 0.5s infinite;
-
+.left-col, .right-col, .main-col, .article-footer, .article-header, @keyframes jumpAnimation {
+  // ...
 }
-
-.main-col {
-  /* text-align: center; */
-  padding-left: 20px;
-  padding-right: 20px;
-}
-
-.article-footer {
-  /* margin-left: 23px;
-  margin-right: 30px; */
-  /* padding-bottom: 10px; */
-}
-
-.article-header{
-  margin-top: 20px;
-  margin-left: 30px;
-  margin-right: 30px;
-
-  height: min-content;
-}
-
-@keyframes jumpAnimation {
-  0% {
-    /* color: #bb00ff; 初始字体颜色 */
-    color: #ff0000;
-    opacity: 1;
-  }
-  50% {
-    /* color: #ffff00; 字体变为红色 */
-    color: #001aff;
-    opacity: 0;
-  }
-  100% {
-    /* color: #bb00ff; 字体恢复原颜色 */
-    color: #ff0000;
-    opacity: 1;
-  }
-}
+*/
 </style>
 
+<style>
+/* 全局样式 */
+.el-header {
+  padding: 0 !important;
+}
 
-
-
+.page-footer {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  padding: 10px;
+  background-color: #252525;
+  width: 100%;
+  min-height: 400px;
+  color: #ffffff;
+}
+</style>

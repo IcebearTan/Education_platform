@@ -165,11 +165,12 @@ const caution = () => {
             <el-button type="primary" size="large" @click="handleDownload()">下载内容</el-button>
           </div>
         </div>
-        
+
       </div>
       <div class="course-contents">
         <div style="height: 50px;width: 90%; padding-bottom: 20px; border-bottom: solid 1px #ddd; margin-bottom: 10px;">
-          <span style="font-size: 25px; font-weight: bold; padding-bottom: 19px; border-bottom: solid 3px #000;">目录</span>
+          <span
+            style="font-size: 25px; font-weight: bold; padding-bottom: 19px; border-bottom: solid 3px #000;">目录</span>
         </div>
         <div class="course-content-card">
           <div class="course-content-item" v-for="(item, index) in formatedCourseDetails" :key="index">
@@ -180,11 +181,15 @@ const caution = () => {
             <div class="course-content-item-sub" v-for="(subItem, subIndex) in item.subChapters" :key="subIndex">
               <div>{{ subItem.name }}</div>
               <div>
-                <el-icon><Lock /></el-icon>
+                <el-icon>
+                  <Lock />
+                </el-icon>
               </div>
             </div>
           </div>
-          <div style="display: flex; justify-content: center; align-items: center; height: 50px; margin-bottom: 20px; font-size: 15px; color: #999;">没有更多内容啦~</div>
+          <div
+            style="display: flex; justify-content: center; align-items: center; height: 50px; margin-bottom: 20px; font-size: 15px; color: #999;">
+            没有更多内容啦~</div>
         </div>
       </div>
     </div>
@@ -197,18 +202,15 @@ const caution = () => {
         <StudentRankComponent />
       </div>
     </div>
-    
+
   </div>
-    
+
 </template>
 
 <style scoped>
+.course-wrapper {}
 
-.course-wrapper {
-  
-}
-
-.course-process{
+.course-process {
   width: 300px;
   height: 120px;
   margin-top: 20px;
@@ -229,7 +231,31 @@ const caution = () => {
 
   margin-top: 20px;
   margin-bottom: 20px;
-  
+
+}
+
+@media (max-width: 768px) {
+  .course-wrapper {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .course-details {
+    width: 90% !important;
+    /* 可以尝试加 !important 提高优先级 */
+    margin-right: 0 !important;
+    margin-bottom: 20px !important;
+  }
+
+  .course-process,
+  .class-rank {
+    /* 确保 .class-rank 也有定义，或者右侧栏的容器有统一的类名 */
+    width: 90% !important;
+    margin-left: 0 !important;
+    margin-right: auto;
+    /* 可以尝试让右侧栏在垂直堆叠时也居中 */
+    margin-left: auto;
+  }
 }
 
 .course-info {
@@ -241,16 +267,16 @@ const caution = () => {
 }
 
 .course-info-left {
-  display: flex; 
-  align-items: center; 
-  justify-content: center; 
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-size: 30px;
   font-weight: bold;
   background-color: #91bdff;
   box-shadow: 0 0 15px 2px #d2dbe9;
   color: #fff;
 
-  margin-right: 35px; 
+  margin-right: 35px;
   border-radius: 10px;
   padding: 10px;
 
@@ -277,7 +303,7 @@ const caution = () => {
   flex-direction: column;
 }
 
-.course-bottom{
+.course-bottom {
   position: absolute;
   bottom: 0;
 
@@ -295,23 +321,24 @@ const caution = () => {
   justify-content: space-between;
 }
 
-.course-content-card{
+.course-content-card {
   background-color: #ffffff;
   width: 90%;
 
   border-radius: 5px;
-  box-shadow: #e9e9e9  0px 0px 12px 2px;
+  box-shadow: #e9e9e9 0px 0px 12px 2px;
 
   margin-top: 15px;
 }
 
-.course-content-item{
+.course-content-item {
   border-bottom: solid 1px #d1d1d1;
   margin: 20px;
 
   padding-bottom: 10px;
 }
-.course-content-item-index{
+
+.course-content-item-index {
   display: inline-block;
 
   position: relative;
@@ -323,7 +350,8 @@ const caution = () => {
   box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
   color: #fff;
 }
-.course-content-item-sub{
+
+.course-content-item-sub {
   display: flex;
   justify-content: space-between;
   font-size: 15px;
@@ -334,7 +362,8 @@ const caution = () => {
   border-radius: 5px;
   cursor: pointer;
 }
-.course-content-item-sub:hover{
+
+.course-content-item-sub:hover {
   background-color: #ededed;
 }
 

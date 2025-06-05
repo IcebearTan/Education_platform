@@ -52,19 +52,21 @@ onMounted(() => {
     </div>
   </div>
   <div style="display: flex; justify-content: center; align-items: center;">
-    <img src="../assets/Logo_NewYear.png" alt="BME Logo" width="250px" class="largeLogo"/>
+    <img src="../assets/Logo_NewYear.png" alt="BME Logo"  class="largeLogo"/>
     <h1 class="largeTitle">卓越工程师训练营</h1>
   </div>
-  <div style="display: flex; justify-content: center; align-items: center; color: #888; font-size: 20px;">中山大学生物医学工程医工融合科创协会在线教育平台</div>
+  <div style="width: 100%; text-align: center; font-size: 20px; color: #888; margin-top: 20px; margin-bottom: 20px;">
+    中山大学生物医学工程医工融合科创协会在线教育平台
+  </div>
   
   <div style="display: flex; justify-content: center; align-items: center; flex-wrap: wrap;">
     
     <div class="content-container">
       <div style="width: 0%; margin-left: 20px;"></div>
       <div style="display: flex; flex-direction: column; align-items: center;width: 80%;">
-        <div style="width: 880px;">
+        
           <h1 class="secondTitle">最新资讯</h1>
-        </div>
+        
         <el-card v-for="article in reversedArticles" :key="article.Article_Id" @click="goToArticle(article.Article_Id)" class="article-card">
           <div slot="header" class="article-header">
             <h3 class="article-title">{{ article.Article_Title }}</h3>
@@ -83,7 +85,11 @@ onMounted(() => {
       </div>
       <div style="width: 20%;margin-right: 20px; margin-top: 20px;">
         <div>
-          <DailyAttendence />
+          
+          <DailyAttendence /> 
+
+        
+
         </div>
         <div style="margin-top: 20px;">
           <AttenceRankComponent />
@@ -99,6 +105,8 @@ onMounted(() => {
   width: 100%;
   overflow: hidden;
   white-space: nowrap;
+  box-sizing: border-box; /* 确保 padding/border 不会增加宽度 */
+
   background-color: #f0f0f0;
   color: #333;
   font-size: 16px;
@@ -139,7 +147,7 @@ onMounted(() => {
   color: rgb(244, 203, 138);
 }
 .secondTitle {
-  width: 100%;
+  width: 880px;
   /* text-align: center; */
   margin: 30px;
   margin-left: 10px;
@@ -155,10 +163,96 @@ onMounted(() => {
   transition: transform 1s ease-in-out;
 
   border-radius: 50%;
+  width: 250px; /* 设置容器的宽度为250px */
+  height: auto; /* 保持高度自动，适应宽度 */
 }
 .largeLogo:hover {
   transform: rotate(360deg);
 }
+
+@media (max-width: 768px) {
+
+
+  /* 调整整体布局，从三栏改垂直 */
+   .content-container {
+    flex-direction: column;
+    align-items:center; /* 水平居中 */
+    justify-content: flex-start;
+    margin-top: 10px; /* 调整顶部间距 */
+    width: 100%;
+    min-width: 0; /* 确保没有最小宽度限制 */
+    height: auto !important;
+    box-sizing: border-box;
+    padding-left: 1px; /* 添加少量内边距 */
+    padding-right: 1px;
+    overflow: hidden; /* 尝试隐藏此容器自身的溢出 */
+  }
+
+    /* 调整 Logo 和标题 */
+  .largeLogo, .largeTitle, .homeMainContainer > div:first-child { /* 选择器可能需要根据实际HTML调整 */
+    font-size: 0.8rem; /* 调整为适合小屏幕的大小，1.2rem可以根据需求调整 */
+    width: 5rem; /* 设置容器的宽度为5rem */
+    height: auto; /* 保持高度自动，适应宽度 */
+
+  }
+
+  /* 隐藏第二标题 "最新资讯" */
+  .secondTitle {
+    font-size: 0.8rem; /* 调整为适合小屏幕的大小 */
+    width: 100%; /* 设置容器的宽度为5rem */
+    height: auto; /* 保持高度自动，适应宽度 */
+  }
+
+  /* 隐藏文章卡片列表 */
+  .article-card { /* 或者包裹这些卡片的容器 */
+    font-size: 0.8rem; /* 调整为适合小屏幕的大小，1.2rem可以根据需求调整 */
+    width: 8rem; /* 设置容器的宽度为5rem */
+    height: auto; /* 保持高度自动，适应宽度 */
+  }
+
+   /* 确保 DailyAttendence 组件本身是可见的 */
+   .content-container > div:last-child > div:first-child { 
+    /* 包裹 DailyAttendence 的 div */
+      display: block; /* 或者 flex 等，确保它不被隐藏 */
+      margin: 0 auto; /* 居中 */
+   }
+
+  .calendar-container {
+  position: relative;
+  width: 100%;
+  height: auto !important;
+  min-height: 0 !important;
+  padding: 10px;
+  box-sizing: border-box;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  }
+
+
+  /* 打卡组件容器 */
+  .content-container > div:last-child {
+    width: 100% !important; /* 宽度占满父容器 这个important要写 ，因为外部设置了宽屏模式下这一列只占20%*/
+    max-width: 1200px; /* 可以设置一个最大宽度，让它在稍大窄屏上居中 */
+    
+    margin: 0 0 20px 0; /* 上下间距，左右自动居中 */
+    margin-right: 20px; /* 移除右边距 */
+    margin-left: 20px; /* 移除左边距 */
+    order: -1; /* 移到顶部 */
+    box-sizing: border-box;
+  }
+
+  .rank-container {
+    width: 90%;
+    height: auto !important;
+    min-height: 0 !important;
+    margin: 0 auto; /* 水平居中 */
+  }
+
+
+
+}
+
 </style>
 
 <style>

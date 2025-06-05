@@ -4,7 +4,7 @@
     <div class="podium-group">
       <div class="podium-item silver">
         <div class="avatar-frame">
-          <img src="../assets/ice_bear_avatar.jpg" class="avatar" alt="亚军">
+          <img src="../../assets/ice_bear_avatar.jpg" class="avatar" alt="亚军">
         </div>
         <!-- <div class="rank-badge">2</div> -->
         <div class="user-info">
@@ -16,7 +16,7 @@
       <div class="podium-item gold">
         <!-- <div class="crown">🏆</div> -->
         <div class="avatar-frame">
-          <img src="../assets/ice_bear_avatar.jpg" class="avatar" alt="冠军">
+          <img src="../../assets/ice_bear_avatar.jpg" class="avatar" alt="冠军">
         </div>
         <div class="user-info">
           <h3>张三</h3>
@@ -26,7 +26,7 @@
 
       <div class="podium-item bronze">
         <div class="avatar-frame">
-          <img src="../assets/ice_bear_avatar.jpg" class="avatar" alt="季军">
+          <img src="../../assets/ice_bear_avatar.jpg" class="avatar" alt="季军">
         </div>
         <!-- <div class="rank-badge">3</div> -->
         <div class="user-info">
@@ -40,7 +40,7 @@
     <div class="ranking-list">
       <div class="list-item" v-for="n in 7" :key="n">
         <div class="list-rank">{{ n + 3 }}</div>
-        <img src="../assets/ice_bear_avatar.jpg" class="list-avatar" alt="用户头像">
+        <img src="" class="list-avatar" alt="用户头像">
         <div class="list-info">
           <h4>用户 {{ n + 3 }}</h4>
           <div class="progress-track">
