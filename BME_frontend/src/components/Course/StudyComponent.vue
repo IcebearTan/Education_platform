@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, reactive } from 'vue'
+import { ref, onMounted, reactive, computed } from 'vue'
 import { useRouter } from 'vue-router'
 // import api from '../../../api'
 // import LearningPathComponent from './LearningPathComponent.vue'
@@ -30,7 +30,8 @@ const randomColor = (courseName) => {
 const courseList = ref([])  // 使用 ref 来声明响应式数据
 
 const buttons = reactive([
-    { label: '硬件组', active: true },
+    { label: '全部课程', active: true },
+    { label: '硬件组', active: false },
     { label: '软件组', active: false },
     { label: '先进制造组', active: false },
 ]);
@@ -60,6 +61,16 @@ const handleCourseClick = (courseId) => {
     router.push({ path: '/study/details', query: { id: courseId } })
 }
 
+// 计算属性：根据按钮过滤课程
+const filteredCourses = computed(() => {
+    const activeBtn = buttons.find(btn => btn.active);
+    if (!activeBtn || activeBtn.label === '全部课程') {
+        return courseList.value;
+    }
+    // 假设每个课程有 Group 字段
+    return courseList.value.filter(course => course.Course_Tags === activeBtn.label);
+});
+
 onMounted(() => {
     getCourseList()  // 在组件挂载时调用获取课程列表的方法
 })
@@ -84,21 +95,25 @@ onMounted(() => {
         </div>
 
         <div class="columnContainer">
-            <el-card class="boxCard" v-for="course in courseList" :key="course.Course_Id"
-                @click="handleCourseClick(course.Course_Id)">
-                <div style="width: 100%; height: 100%; display: flex;">
-                    <div class="bookCover" :style="{ backgroundColor: randomColor(course.Course_title) }">{{ course.Course_title }}</div>
-                    <div class="bookInfo">
-                        <div class="cardTitle">{{ course.Course_title }}</div>
-                        <div class="cardText">{{ course.Course_Introduction }}</div>
-                        <div class="cardFooter">共 {{ course.Course_Chapters }} 章</div>
+            <template v-if="filteredCourses.length === 0">
+                <el-card style="width: 100%; text-align: center; box-shadow: 0 0 0 0 ; border: none;">
+                    <div>暂时没有课程哦╮(╯▽╰)╭</div>
+                </el-card>
+            </template>
+            <template v-else>
+                <el-card class="boxCard" v-for="course in filteredCourses" :key="course.Course_Id"
+                    @click="handleCourseClick(course.Course_Id)">
+                    <div style="width: 100%; height: 100%; display: flex;">
+                        <div class="bookCover" :style="{ backgroundColor: randomColor(course.Course_title) }">{{ course.Course_title }}</div>
+                        <div class="bookInfo">
+                            <div class="cardTitle">{{ course.Course_title }}</div>
+                            <div class="cardText">{{ course.Course_Introduction }}</div>
+                            <div class="cardFooter">共 {{ course.Course_Chapters }} 章</div>
+                        </div>
                     </div>
-                </div>
-
-            </el-card>
+                </el-card>
+            </template>
         </div>
-
-        <!-- <el-card class="boxCard"></el-card> -->
     </div>
 </template>
 
@@ -124,7 +139,11 @@ onMounted(() => {
     width: 100%;
 
     height: 300px;
-    background-color: #eeeeee;
+    background-color: #f5f4f2;
+    background-image: 
+        repeating-radial-gradient(circle, rgb(255, 255, 255) 1px, transparent 3px, transparent 18px);
+    /* 1px为点大小，3px为点边界，18px为点间距，可根据需要调整 */
+    
 }
 
 .headGraph {
@@ -162,6 +181,8 @@ onMounted(() => {
     flex-wrap: wrap;
 
     width: 1300px;
+
+    margin-top: 25px;
 }
 
 .boxCard {
@@ -226,6 +247,7 @@ onMounted(() => {
 .cardText {
     font-size: 12px;
     height: 3em;
+    /* width: 95%; */
     /* 限制高度为两行的高度 */
     line-height: 1.5em;
     /* 设置行高 */
@@ -280,7 +302,7 @@ onMounted(() => {
 
 .bookInfo {
     height: 100px;
-
+    width: 75%;
     margin-top: 5px;
     margin-left: 5px;
 }
@@ -296,6 +318,7 @@ onMounted(() => {
 .styled-button {
     font-size: 17px;
     padding: 18px 20px;
+
     border-radius: 8px;
     transition: all 0.3s ease;
 

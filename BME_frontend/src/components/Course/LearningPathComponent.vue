@@ -8,14 +8,14 @@
 
     <div class="path">
       <div class="path-title" style="margin-top:-8px;">
-        <h2 class="text line-tit">
+        <h2 class="text line-tit" style="top: 1px;">
           <div class="dot-text-hardware"></div>
           硬件组路线
           <div class="dot-left"></div>
           <div class="dot-right"></div> 
         </h2>
         <a style="margin-top:23px"></a>
-        <h2 class="text line-tit">
+        <h2 class="text line-tit" style="top: 3px;">
           <div class="dot-text-software"></div>
           软件组路线
           <div class="dot-left"></div>
@@ -83,41 +83,41 @@
         </a>
       </div>
       <div class="path-4">
-        <a class="text line-4">
+        <a class="text line-4" style="top: 3px;">
           三参板
-          <div class="dot-left"></div>
-          <div class="dot-right"></div>
+          <div class="dot-left" style="top: 11px;"></div>
+          <div class="dot-right" style="top: 11px;"></div>
         </a>
-        <a class="text line-5-1">
+        <a class="text line-5-1" style="top: px;">
           VTK手术机器人
-          <div class="dot-left"></div>
-          <div class="dot-right"></div>
+          <div class="dot-left" style="top: 11px;"></div>
+          <div class="dot-right" style="top: 11px;"></div>
         </a>
         <a class="text line-5-2">
           IVD
-          <div class="dot-left"></div>
-          <div class="dot-right"></div>
+          <div class="dot-left" style="top: 11px;"></div>
+          <div class="dot-right" style="top: 11px;"></div>
         </a>
         <a class="text line-5-3">
           安卓
-          <div class="dot-left"></div>
-          <div class="dot-right"></div>
+          <div class="dot-left" style="top: 11px;"></div>
+          <div class="dot-right" style="top: 11px;"></div>
         </a>
         <a class="text line-5-4">
           网页开发
-          <div class="dot-left"></div>
-          <div class="dot-right"></div>
+          <div class="dot-left" style="top: 11px;"></div>
+          <div class="dot-right" style="top: 11px;"></div>
         </a>
       </div>
       <div class="path-5">
-        <a class="text line-6">
+        <a class="text line-6" style="top: -2px;">
           微机原理
           <div class="dot-left"></div>
           <div class="dot-right"></div>
         </a>
       </div>
       <div class="path-6">
-        <a class="text">
+        <a class="text" style="top: -3px;">
           准产品
           <div class="dot-left"></div>
           <div class="dot-right"></div>
@@ -147,12 +147,14 @@
   /* height:100%; */
   width: fit-content;
   margin-right: auto;
+  margin-bottom: 5px;
+
   flex-direction: column;
   text-align: center;
   justify-content: center;
 
   font-size: 35px;
-  font-weight: normal;
+  font-weight: 500;
 }
 .subtitle{
   display:flex;
@@ -227,10 +229,11 @@
   gap: 14px;
   margin-left: 10px;
 }
+
 .line-tit::after{
   content:"";
   position:absolute;
-  top:18px;
+  top:20px;
   left:80px;
   width:40%;
   border-width: 1px 0 0 0;
@@ -270,7 +273,7 @@
 .line-4::after{
   content:"";
   position:absolute;
-  top:18px;
+  top:15px;
   left:53px;
   width:130%;
   border-width: 1px 0 0 0;
@@ -336,10 +339,10 @@
 .line-5-1::before{
   content:"";
   position:absolute;
-  top:18px;
+  top:16px;
   right:88px;
   width:48%;
-  height:64px;
+  height:65px;
   border-width: 1px 0 0 1px;
   border-style:dashed;
   border-color:rgb(59, 3, 55);
@@ -348,9 +351,9 @@
 .line-5-2::before{
   content:"";
   position:absolute;
-  top:18px;
+  top:16px;
   right:40px;
-  width:42px;
+  width:41px;
   border-width: 1px 0 0 0;
   border-style:dashed;
   border-color:rgb(59, 3, 55);
@@ -359,9 +362,9 @@
 .line-5-4::before{
   content:"";
   position:absolute;
-  bottom:10px;
-  right:64px;
-  width:65%;
+  bottom:14px;
+  right:63px;
+  width:68%;
   height:78px;
   border-width: 0 0 1px 1px;
   border-style:dashed;
@@ -371,7 +374,7 @@
 .line-5-3::before{
   content:"";
   position:absolute;
-  bottom:10px;
+  bottom:14px;
   right:36px;
   width:48px;
   border-width: 1px 0 0 0;
@@ -396,7 +399,7 @@
   background-image: linear-gradient(
     to bottom,
     #ffc2af 0%,    /* 顶部纯白 */
-    #d7522a 100% /* 底部保持纯蓝色 */
+    #ef582a 100% /* 底部保持纯蓝色 */
   );
   border-radius: 50%;
   margin-right: 5px;

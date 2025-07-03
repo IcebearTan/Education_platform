@@ -214,7 +214,10 @@ const caution = () => {
 </template>
 
 <style scoped>
-.course-wrapper {}
+.course-wrapper {
+  padding-top: 20px;
+  background-color: #00000005;
+}
 
 .course-process {
   width: 300px;
@@ -279,7 +282,7 @@ const caution = () => {
   font-size: 30px;
   font-weight: bold;
   background-color: #91bdff;
-  box-shadow: 0 0 15px 2px #d2dbe9;
+  box-shadow: 0 0 12px 2px #d2dbe9;
   color: #fff;
 
   margin-right: 35px;
@@ -307,6 +310,7 @@ const caution = () => {
   /* justify-content: center; */
   align-items: center;
   flex-direction: column;
+  margin-top: 20px;
 }
 
 .course-bottom {
