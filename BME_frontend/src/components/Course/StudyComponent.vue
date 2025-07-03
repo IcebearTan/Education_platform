@@ -76,11 +76,23 @@ const hoverPosition = ref({ x: 0, y: 0 })
 
 const handleMouseEnter = (course, event) => {
     hoverCourse.value = course;
-    // 获取当前卡片的 DOM 元素
     const cardRect = event.currentTarget.getBoundingClientRect();
-    hoverPosition.value = {
-        x: cardRect.right + 10, // 右侧偏移10px
-        y: cardRect.top // 顶部对齐
+    const tooltipWidth = 320; // 估算悬浮框宽度（px），可根据实际调整
+    const gap = 10; // 间距
+
+    // 判断右侧空间是否足够
+    if (window.innerWidth - cardRect.right > tooltipWidth + gap) {
+        // 右侧空间足够，展示在右侧
+        hoverPosition.value = {
+            x: cardRect.right + gap,
+            y: cardRect.top
+        }
+    } else {
+        // 右侧空间不够，展示在左侧
+        hoverPosition.value = {
+            x: cardRect.left - tooltipWidth - gap,
+            y: cardRect.top
+        }
     }
 }
 const handleMouseLeave = () => {

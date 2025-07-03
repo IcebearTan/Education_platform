@@ -15,7 +15,7 @@ export default {
 
 <!-- 这个 style 块没有 scoped 属性，用于全局样式 -->
 <style>
-@media (max-width: 1768px) {
+@media (max-width: 768px) {
 
   /*小屏幕时候强制禁止横向翻动*/
   html,

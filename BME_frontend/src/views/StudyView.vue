@@ -76,7 +76,7 @@ onUnmounted(() => {
       <!-- 移动端菜单 -->
       <MobileMenuComponent v-if="isMobile && isMobileMenuOpen" @close="toggleMobileMenu" />
 
-      <el-main style="padding: 0px; min-height: 100vh;">
+      <el-main style="padding: 0px; min-height: 100vh; overflow-x: hidden;">
         <RouterView />
       </el-main>
       <el-footer class="page-footer">

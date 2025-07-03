@@ -8,7 +8,7 @@
         <div class="instructor-name">Jie Luo</div>
         <div class="instructor-label">金牌导师</div>
     </div>
-    <div class="title">班级排名</div>
+    <div class="title">小组排名</div>
     <div class="student-container">
         <div class="single-student-container" v-for="(user, index) in users" :key="index">
             <div :class="{'index': true, 'index-gold': index === 0, 'index-silver': index === 1, 'index-bronze': index === 2}">{{ index + 1 }}</div>
