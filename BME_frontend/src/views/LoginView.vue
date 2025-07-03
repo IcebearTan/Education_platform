@@ -16,7 +16,7 @@ export default {
 <template>
   <div>
     <el-container class="common-layout">
-      <el-header style="display: flex; justify-content: center; align-items: center; border-bottom: solid 1px #e6e6e6; padding-bottom: 1px;">
+      <el-header class="header">
         <MenuPlainComponent />
       </el-header>
       <el-main class="homeMainContainer">
@@ -32,6 +32,14 @@ export default {
 <style scoped>
 .common-layout{
   height: 100%;
+}
+
+.header{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-bottom: solid 1px #e6e6e6;
+  padding-bottom: 1px;
 }
 
 .footer {
