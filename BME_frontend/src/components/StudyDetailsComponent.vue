@@ -326,9 +326,9 @@ const caution = () => {
   width: 90%;
 
   border-radius: 5px;
-  box-shadow: #e9e9e9 0px 0px 12px 2px;
+  box-shadow: #e9e9e9 0px 0px 10px 2px;
 
-  margin-top: 15px;
+  margin-top: 20px;
 }
 
 .course-content-item {
@@ -368,8 +368,10 @@ const caution = () => {
 }
 
 .course-description {
+  color: #555;
+
   display: -webkit-box;
-  -webkit-line-clamp: 3;
+  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
