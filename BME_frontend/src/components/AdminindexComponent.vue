@@ -48,36 +48,6 @@ onMounted(() => {
 <template>
   <el-row>
     <el-col :span="6">
-      <!-- <div class="grid-content bg-purple">
-        <el-card class="box-card">
-          <div slot="header" class="clearfix">
-            <span>个人简介</span>
-          </div>
-          <el-divider></el-divider>
-          <div class="name-role">
-            <span class="sender">{{ User_Name }}</span>
-          </div>
-          <div class="registe-info">
-            <span class="registe-info">
-              注册时间：
-              {{ join_time }}
-            </span>
-          </div>
-          <el-divider></el-divider>
-          <div class="personal-relation">
-            <div class="relation-item">邮箱: {{ User_Email }}<div style="float: right; padding-right:20px;"></div>
-            </div>
-          </div>
-          <div class="personal-relation">
-            <div class="relation-item">勋章: {{ User_Medal }}<div style="float: right; padding-right:20px;"></div>
-            </div>
-          </div>
-          <div class="personal-relation">
-            <div class="relation-item">学习阶段: {{ User_Stage }}<div style="float: right; padding-right:20px;"></div>
-            </div>
-          </div>
-        </el-card>
-      </div> -->
 
       <div class="left-side">
         <div>

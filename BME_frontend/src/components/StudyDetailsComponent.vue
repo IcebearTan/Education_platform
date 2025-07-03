@@ -17,25 +17,26 @@ const courseId = ref(router.currentRoute.value.query.id)
 const courseInfo = ref([])
 
 const formatedCourseDetails = ref([])
-// Number(router.currentRoute.value.query.id)
 
-// 页面挂载时调用的函数，类似 Vue 2 中的 created()
-// const fetchUserData = async () => {
-//   try {
-//     const res = await api({
-//       url: '/user/user_index',
-//       method: 'get',
-//     })
+const colorPalette = [
+    "#b391ff", // 蓝紫色: 和谐邻近色
+    "#91bdff", // 原始色: 柔和蓝色
+    "#91ffde", // 蓝绿色: 清新冷色调
+    "#ffcc91", // 橙黄色: 温暖对比色
+    "#ff91c0"  // 玫红色: 活力点缀色
+];
 
-//     if (res.data.code === 200) {
-//       // console.log(res)
-//       store.dispatch('setUser', res.data)  // 将用户信息保存到 Vuex
-//     }
-//   } catch (error) {
-//     ElMessage.error('登录失效，请重新登录')
-//     router.push('/login')  // 跳转到登录页面
-//   }
-// }
+const randomColor = (courseName) => {
+    console.log(courseName)
+    // 简单哈希：将字符串转成数字和 
+    let hash = 0;
+    for (let i = 0; i < courseName.length; i++) {
+        hash = courseName.charCodeAt(i) + (hash << 6) + (hash << 16) - hash;
+    }
+    // 取余映射到色板 
+    const index = Math.abs(hash) % colorPalette.length;
+    return colorPalette[index];
+};
 
 const fetchCourseInfo = async () => {
   try {
@@ -152,7 +153,9 @@ const caution = () => {
   <div class="course-wrapper">
     <div class="course-details">
       <div class="course-info">
-        <div class="course-info-left" style="">{{ courseInfo.Course_Title }}</div>
+        <div class="course-info-left" 
+        :style="{backgroundColor: courseInfo?.Course_Title ? randomColor(courseInfo.Course_Title) : colorPalette[0]}">
+        {{ courseInfo.Course_Title }}</div>
         <div class="course-info-right">
           <h2 style="height: 20%;margin: 0;">
             {{ courseInfo.Course_Title }}
@@ -379,14 +382,5 @@ const caution = () => {
 .course-wrapper {
   display: flex;
   justify-content: center;
-
-  /* background: linear-gradient(
-    135deg, 
-    #dee7ff 0%,      
-    #dce6ff 30%,     
-    #ffffff 100%     
-  );
-  background-size: 100% 100%;
-  box-shadow: inset 0 8px 32px rgba(255, 255, 255, 0.15);  */
 }
 </style>

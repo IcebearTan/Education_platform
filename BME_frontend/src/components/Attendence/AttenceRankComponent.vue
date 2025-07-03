@@ -216,16 +216,3 @@ onMounted(() => {
     color: #999;
 }
 </style>
-
-{
-    "Group_Name": "C语言9组",
-    "Group_Type": "study",
-    "Group_member": "[
-        {
-            “student_id”:"9"
-        },
-        {
-            “student_id”:"10"
-        },
-    ]"
-}

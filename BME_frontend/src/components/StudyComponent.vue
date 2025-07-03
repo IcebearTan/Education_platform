@@ -6,6 +6,25 @@ import LearningPathComponent from './LearningPathComponent.vue'
 
 const router = useRouter()
 
+const colorPalette = [
+    "#b391ff", // 蓝紫色: 和谐邻近色
+    "#91bdff", // 原始色: 柔和蓝色
+    "#91ffde", // 蓝绿色: 清新冷色调
+    "#ffcc91", // 橙黄色: 温暖对比色
+    "#ff91c0"  // 玫红色: 活力点缀色
+];
+
+const randomColor = (courseName) => {
+    // 简单哈希：将字符串转成数字和 
+    let hash = 0;
+    for (let i = 0; i < courseName.length; i++) {
+        hash = courseName.charCodeAt(i) + (hash << 6) + (hash << 16) - hash;
+    }
+    // 取余映射到色板 
+    const index = Math.abs(hash) % colorPalette.length;
+    return colorPalette[index];
+};
+
 const courseList = ref([])  // 使用 ref 来声明响应式数据
 
 const buttons = reactive([
@@ -66,7 +85,7 @@ onMounted(() => {
             <el-card class="boxCard" v-for="course in courseList" :key="course.Course_Id"
                 @click="handleCourseClick(course.Course_Id)">
                 <div style="width: 100%; height: 100%; display: flex;">
-                    <div class="bookCover">{{ course.Course_title }}</div>
+                    <div class="bookCover" :style="{ backgroundColor: randomColor(course.Course_title) }">{{ course.Course_title }}</div>
                     <div class="bookInfo">
                         <div class="cardTitle">{{ course.Course_title }}</div>
                         <div class="cardText">{{ course.Course_Introduction }}</div>
@@ -187,17 +206,6 @@ onMounted(() => {
         margin: 10px 0 !important;
         /* 调整上下外边距 */
     }
-
-    /* 如果按钮组也在 StudyComponent.vue 内部，并且需要调整，也一并移动 */
-    /* .button-group-container {
-    justify-content: center;
-    width: 100%;
-  }
-  .styled-button {
-    font-size: 15px;
-    padding: 12px 15px;
-    margin-right: 10px;
-  } */
 }
 
 .boxCard:hover {
@@ -246,7 +254,7 @@ onMounted(() => {
 }
 
 .bookCover {
-    background-color: #91bdff;
+    /* background-color: #91bdff; */
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 
     font-weight: bold;

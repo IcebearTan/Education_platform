@@ -217,12 +217,3 @@ footer p {
   }
 }
 </style>
-
-{
-  "Group_Name": "string",
-  "Student_Ids": [
-    {
-      "student_id":"10"
-    }
-  ]
-}
