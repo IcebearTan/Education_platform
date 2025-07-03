@@ -1,11 +1,12 @@
 <!-- 使用vue3语法 -->
 <script setup>
-import api from '../api';
 import { onMounted } from 'vue'
 import { ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useRouter } from 'vue-router'
 import { useStore } from 'vuex';
+
+import api from '../../api';
 
 onMounted(() => {
   

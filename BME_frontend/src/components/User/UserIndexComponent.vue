@@ -1,13 +1,15 @@
 <!-- 使用vue3语法 -->
 <script setup>
-import api from '../api';
-import CalendarComponent from './CalendarComponent.vue';
-import UserActivityComponent from './UserActivityComponent.vue';
 import { onMounted } from 'vue'
 import { ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useRouter } from 'vue-router'
 import { useStore } from 'vuex';
+
+
+import api from '../../api';
+import CalendarComponent from './CalendarComponent.vue';
+import UserActivityComponent from './UserActivityComponent.vue';
 import UserIndexGroupComponent from './UserIndexGroupComponent.vue';
 
 const User_Info = ref({})
@@ -78,7 +80,7 @@ onMounted(() => {
             </div>
           </span>
           <span style="display: flex; align-items: center; justify-content: center;">
-            <img src="../assets/image.png" class="medal-image" />
+            <img src="../../assets/image.png" class="medal-image" />
           </span>
         </div>
       </div>

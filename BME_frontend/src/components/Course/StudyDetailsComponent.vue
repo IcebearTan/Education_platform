@@ -3,10 +3,13 @@ import { onMounted, ref } from 'vue'
 import { useStore } from 'vuex'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import MenuComponent from '../components/MenuComponent.vue'
-import api from '../api'
-import { API_URL } from '../api'
-import StudentProgressComponent from './studentProgressComponent.vue'
+// import api from '../../api'
+// import { API_URL } from '../../api'
+import api from '../../api'
+import { API_URL } from '../../api'
+
+import MenuComponent from '../MenuComponent.vue'
+import StudentProgressComponent from './StudentProgressComponent.vue'
 import StudentRankComponent from './StudentRankComponent.vue'
 
 const store = useStore()  // 获取 Vuex store

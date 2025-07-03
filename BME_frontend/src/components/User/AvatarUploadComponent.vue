@@ -1,18 +1,5 @@
-<template>
-  <el-upload
-    class="avatar-uploader"
-    :http-request="customUploadRequest"
-    :show-file-list="false"
-    :on-success="handleAvatarSuccess"
-    :before-upload="beforeAvatarUpload"
-  >
-    <img v-if="imageUrl" :src="imageUrl" class="avatar" />
-    <el-icon v-else class="avatar-uploader-icon"><Plus /></el-icon>
-  </el-upload>
-</template>
-
 <script lang="ts" setup>
-import api from '../api'
+import api from '../../api'
 import { ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
@@ -84,6 +71,19 @@ const beforeAvatarUpload: UploadProps['beforeUpload'] = (rawFile) => {
   return true
 }
 </script>
+
+<template>
+  <el-upload
+    class="avatar-uploader"
+    :http-request="customUploadRequest"
+    :show-file-list="false"
+    :on-success="handleAvatarSuccess"
+    :before-upload="beforeAvatarUpload"
+  >
+    <img v-if="imageUrl" :src="imageUrl" class="avatar" />
+    <el-icon v-else class="avatar-uploader-icon"><Plus /></el-icon>
+  </el-upload>
+</template>
 
 <style scoped>
 .avatar-uploader .avatar {

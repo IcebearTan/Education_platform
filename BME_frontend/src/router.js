@@ -1,11 +1,11 @@
 import { createRouter, createWebHistory } from 'vue-router';
 
-import UserindexComponent from './components/UserindexComponent.vue';
+// import UserIndexComponent from './components/User/UserIndexComponent.vue';
 import AdminindexComponent from "./components/AdminindexComponent.vue";
 
 import HomePage from './components/HomePage.vue';
-import StudyDetailsComponent from './components/StudyDetailsComponent.vue'
-import StudyComponent from './components/StudyComponent.vue'
+import StudyDetailsComponent from './components/Course/StudyDetailsComponent.vue'
+import StudyComponent from './components/Course/StudyComponent.vue'
 import ExamListComponent from './components/ExamListComponent.vue'
 
 import HomeView from './views/HomeView.vue'
@@ -16,11 +16,11 @@ import StudyView from './views/StudyView.vue'
 import ExamView from './views/ExamView.vue'
 import UserIndex from './views/UserIndex.vue';
 import UserCenter from './views/UserCenter.vue';
-import UserInfoComponent from './components/UserInfoComponent.vue';
+import UserInfoComponent from './components/User/UserInfoComponent.vue';
 
 import AboutUsView from './views/AboutUsView.vue'
 import FindPasswordView from './views/FindPasswordView.vue'
-import MedalWallComponent from './components/MedalWallComponent.vue';
+import MedalWallComponent from './components/User/MedalWallComponent.vue';
 
 import MedalView from './views/MedalView.vue';
 import StudentGroupsComponent from './components/StudentGroup/StudentGroupsComponent.vue';

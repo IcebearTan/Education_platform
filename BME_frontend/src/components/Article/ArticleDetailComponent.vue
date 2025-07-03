@@ -25,7 +25,7 @@ import { id } from 'element-plus/es/locales.mjs';
 import { defineComponent } from 'vue'
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-import api from '../api';
+import api from '../../api';
 
 export default defineComponent({
 

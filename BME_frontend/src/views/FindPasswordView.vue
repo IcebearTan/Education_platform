@@ -1,5 +1,5 @@
 <script>
-import FindPasswordComponent from '../components/FindPasswordComponent.vue';
+import FindPasswordComponent from '../components/Auth/FindPasswordComponent.vue';
 import PageFooterComponent from '../components/PageFooterComponent.vue';
 import MenuPlainComponent from '../components/MenuPlainComponent.vue';
 

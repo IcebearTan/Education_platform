@@ -1,5 +1,5 @@
 <script>
-import Register from '../components/RegisterComponent.vue';
+import Register from '../components/Auth/RegisterComponent.vue';
 import MenuPlainComponent from '../components/MenuPlainComponent.vue';
 import PageFooterComponent from '../components/PageFooterComponent.vue';
 

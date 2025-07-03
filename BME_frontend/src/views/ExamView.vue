@@ -1,7 +1,7 @@
 <script>
 import { RouterView } from "vue-router";
 import MenuComponent from "../components/MenuComponent.vue";
-import StudyComponent from '../components/StudyComponent.vue'
+import StudyComponent from '../components/Course/StudyComponent.vue'
 import PageFooterComponent from "../components/PageFooterComponent.vue";
 import { useStore } from 'vuex'
 import { useRouter } from 'vue-router'

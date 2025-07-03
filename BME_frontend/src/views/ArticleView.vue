@@ -4,7 +4,7 @@ import { useRoute, useRouter } from "vue-router";
 import MenuComponent from "../components/MenuComponent.vue";
 import MobileMenuComponent from "../components/MobileMenuComponent.vue";
 import PageFooterComponent from "../components/PageFooterComponent.vue";
-import ArticleDetailComponent from "../components/ArticleDetailComponent.vue";
+import ArticleDetailComponent from "../components/Article/ArticleDetailComponent.vue";
 import { Expand } from '@element-plus/icons-vue'; // 只导入 Expand，因为模板中只用了它
 
 // api 的导入如果 ArticleView 本身不直接调用，可以考虑移除

@@ -1,5 +1,5 @@
 <script>
-import Login from '../components/LoginComponent.vue';
+import Login from '../components/Auth/LoginComponent.vue';
 import PageFooterComponent from '../components/PageFooterComponent.vue';
 import MenuPlainComponent from '../components/MenuPlainComponent.vue';
 

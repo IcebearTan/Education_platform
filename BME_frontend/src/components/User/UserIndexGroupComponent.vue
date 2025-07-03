@@ -4,7 +4,7 @@ import { useStore } from 'vuex';
 import { useRouter } from 'vue-router';
 import { useRoute } from 'vue-router';
 import { ref, reactive, onMounted } from 'vue';
-import api from '../api';
+import api from '../../api';
 
 export default defineComponent({
     setup(props, context) {
@@ -133,31 +133,6 @@ export default defineComponent({
     </div>
     
   </div>
-  <!-- <div v-if="isShow">
-    <div class="title">我的小组</div>
-    <div class="content">
-         <div class="group-box">
-            <div class="group-title">学习组</div>
-            <div>
-                <img src="../assets/ice_bear_avatar.jpg" style="width: 50px; height: 50px; border-radius: 50%;">
-            </div>
-            <div class="groups">
-                <div>C语言程序设计</div>
-                <div>在内共 2 个小组</div>
-            </div>
-        </div>
-        <div class="group-box">
-            <div class="group-title">项目组</div>
-            <div>
-                <img src="../assets/ice_bear_avatar.jpg" style="width: 50px; height: 50px; border-radius: 50%;">
-            </div>
-            <div class="groups">
-                <div>训练营网页开发</div>
-                <div>在内共 2 个小组</div>
-            </div>
-        </div>
-    </div>
-  </div> -->
 </template>
 
 <style scoped>

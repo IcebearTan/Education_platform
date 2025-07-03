@@ -1,5 +1,5 @@
 <script>
-import api from '../api';
+import api from '../../api';
 import md5 from 'js-md5'
 
 export default {
@@ -183,7 +183,7 @@ export default {
     <div class="login-container">
         <el-container>
             <el-header>
-                <img style="width: 50px; position: relative; top: 15px;" src="../assets/Logo_NewYear.png" />
+                <img style="width: 50px; position: relative; top: 15px;" src="../../assets/Logo_NewYear.png" />
                 <span style="font-size: 25px; margin-bottom: 20px; font-weight: bold;">找回密码</span>
             </el-header>
             <el-main>
@@ -193,7 +193,7 @@ export default {
                         <el-input v-model="registerForm.username" type="text" autocomplete="off" placeholder="输入用户名" class="input"/>
                     </el-form-item> -->
                     <el-form-item prop="password">
-                        <el-input v-model="registerForm.password" type="password" autocomplete="off" placeholder="输入密码" class="input" show-password/>
+                        <el-input v-model="registerForm.password" type="password" autocomplete="off" placeholder="输入新密码" class="input" show-password/>
                     </el-form-item>
                     <el-form-item prop="confirmPassword">
                         <el-input v-model="registerForm.confirmPassword" type="password" autocomplete="off" placeholder="再次输入密码" class="input" show-password/>

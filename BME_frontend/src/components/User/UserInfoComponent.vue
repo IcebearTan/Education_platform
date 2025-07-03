@@ -1,6 +1,6 @@
 <!-- 使用vue3语法 -->
 <script setup>
-import api from '../api';
+import api from '../../api';
 import { onMounted } from 'vue'
 import { ref, reactive, computed, nextTick } from 'vue'
 import { ElMessage } from 'element-plus'

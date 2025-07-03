@@ -1,9 +1,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted, nextTick } from 'vue'; // 引入 Vue API
 import { useRouter } from "vue-router"; // RouterLink 已在模板中使用，但 router 实例可能需要
-import UserCenterComponent from "../components/UserCenterComponent.vue";
-// AdminindexComponent 似乎没有在模板中使用，如果不需要可以移除
-// import AdminindexComponent from "../components/AdminindexComponent.vue";
+import UserCenterComponent from "../components/User/UserCenterComponent.vue";
 import PageFooterComponent from "../components/PageFooterComponent.vue";
 import MenuComponent from "../components/MenuComponent.vue";
 import MobileMenuComponent from "../components/MobileMenuComponent.vue"; // 引入移动端菜单

@@ -1,5 +1,5 @@
 <script>
-import UserindexComponent from "../components/UserindexComponent.vue";
+import UserIndexComponent from "../components/User/UserIndexComponent.vue";
 import AdminindexComponent from "../components/AdminindexComponent.vue";
 import PageFooterComponent from "../components/PageFooterComponent.vue";
 import MenuComponent from "../components/MenuComponent.vue";
@@ -9,7 +9,7 @@ import { RouterLink } from "vue-router";
 export default {
     name: 'UserIndex',
     components: {
-        UserindexComponent,
+        UserIndexComponent,
         MenuComponent,
         PageFooterComponent
     },
@@ -95,7 +95,7 @@ onMounted(() => {
                         <div style="position: absolute; bottom: 5px; font-size: 15px; color: #666;">#uid：{{ uid }}</div>
                     </div>
                 </div>
-                <UserindexComponent />
+                <UserIndexComponent />
             </el-main>
             <el-footer class="page-footer">
                 <PageFooterComponent />

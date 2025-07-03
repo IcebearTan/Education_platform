@@ -1,7 +1,9 @@
 <script setup>
 import { ref, onMounted, reactive } from 'vue'
 import { useRouter } from 'vue-router'
-import api from '../api'
+// import api from '../../../api'
+// import LearningPathComponent from './LearningPathComponent.vue'
+import api from '../../api';
 import LearningPathComponent from './LearningPathComponent.vue'
 
 const router = useRouter()
