@@ -38,7 +38,7 @@
               <span 
                 v-for="(month, index) in visibleMonths" 
                 :key="month"
-                :style="{left: monthStartIndices[index] * 16 + 'px'}">{{ month }}</span>
+                :style="{left: monthStartIndices[index] * 2.5 + 'px'}">{{ month }}</span>
           </div>
       </div>
       <div class="calendar-grid" v-if="formeCheckStatus.length > 0">
@@ -587,10 +587,12 @@ watch(isloading, (newValue) => {
 .month-labels {
   position: relative;
   height: 20px;
-  margin-bottom: 10px;
-  margin-left: 62px;
+  /* margin-bottom: 10px; */
+  margin-left: 55px;
   overflow: visible;
   z-index: 10; /* 确保月份不被格子遮盖 */
+
+  color: #969696;
 }
 
 .month-labels span {
