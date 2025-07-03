@@ -22,7 +22,7 @@
             <div class="title_disabled">
                 医工融合科创协会
             </div>
-            <a class="subtitle" href="https://bme.sysu.edu.cn" target="_blank">中山大学生物医学工程</a>
+            <a class="subtitle" href="https://bme.sysu.edu.cn" target="_blank">中山大学生物医学工程学院</a>
             <a class="subtitle" href="https://www.sysu.edu.cn" target="_blank">中山大学</a>
             <!-- <div class="subtitle_disabled">
                 资源库
@@ -33,20 +33,10 @@
         </div>
         <div class="links">
             <div class="title_disabled">
-                训练营平台
+                训练营运营项目
             </div>
-            <div class="subtitle_disabled">
-                LeaningBooks
-            </div>
-            <div class="subtitle_disabled">
-                考核报名
-            </div>
-            <div class="subtitle_disabled">
-                资源库
-            </div>
-            <div class="subtitle_disabled">
-                讨论社区
-            </div>
+            <a class="subtitle" href="http://172.25.56.83:8081/" target="_blank">BioMedAI 生医工智能平台</a>
+            
         </div>
         <div class="links">
             <router-link class="title" :to="{ path: '/about'}" target="_blank">
@@ -74,7 +64,7 @@
         <div style="margin-right: 10px;">备案编号：1145141919810</div>
         <div style="margin-right: 10px;">没有版权和免责声明</div>
         <div style="margin-right: 10px;">服务冷线：4008-123-123</div>
-        <div style="margin-right: 10px;">客服邮箱：thisIsAfakeEmail@bme.com</div>
+        <div style="margin-right: 10px;">客服邮箱：thisIsAfakeEmail@mail2.sysu.edu.cn</div>
     </div>
   </div>
 </template>

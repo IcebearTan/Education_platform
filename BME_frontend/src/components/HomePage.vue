@@ -64,9 +64,7 @@ onMounted(() => {
     <div class="content-container">
       <div style="width: 0%; margin-left: 20px;"></div>
       <div style="display: flex; flex-direction: column; align-items: center;width: 80%;">
-        
-          <h1 class="secondTitle">最新资讯</h1>
-        
+        <!-- <h1 class="secondTitle">最新资讯</h1>
         <el-card v-for="article in reversedArticles" :key="article.Article_Id" @click="goToArticle(article.Article_Id)" class="article-card">
           <div slot="header" class="article-header">
             <h3 class="article-title">{{ article.Article_Title }}</h3>
@@ -81,7 +79,31 @@ onMounted(() => {
               <span class="view-count"> 0</span>
             </div>
           </div>
-        </el-card>
+        </el-card> 老版本-->
+        <div class="news-list">
+          <h1 class="news-title">最新资讯</h1>
+          <div
+            class="news-card"
+            v-for="article in reversedArticles"
+            :key="article.Article_Id"
+            @click="goToArticle(article.Article_Id)"
+          >
+            <div class="news-card-content">
+              <div class="news-card-header">
+                <span class="news-card-title">{{ article.Article_Title }}</span>
+                <span class="news-card-date">{{ article.Article_Time }}</span>
+              </div>
+              <div class="news-card-summary">{{ article.Article_Introduction }}</div>
+              <div class="news-card-footer">
+                <span class="news-card-action">查看详情</span>
+                <span class="news-card-stats">
+                  <span class="like-count">👍 0</span>
+                  <span class="view-count">👀 0</span>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
       <div style="width: 20%;margin-right: 20px; margin-top: 20px;">
         <div>
@@ -338,5 +360,134 @@ onMounted(() => {
 .view-count::before {
   content: '👀';
   margin-right: 5px;
+}
+</style>
+
+<style scoped>
+.news-title {
+  width: 100%;
+  text-align: left;
+  font-size: 28px;
+  font-weight: 700;
+  color: #222;
+  margin: 32px 0 18px 0;
+  margin-left: 10px;
+  letter-spacing: 1px;
+}
+
+.news-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+  max-width: 880px;
+}
+
+.news-card {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+  transition: box-shadow 0.2s, transform 0.2s;
+  cursor: pointer;
+  padding: 0;
+  border: none;
+  overflow: hidden;
+  position: relative;
+}
+
+.news-card:hover {
+  box-shadow: 0 8px 32px rgba(0,0,0,0.16);
+  transform: translateY(-4px) scale(1.01);
+}
+
+.news-card-content {
+  padding: 22px 26px 14px 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.news-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 4px;
+}
+
+.news-card-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #222;
+  flex: 1;
+  margin-right: 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.news-card-date {
+  font-size: 13px;
+  color: #aaa;
+  font-weight: 400;
+  min-width: 80px;
+  text-align: right;
+}
+
+.news-card-summary {
+  font-size: 15px;
+  color: #555;
+  margin-bottom: 6px;
+  line-height: 1.7;
+  min-height: 28px;
+}
+
+.news-card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 6px;
+}
+
+.news-card-action {
+  color: #409eff;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.news-card-action:hover {
+  color: #1867c0;
+  text-decoration: underline;
+}
+
+.news-card-stats {
+  display: flex;
+  gap: 14px;
+  color: #bbb;
+  font-size: 14px;
+}
+
+@media (max-width: 900px) {
+  .news-list {
+    max-width: 100%;
+    padding: 0 4px;
+  }
+  .news-card-content {
+    padding: 12px 6px 10px 6px;
+  }
+  .news-title {
+    font-size: 18px;
+    margin: 14px 0 8px 0;
+  }
+  .news-card-title {
+    font-size: 15px;
+  }
+  .news-card-summary {
+    font-size: 13px;
+  }
+  .news-card-action, .news-card-stats {
+    font-size: 12px;
+  }
 }
 </style>
