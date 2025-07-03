@@ -71,6 +71,22 @@ const filteredCourses = computed(() => {
     return courseList.value.filter(course => course.Course_Tags === activeBtn.label);
 });
 
+const hoverCourse = ref(null)
+const hoverPosition = ref({ x: 0, y: 0 })
+
+const handleMouseEnter = (course, event) => {
+    hoverCourse.value = course;
+    // 获取当前卡片的 DOM 元素
+    const cardRect = event.currentTarget.getBoundingClientRect();
+    hoverPosition.value = {
+        x: cardRect.right + 10, // 右侧偏移10px
+        y: cardRect.top // 顶部对齐
+    }
+}
+const handleMouseLeave = () => {
+    hoverCourse.value = null
+}
+
 onMounted(() => {
     getCourseList()  // 在组件挂载时调用获取课程列表的方法
 })
@@ -102,7 +118,9 @@ onMounted(() => {
             </template>
             <template v-else>
                 <el-card class="boxCard" v-for="course in filteredCourses" :key="course.Course_Id"
-                    @click="handleCourseClick(course.Course_Id)">
+                    @click="handleCourseClick(course.Course_Id)"
+                    @mouseenter="handleMouseEnter(course, $event)"
+                    @mouseleave="handleMouseLeave">
                     <div style="width: 100%; height: 100%; display: flex;">
                         <div class="bookCover" :style="{ backgroundColor: randomColor(course.Course_title) }">{{ course.Course_title }}</div>
                         <div class="bookInfo">
@@ -112,12 +130,71 @@ onMounted(() => {
                         </div>
                     </div>
                 </el-card>
+
+                <transition name="fade-tooltip">
+                    <div
+                        v-if="hoverCourse"
+                        class="course-tooltip"
+                        :style="{
+                        left: hoverPosition.x + 20 + 'px',
+                        top: hoverPosition.y + 20 + 'px'
+                        }"
+                    >
+                        <div class="tooltip-title">{{ hoverCourse.Course_title }}</div>
+                        <div class="tooltip-intro">{{ hoverCourse.Course_Introduction }}</div>
+                        <div class="tooltip-footer">共 {{ hoverCourse.Course_Chapters }} 章</div>
+                    </div>
+                </transition>
             </template>
         </div>
     </div>
 </template>
 
 <style scoped>
+.course-tooltip {
+    position: fixed;
+    z-index: 9999;
+    min-width: 220px;
+    max-width: 300px;
+    padding: 18px 22px;
+    border-radius: 16px;
+    background: rgba(255,255,255,0.7);
+    box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+    backdrop-filter: blur(10px);
+    color: #333;
+    pointer-events: none;
+    transition: opacity 0.2s;
+    font-size: 15px;
+    /* 防止超出屏幕 */
+    word-break: break-all;
+}
+
+.tooltip-title {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+.tooltip-intro {
+    font-size: 14px;
+    margin-bottom: 10px;
+    color: #666;
+}
+
+.tooltip-footer {
+    font-size: 13px;
+    color: #888;
+}
+.fade-tooltip-enter-active, .fade-tooltip-leave-active {
+  transition: opacity 0.25s;
+}
+.fade-tooltip-enter-from, .fade-tooltip-leave-to {
+  opacity: 0;
+}
+.fade-tooltip-enter-to, .fade-tooltip-leave-from {
+  opacity: 1;
+}
+
 .headText {
     font-size: 30px;
     font-weight: bold;
@@ -143,7 +220,11 @@ onMounted(() => {
     background-image: 
         repeating-radial-gradient(circle, rgb(255, 255, 255) 1px, transparent 3px, transparent 18px);
     /* 1px为点大小，3px为点边界，18px为点间距，可根据需要调整 */
+    transition: 1s ease-in-out;
     
+}
+.headContainer:hover{
+    background-size: 180px 180px;
 }
 
 .headGraph {

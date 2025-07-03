@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, computed } from 'vue'
 import { useStore } from 'vuex'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
@@ -138,6 +138,26 @@ const handleDownload = () => {
   fetchDownloadUrl()
 }
 
+const coverColor = computed(() => {
+  // 如果没有标题，使用默认色
+  return courseInfo.value?.Course_Title
+    ? randomColor(courseInfo.value.Course_Title)
+    : colorPalette[0];
+});
+
+function hexToRgba(hex, alpha) {
+  let c = hex.replace('#', '');
+  if (c.length === 3) c = c.split('').map(s => s + s).join('');
+  const num = parseInt(c, 16);
+  return `rgba(${(num >> 16) & 255},${(num >> 8) & 255},${num & 255},${alpha})`;
+}
+
+// 生成渐变色（可以根据 coverColor 调整深浅）
+const wrapperBg = computed(() => {
+  // 这里用 coverColor 作为主色，和白色做渐变
+  return `linear-gradient(360deg, ${hexToRgba(coverColor.value, 0.55)} 0%, #f8f9ff 100%)`;
+});
+
 // 在组件挂载后执行
 onMounted(() => {
   // courseId.value = router.value.quer.id
@@ -153,7 +173,7 @@ const caution = () => {
 </script>
 
 <template>
-  <div class="course-wrapper">
+  <div class="course-wrapper" :style="{ background: wrapperBg }">
     <div class="course-details">
       <div class="course-info">
         <div class="course-info-left" 
@@ -216,7 +236,10 @@ const caution = () => {
 <style scoped>
 .course-wrapper {
   padding-top: 20px;
-  background-color: #00000005;
+  min-height: 950px;
+  /* background-color: #eeefff; 这一行可以去掉 */
+  display: flex;
+  justify-content: center;
 }
 
 .course-process {
