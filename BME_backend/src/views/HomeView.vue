@@ -128,6 +128,15 @@ const handleClose = (key, keyPath) => {
               </template>
               <el-menu-item index="/learningprgress/manage" @click="router.push('/learningprgress/manage')">编辑学习进度</el-menu-item>
             </el-sub-menu>
+            <el-sub-menu index="6" disabled>
+              <template #title>
+                <el-icon>
+                  <Grid />
+                </el-icon>
+                <span>首页管理</span>
+              </template>
+              <el-menu-item index="/homepage/manage" @click="router.push('/homepage/cover')">编辑首页封面</el-menu-item>
+            </el-sub-menu>
             <el-menu-item index="7" style="position: absolute; bottom: 0;">
               <el-icon>
                 <setting />

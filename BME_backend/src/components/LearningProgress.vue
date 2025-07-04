@@ -185,7 +185,10 @@
   import { onBeforeMount } from 'vue';
   import { ref } from 'vue';
   import { ElDialog, ElMessage, ElMessageBox} from 'element-plus';
-  
+  import { useStore } from 'vuex'; // 添加store引入
+
+  const store = useStore(); // 初始化store
+
   const dialogVisible = ref(false)
   const isloading = ref(true)
   
@@ -334,8 +337,24 @@ const handleChapterChange = (user, course) => {
               group.student = '无'; //如果没有组员，则显示无
             }
           });
-          Groups.value.push(...res.data.project_groups);
-          Groups.value.push(...res.data.study_groups);
+          
+          // 获取当前用户ID
+          const currentUser = store.state.user;
+          
+          if (currentUser && currentUser.User_Id) {
+            // 筛选当前用户作为老师的小组
+            // 将用户ID转换为数字以避免前导零的问题
+            const currentUserId = Number(currentUser.User_Id);
+            const teacherGroups = [...res.data.project_groups, ...res.data.study_groups].filter(
+              group => Number(group.teacher_id) === currentUserId
+            );
+            Groups.value = teacherGroups;
+          } else {
+            // 如果无法获取用户信息，显示所有小组（保留原有行为）
+            Groups.value.push(...res.data.project_groups);
+            Groups.value.push(...res.data.study_groups);
+          }
+          
           // console.log(res);
           // console.log("Groups:",Groups);
           
