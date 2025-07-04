@@ -11,7 +11,7 @@ const api = axios.create({
     headers: {
         'Content-Type': 'application/json'
     },
-    withCredentials: false, // default
+    withCredentials: true, // 修改为true，允许跨域请求携带凭证
 
 
 });

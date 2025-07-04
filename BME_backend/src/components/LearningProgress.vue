@@ -206,9 +206,15 @@
       align:'center'
     },
     {
+      label: '课程名称',
+      prop: 'title',
+      width: 220,
+      align:'center'
+    },
+    {
       label: '小组成员',
       prop: 'student',
-      width: 400,
+      width: 330,
       align:'center'
     },
     {
@@ -234,8 +240,9 @@
   let Groups = ref([]);
 
   const records = ref([]);
+  const selectedCourseId = ref(null); // 新增：用于存储当前选中小组的课程ID
   
-async function getGroupProgress(group_id)
+async function getGroupProgress()
   {
     isloading.value = true;
     console.log('Fetching Progress data...');
@@ -250,7 +257,9 @@ async function getGroupProgress(group_id)
         return {
           name: user.username,
           id: user.user_id,
-          courses: user.records.map(record => {
+          courses: user.records
+            .filter(record => record.course_id === selectedCourseId.value) // 筛选对应课程的记录
+            .map(record => {
             return {
               course_id: record.course_id,
               course_name: record.course_name,
@@ -274,6 +283,7 @@ async function getGroupProgress(group_id)
   function configProgress(group) {
   dialogVisible.value = true;
   selectedGroupid.value = group.group_id;
+  selectedCourseId.value = group.course_id; // 设置当前选中的课程ID
   getGroupProgress();
   }
 
@@ -315,6 +325,10 @@ const handleChapterChange = (user, course) => {
           const res = await api.get(`/user/group/list`);
           res.data.project_groups.forEach(group => {
             group.group_type = 'project';  //给group加上类型标签
+            // 确保title字段存在，如果不存在则显示"未知课程"
+            if (!group.title) {
+              group.title = "未知课程";
+            }
             if(group.group.length > 0) {
               group.student = ''; //初始化组员字符串
               for(let i = 0; i < group.group.length; i++) {
@@ -327,6 +341,10 @@ const handleChapterChange = (user, course) => {
           });
           res.data.study_groups.forEach(group => {
             group.group_type = 'study';
+            // 确保title字段存在，如果不存在则显示"未知课程"
+            if (!group.title) {
+              group.title = "未知课程";
+            }
             if(group.group.length > 0) {
               group.student = ''; //初始化组员字符串
               for(let i = 0; i < group.group.length; i++) {
