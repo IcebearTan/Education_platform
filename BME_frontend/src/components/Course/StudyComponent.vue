@@ -50,6 +50,8 @@ const getCourseList = async () => {
             method: 'get',
         })
         courseList.value = res.data  // 将返回的数据赋值给响应式变量
+        console.log(courseList.value)
+
     } catch (err) {
         console.error(err)
     }

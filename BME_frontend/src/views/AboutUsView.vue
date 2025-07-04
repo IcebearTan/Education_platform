@@ -11,7 +11,7 @@ export default {
     components: {
         AboutUsComponent,
         MenuComponent,
-        PageFooterComponent
+        PageFooterComponent,
     },
 
     data() {
@@ -43,7 +43,8 @@ const User_Avatar = ref('');
             <el-header>
                 <MenuComponent />
             </el-header>
-            <AboutUsComponent />
+            <!-- <AboutUsComponent /> -->
+            
             <el-footer class="page-footer">
                 <PageFooterComponent />
             </el-footer>

@@ -19,7 +19,7 @@
             <div class="progress">
                 <div class="label">{{ user.progress }}/17</div>
                 <div style="width: 20px; display: flex; align-items: center;">
-                    <el-progress type="circle" :percentage="user.progress * 100 / 17" :width="20" :show-text="false" stroke-width="3"/>
+                    <el-progress type="circle" :percentage="user.displayProgress * 100 / 17" :width="20" :show-text="false" stroke-width="3"/>
                 </div>
             </div>
         </div>
@@ -28,8 +28,9 @@
 </template>
 
 <script setup>
-import { defineComponent } from 'vue'
-import { reactive } from 'vue';
+import { reactive, onMounted } from 'vue';
+
+const animationSpeed = 15; // 数字越小动画越快，可根据需要调整
 
 const users = reactive([
     {
@@ -73,6 +74,30 @@ const users = reactive([
         progress: 9,
     }
 ])
+
+// 给每个 user 增加 displayProgress 字段
+users.forEach(user => user.displayProgress = 0);
+
+function animateUserProgress(user) {
+    const target = user.progress;
+    function step() {
+        if (user.displayProgress < target) {
+            user.displayProgress += Math.max((target - user.displayProgress) / animationSpeed, 0.2);
+            if (user.displayProgress > target) user.displayProgress = target;
+            requestAnimationFrame(step);
+        } else {
+            user.displayProgress = target;
+        }
+    }
+    step();
+}
+
+onMounted(() => {
+    users.forEach(user => {
+        user.displayProgress = 0;
+        animateUserProgress(user);
+    });
+});
 
 </script>
 
