@@ -3,7 +3,7 @@ import axios from 'axios';
 // const API_URL = 'http://110.41.177.107:8000';
 // const API_URL = 'http://139.159.157.5:5000';
 const API_URL = 'http://172.25.56.83:5173';
-const LocalAPI_URL = 'http://localhost:5173';
+const LocalAPI_URL = 'http://localhost:5000';
 
 
 const api = axios.create({
@@ -11,7 +11,7 @@ const api = axios.create({
     headers: {
         'Content-Type': 'application/json'
     },
-    withCredentials: false, // default
+    withCredentials: true, // 修改为true，允许跨域请求携带凭证
 
 
 });

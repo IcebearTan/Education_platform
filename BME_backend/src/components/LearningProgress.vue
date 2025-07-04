@@ -185,7 +185,10 @@
   import { onBeforeMount } from 'vue';
   import { ref } from 'vue';
   import { ElDialog, ElMessage, ElMessageBox} from 'element-plus';
-  
+  import { useStore } from 'vuex'; // 添加store引入
+
+  const store = useStore(); // 初始化store
+
   const dialogVisible = ref(false)
   const isloading = ref(true)
   
@@ -203,9 +206,15 @@
       align:'center'
     },
     {
+      label: '课程名称',
+      prop: 'title',
+      width: 220,
+      align:'center'
+    },
+    {
       label: '小组成员',
       prop: 'student',
-      width: 400,
+      width: 330,
       align:'center'
     },
     {
@@ -231,8 +240,9 @@
   let Groups = ref([]);
 
   const records = ref([]);
+  const selectedCourseId = ref(null); // 新增：用于存储当前选中小组的课程ID
   
-async function getGroupProgress(group_id)
+async function getGroupProgress()
   {
     isloading.value = true;
     console.log('Fetching Progress data...');
@@ -247,7 +257,9 @@ async function getGroupProgress(group_id)
         return {
           name: user.username,
           id: user.user_id,
-          courses: user.records.map(record => {
+          courses: user.records
+            .filter(record => record.course_id === selectedCourseId.value) // 筛选对应课程的记录
+            .map(record => {
             return {
               course_id: record.course_id,
               course_name: record.course_name,
@@ -271,6 +283,7 @@ async function getGroupProgress(group_id)
   function configProgress(group) {
   dialogVisible.value = true;
   selectedGroupid.value = group.group_id;
+  selectedCourseId.value = group.course_id; // 设置当前选中的课程ID
   getGroupProgress();
   }
 
@@ -312,6 +325,10 @@ const handleChapterChange = (user, course) => {
           const res = await api.get(`/user/group/list`);
           res.data.project_groups.forEach(group => {
             group.group_type = 'project';  //给group加上类型标签
+            // 确保title字段存在，如果不存在则显示"未知课程"
+            if (!group.title) {
+              group.title = "未知课程";
+            }
             if(group.group.length > 0) {
               group.student = ''; //初始化组员字符串
               for(let i = 0; i < group.group.length; i++) {
@@ -324,6 +341,10 @@ const handleChapterChange = (user, course) => {
           });
           res.data.study_groups.forEach(group => {
             group.group_type = 'study';
+            // 确保title字段存在，如果不存在则显示"未知课程"
+            if (!group.title) {
+              group.title = "未知课程";
+            }
             if(group.group.length > 0) {
               group.student = ''; //初始化组员字符串
               for(let i = 0; i < group.group.length; i++) {
@@ -334,8 +355,24 @@ const handleChapterChange = (user, course) => {
               group.student = '无'; //如果没有组员，则显示无
             }
           });
-          Groups.value.push(...res.data.project_groups);
-          Groups.value.push(...res.data.study_groups);
+          
+          // 获取当前用户ID
+          const currentUser = store.state.user;
+          
+          if (currentUser && currentUser.User_Id) {
+            // 筛选当前用户作为老师的小组
+            // 将用户ID转换为数字以避免前导零的问题
+            const currentUserId = Number(currentUser.User_Id);
+            const teacherGroups = [...res.data.project_groups, ...res.data.study_groups].filter(
+              group => Number(group.teacher_id) === currentUserId
+            );
+            Groups.value = teacherGroups;
+          } else {
+            // 如果无法获取用户信息，显示所有小组（保留原有行为）
+            Groups.value.push(...res.data.project_groups);
+            Groups.value.push(...res.data.study_groups);
+          }
+          
           // console.log(res);
           // console.log("Groups:",Groups);
           

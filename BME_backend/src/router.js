@@ -15,6 +15,7 @@ import EditorComponent from './components/EditorComponent.vue';
 import EditorCreateComponent from './components/EditorCreateComponent.vue';
 import GroupManage from './components/GroupManage.vue';
 import LearningProgress from './components/LearningProgress.vue';
+import HomeCoverManage from './components/HomeCoverManage.vue';
 
 const router = createRouter({
     history: createWebHistory("/admin/"),
@@ -58,6 +59,11 @@ const router = createRouter({
                     path: '/learningprgress/manage',
                     name: 'learningprgress_manage',
                     component: LearningProgress
+                },
+                {
+                    path: '/homepage/cover',
+                    name: 'homepage_cover',
+                    component: HomeCoverManage
                 }
             ]
         },

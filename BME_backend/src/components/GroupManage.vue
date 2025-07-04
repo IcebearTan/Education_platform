@@ -1,7 +1,7 @@
 <template>
   <div class="selectable" style="width: 100%; height: 100%; position: relative; overflow: hidden;">
 
-    <el-dialog v-model="appendGruopDialogVisible" title="新建小组" width="500">
+    <el-dialog v-model="appendGruopDialogVisible" @closed="clearForm" title="新建小组" width="500">
     <el-form :model="form" @submit.prevent>
       <el-form-item class="GroupInput" label="小组名称" :label-width="140">
         <el-input v-model="form.name" autocomplete="off" />
@@ -12,6 +12,16 @@
           <el-option label="study" value="study" />
           <el-option label="project" value="project" />
       </el-select>
+      </el-form-item>
+      <el-form-item class="GroupInput" label="选择课程" :label-width="140">
+        <el-select v-model="form.course_id" placeholder="请选择课程">
+          <el-option 
+            v-for="course in courseList" 
+            :key="course.value" 
+            :label="course.label" 
+            :value="course.value"
+          />
+        </el-select>
       </el-form-item>
       <el-form-item class="GroupInput" label="组员信息" :label-width="140" >
         <el-input v-model="form.student" @keyup.enter="configBuildGroup" autocomplete="off" placeholder="请输入学生编号，不同编号间用空格隔开"/>
@@ -19,7 +29,7 @@
     </el-form>
     <template #footer>
       <div class="dialog-footer">
-        <el-button @click="appendGruopDialogVisible = false">取消</el-button>
+        <el-button @click="() => { appendGruopDialogVisible = false; clearForm(); }">取消</el-button>
         <el-button type="primary" @click="configBuildGroup">
           应用
         </el-button>
@@ -27,7 +37,7 @@
     </template>
   </el-dialog>
 
-  <el-dialog v-model="configGruopDialogVisible" title="编辑小组" width="500">
+  <el-dialog v-model="configGruopDialogVisible" @closed="clearForm" title="编辑小组" width="500">
     <el-form :model="form" @submit.prevent>
       <el-form-item class="GroupInput" label="小组名称" :label-width="140">
         <el-input v-model="form.name" autocomplete="off" />
@@ -39,13 +49,23 @@
           <el-option label="project" value="project" />
       </el-select>
       </el-form-item>
+      <el-form-item class="GroupInput" label="选择课程" :label-width="140">
+        <el-select v-model="form.course_id" placeholder="请选择课程">
+          <el-option 
+            v-for="course in courseList" 
+            :key="course.value" 
+            :label="course.label" 
+            :value="course.value"
+          />
+        </el-select>
+      </el-form-item>
       <el-form-item class="GroupInput" label="组员信息" :label-width="140" >
         <el-input v-model="form.student" @keyup.enter="configConfigGroup" autocomplete="off" placeholder="请输入学生编号，不同编号间用空格隔开"/>
       </el-form-item>
     </el-form>
     <template #footer>
       <div class="dialog-footer">
-        <el-button @click="configGruopDialogVisible = false">取消</el-button>
+        <el-button @click="() => { configGruopDialogVisible = false; clearForm(); }">取消</el-button>
         <el-button type="primary" @click="configConfigGroup">
           应用
         </el-button>
@@ -140,6 +160,9 @@ import api from '../api';
 import { onBeforeMount } from 'vue';
 import { ref, reactive} from 'vue';
 import { ElDialog, ElMessage, ElMessageBox} from 'element-plus';
+import { useStore } from 'vuex'; // 添加store引入
+
+const store = useStore(); // 初始化store
 
 const appendGruopDialogVisible = ref(false)
 const appendMemberDialogVisible = ref(false)
@@ -160,9 +183,15 @@ let tableLabel = ref([
     align:'center'
   },
   {
+    label: '课程名称',
+    prop: 'title',
+    width: 220,
+    align:'center'
+  },
+  {
     label: '小组成员',
     prop: 'student',
-    width: 400,
+    width: 330,
     align:'center'
   },
   {
@@ -183,6 +212,8 @@ const showHint = ref(false);
 const searchQuery = ref('');
 
 let Groups = ref([]);
+// 添加课程列表的响应式数据
+const courseList = ref([]);
 
 async function getGroupList()
 {
@@ -192,6 +223,10 @@ async function getGroupList()
         const res = await api.get(`/user/group/list`);
         res.data.project_groups.forEach(group => {
           group.group_type = 'project';  //给group加上类型标签
+          // 确保title字段存在，如果不存在则显示"未知课程"
+          if (!group.title) {
+            group.title = "未知课程";
+          }
           if(group.group.length > 0) {
             group.student = ''; //初始化组员字符串
             for(let i = 0; i < group.group.length; i++) {
@@ -204,6 +239,10 @@ async function getGroupList()
         });
         res.data.study_groups.forEach(group => {
           group.group_type = 'study';
+          // 确保title字段存在，如果不存在则显示"未知课程"
+          if (!group.title) {
+            group.title = "未知课程";
+          }
           if(group.group.length > 0) {
             group.student = ''; //初始化组员字符串
             for(let i = 0; i < group.group.length; i++) {
@@ -214,8 +253,24 @@ async function getGroupList()
             group.student = '无'; //如果没有组员，则显示无
           }
         });
-        Groups.value.push(...res.data.project_groups);
-        Groups.value.push(...res.data.study_groups);
+        
+        // 获取当前用户ID
+        const currentUser = store.state.user;
+        
+        if (currentUser && currentUser.User_Id) {
+          // 筛选当前用户作为老师的小组
+          // 将用户ID转换为数字以避免前导零的问题
+          const currentUserId = Number(currentUser.User_Id);
+          const teacherGroups = [...res.data.project_groups, ...res.data.study_groups].filter(
+            group => Number(group.teacher_id) === currentUserId
+          );
+          Groups.value = teacherGroups;
+        } else {
+          // 如果无法获取用户信息，显示所有小组（保留原有行为）
+          Groups.value.push(...res.data.project_groups);
+          Groups.value.push(...res.data.study_groups);
+        }
+        
         console.log(res);
         console.log(Groups);
         
@@ -224,14 +279,32 @@ async function getGroupList()
 }
 }
 
+// 获取课程列表的函数
+async function getCourseList() {
+  try {
+    const res = await api.get('/course/list');
+    courseList.value = res.data.map(course => ({
+      value: parseInt(course.Course_Id), // 将ID转为数字
+      label: course.Course_title
+    }));
+    console.log('课程列表加载成功:', courseList.value);
+  } catch (error) {
+    console.error('获取课程列表失败:', error);
+    ElMessage.error('获取课程列表失败');
+  }
+}
+
 onBeforeMount(async () => {
   await getGroupList();
+  await getCourseList(); // 获取课程列表
 });
 
 const form = reactive({
   name: '',
   type: '',
-  student:''
+  student:'',
+  course_id: null,
+  group_id: null // 添加group_id字段
 })
 
 const tempForm = reactive({
@@ -245,6 +318,8 @@ function clearForm()
   form.name = '';
   form.type = '';
   form.student = '';
+  form.course_id = null;
+  form.group_id = null; // 清空group_id
 }
 function clearTempForm()
 {
@@ -255,6 +330,12 @@ function clearTempForm()
 
 async function BuildGroup()
 {
+  // 验证课程ID是否已选择
+  if (form.course_id === null || form.course_id === undefined) {
+    ElMessage.error('请选择课程');
+    return;
+  }
+
   const studentString = form.student; // 获取输入的学生 ID 字符串
   const studentArray = studentString.split(" ").map(id => ({ student_id: id })); // 转换为对象数组
 
@@ -262,16 +343,19 @@ async function BuildGroup()
     Group_Name: form.name,
     Group_Type: form.type,
     Group_member: studentArray, // 将对象数组赋值给 Group_member
+    Course_Id: parseInt(form.course_id), // 确保Course_Id是整数类型
   };
 
+  console.log('提交的小组数据:', returnGroup);
+
   try{
-    // console.log(returnGroup);
     const response = await api.post('/user/group_add', returnGroup);
     console.log(response);
     ElMessage.success('创建小组成功');
   }
   catch (error) {
     console.error('Failed to add group:', error);
+    ElMessage.error('创建小组失败');
   }
 
 }
@@ -378,6 +462,8 @@ function configGroup(group) {
   // 将传入的 group 信息赋值到表单中
   form.name = group.group_name; // 小组名称
   form.type = group.group_type; // 小组类型
+  form.course_id = group.course_id || null; // 课程ID
+  form.group_id = group.group_id; // 设置小组ID
 
   // 将学生 ID 拼接成空格分隔的字符串
   if (group.student && typeof group.student === 'string') {
@@ -392,6 +478,11 @@ function configGroup(group) {
 }
 
 async function configConfigGroup(){
+  // 验证课程ID是否已选择
+  if (form.course_id === null || form.course_id === undefined) {
+    ElMessage.error('请选择课程');
+    return;
+  }
 
   const studentString = form.student; // 获取输入的学生 ID 字符串
   const studentArray = studentString.split(" ").map(id => ({ student_id: id })); // 转换为对象数组
@@ -400,7 +491,13 @@ async function configConfigGroup(){
     Group_Name: form.name, // 小组名称
     Group_Type: form.type, // 小组类型
     Group_member: studentArray, // 小组成员（学生 ID 数组）
+    Course_Id: parseInt(form.course_id), // 确保Course_Id是整数类型
   };
+  
+  // 只有在编辑小组时才添加Group_Id字段
+  if (form.group_id) {
+    returnGroup.Group_Id = parseInt(form.group_id); // 添加Group_Id字段，确保是整数类型
+  }
 
   try {
     // 打印 returnGroup 以便调试
@@ -414,6 +511,12 @@ async function configConfigGroup(){
 
     // 显示成功消息
     ElMessage.success('小组信息提交成功');
+    
+    // 关闭对话框
+    configGruopDialogVisible.value = false;
+    clearForm(); // 清空表单
+    await getGroupList(); // 重新获取小组列表
+    
   } catch (error) {
     // 捕获并打印错误
     console.error('Failed to submit group data:', error);
@@ -421,11 +524,6 @@ async function configConfigGroup(){
     // 显示错误消息
     ElMessage.error('提交小组信息失败，请稍后重试');
   }
-
-  // 清空表单并关闭对话框
-  appendGruopDialogVisible.value = false;
-  clearForm(); // 清空表单
-  await getGroupList(); // 重新获取小组列表
 }
 
 async function deleteGroup(group)
