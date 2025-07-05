@@ -1,6 +1,6 @@
 <!-- 使用vue3语法 -->
 <script setup>
-import { onMounted } from 'vue'
+import { onMounted, computed } from 'vue'
 import { ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useRouter } from 'vue-router'
@@ -17,6 +17,22 @@ const User_Info = ref({})
 
 const router = useRouter()
 const store = useStore()
+
+// 计算属性：将技能标签字符串分割成数组
+const skillTags = computed(() => {
+  if (!User_Info.value.Skill_Tags) return []
+  // 支持多种分隔符：逗号、分号、竖线、空格等
+  return User_Info.value.Skill_Tags
+    .split(/[,，;；|｜\s]+/)
+    .filter(tag => tag.trim() !== '')
+    .map(tag => tag.trim())
+})
+
+// 为不同的标签分配不同的类型，让标签更有视觉层次
+const getTagType = (index) => {
+  const types = ['primary', 'success', 'info', 'warning', 'danger']
+  return types[index % types.length]
+}
 
 const toMedalWall = () => {
   router.push('/medal/user-medal')
@@ -47,16 +63,30 @@ onMounted(() => {
     <el-col :span="6">
       <div class="left-side">
         <div>
-          <div style="padding-left: 20px; display: flex; align-items: center; font-size: large; font-weight: bold; padding-top: 20px;">个人简介</div>
-          <div style="padding-left: 20px; color: #aaa; font-size: 15px; margin-top: 10px;">{{ User_Info.Introduction }}</div>
-          <div style="color: #555; font-size: 15px;">
-            <div style="padding: 20px; padding-bottom: 0;">性别：{{ User_Info.User_Sex }}</div>
-            <div style="padding: 20px; padding-bottom: 0;">学院：{{ User_Info.Institute }}</div>
-            <div style="padding: 20px; padding-bottom: 0;">专业：{{ User_Info.Major }}</div>
-            <div style="padding: 20px; padding-bottom: 0;">入营时间：{{ User_Info.join_time }}</div>
-            <div style="padding: 20px; padding-bottom: 0;">GithubID：{{ User_Info.Github_Id }}</div>
-            <div style="padding: 20px; padding-bottom: 0;">技能标签：{{ User_Info.Skill_Tags }}</div>
-            <div style="padding-bottom: 20px; border-bottom: solid 1px #eee; height: 0; width: 85%; margin: 0 auto;"></div>
+          <div class="profile-title">个人简介</div>
+          <div class="profile-intro">{{ User_Info.Introduction }}</div>
+          <div class="profile-info">
+            <div class="profile-info-item">性别：{{ User_Info.User_Sex }}</div>
+            <div class="profile-info-item">学院：{{ User_Info.Institute }}</div>
+            <div class="profile-info-item">专业：{{ User_Info.Major }}</div>
+            <div class="profile-info-item">入营时间：{{ User_Info.join_time }}</div>
+            <div class="profile-info-item">GithubID：{{ User_Info.Github_Id }}</div>
+            <div class="profile-info-item profile-skill-tags">
+              <div class="profile-skill-title">技能标签：</div>
+              <div class="skill-tags-container">
+                <el-tag 
+                  v-for="(tag, index) in skillTags" 
+                  :key="index"
+                  :type="getTagType(index)"
+                  size="small"
+                  class="skill-tag"
+                >
+                  {{ tag }}
+                </el-tag>
+                <span v-if="skillTags.length === 0" class="no-skill-tag">暂无技能标签</span>
+              </div>
+            </div>
+            <div class="profile-divider"></div>
           </div>
         </div>
       </div>
@@ -90,7 +120,7 @@ onMounted(() => {
       </div>
       <!-- <user-activity-component/> -->
       <div>
-        <SeatLayoutComponent />
+        <UserActivityComponent />
       </div>
     </el-col>
   </el-row>
@@ -102,12 +132,31 @@ onMounted(() => {
 .right-side{
   border-radius: 10px;
   background-color: #fff;
-
   box-shadow: #e7edf5 0px 0px 10px 0px;
   height: 200px;
   width: 50%;
-
   margin: 10px;
+}
+
+.medalDate {
+  font-size: 14px;
+  padding-left: 20px;
+  /* text-align: center; */
+  color: #999;
+
+  margin-top: 5px;
+}
+
+.medalTitle {
+  font-size: 16px;
+  font-weight: bold;
+  padding-left: 20px;
+  /* text-align: center; */
+  color: #444;
+}
+
+.medalInfo {
+  margin-top: 30px;
 }
 
 .medal-card{
@@ -115,14 +164,10 @@ onMounted(() => {
   background-color: #fff;
   box-shadow: #e7edf5 0px 0px 10px 0px;
   color: #555;
-
   height: 200px;
   width: 50%;
-
   display: flex;
-
   margin: 10px;
-
   transition: all 0.3s;
   cursor: pointer;
 }
@@ -134,97 +179,92 @@ onMounted(() => {
   width: 135px;
   height: 135px;
   margin: 10px;
-  /* display: block; */
   border-radius: 50%;
   border: solid #729bd4 5px;
   display: inline-block;
-
   transition: all 0.3s ease-in-out;
 }
 .medal-image:hover{
   box-shadow: #a3dce6 0px 0px 22px 0px;
-  
 }
 
 .left-side{
   border-radius: 10px;
   background-color: #fff;
-
   box-shadow: #e7edf5 0px 0px 10px 0px;
-
   height: 100vh;
   width: 90%;
-
   margin-top: 10px;
 }
 
-.text {
-  font-size: 14px;
-}
-
-.item {
-  margin-bottom: 18px;
-}
-
-.clearfix:before,
-.clearfix:after {
-  display: table;
-  content: "";
-}
-
-.clearfix:after {
-  clear: both
-}
-
-.box-card {
-  width: 100%;
-}
-
-.name-role {
-  font-size: 16px;
-  padding: 5px;
-  text-align: center;
-}
-
-.sender {
-  text-align: center;
-}
-
-.registe-info {
-  text-align: center;
-  padding-top: 10px;
-}
-
-.personal-relation {
-  font-size: 16px;
-  padding: 0px 5px 15px;
-  margin-right: 1px;
-  width: 100%
-}
-
-.relation-item {
-  padding: 12px;
-
-}
-
-.medalDate {
-  font-size: 14px;
+.profile-title {
   padding-left: 20px;
-  /* text-align: center; */
-  color: #999;
-
-  margin-top: 5px;
-}
-.medalTitle {
-  font-size: 16px;
+  display: flex;
+  align-items: center;
+  font-size: large;
   font-weight: bold;
+  padding-top: 20px;
+}
+
+.profile-intro {
   padding-left: 20px;
-  /* text-align: center; */
-  color: #444;
-}
-.medalInfo {
-  margin-top: 30px;
+  color: #aaa;
+  font-size: 15px;
+  margin-top: 20px;
+
+  padding-right: 20px;
 }
 
+.profile-info {
+  color: #555;
+  font-size: 15px;
+}
 
+.profile-info-item {
+  padding: 20px;
+  padding-bottom: 0;
+}
+
+.profile-skill-tags {
+  padding-bottom: 10px;
+}
+
+.profile-skill-title {
+  margin-bottom: 8px;
+  color: #555;
+}
+
+.no-skill-tag {
+  color: #ccc;
+  font-size: 14px;
+}
+
+.profile-divider {
+  padding-bottom: 20px;
+  border-bottom: solid 1px #eee;
+  height: 0;
+  width: 85%;
+  margin: 0 auto;
+}
+
+/* 技能标签样式 */
+.skill-tags-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.skill-tag {
+  margin: 0;
+  border-radius: 12px;
+  font-size: 12px;
+  padding: 4px 8px;
+  transition: all 0.3s ease;
+}
+
+.skill-tag:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
 </style>
