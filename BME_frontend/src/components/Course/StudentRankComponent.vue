@@ -13,7 +13,7 @@
         <div class="single-student-container" v-for="(user, index) in users" :key="index">
             <div :class="{'index': true, 'index-gold': index === 0, 'index-silver': index === 1, 'index-bronze': index === 2}">{{ index + 1 }}</div>
             <div class="block">
-                <el-avatar :size="40" src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png" />
+                <el-avatar :size="40" :src="userAvatars[user.user_id] || defaultAvatarUrl" />
             </div>
             <div class="username">{{ user.username }}</div>
             <div class="progress">
@@ -78,53 +78,39 @@ watch(sortedUsers, (newList) => {
   users.value.forEach(user => animateUserProgress(user));
 }, { immediate: true });
 
+const userAvatars = ref({}); // { [user_id]: avatarUrl }
+const defaultAvatarUrl = 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png';
+
+const getUserAvatar = async (userId) => {
+    try {
+        const res = await api({
+            url: `/user/user_avatars_id`,
+            method: 'get',
+            params: {
+                User_Id: userId
+            }
+        });
+
+        if (res.data.code === 200) {
+            userAvatars.value[userId] = 'data:image/jpeg;base64,' + res.data.User_Avatar;
+            console.log('yes')
+        } else {
+            userAvatars.value[userId] = defaultAvatarUrl; // 使用默认头像
+            console.log('no')
+        }
+    } catch (err) {
+        console.error(err);
+        userAvatars.value[userId] = defaultAvatarUrl; // 使用默认头像
+    }
+};
+
+watch(sortedUsers, (users) => {
+  users.forEach(user => {
+    getUserAvatar(user.user_id);
+  });
+}, { immediate: true });
+
 const animationSpeed = 15; // 数字越小动画越快，可根据需要调整
-
-// const users = reactive([
-//     {
-//         index: 1,
-//         username: 'Icebear',
-//         progress: 16,
-//     },
-//     {
-//         index: 2,
-//         username: 'Icebear2',
-//         progress: 15,
-//     },
-//     {
-//         index: 3,
-//         username: 'Icebear3',
-//         progress: 14,
-//     },
-//     {
-//         index: 4,
-//         username: 'Icebear4',
-//         progress: 13,
-//     },
-//     {
-//         index: 5,
-//         username: 'Icebear5',
-//         progress: 12,
-//     },
-//     {
-//         index: 6,
-//         username: 'Icebear6',
-//         progress: 11,
-//     },
-//     {
-//         index: 7,
-//         username: 'Icebear7',
-//         progress: 10,
-//     },
-//     {
-//         index: 8,
-//         username: 'Icebear8',
-//         progress: 9,
-//     }
-// ])
-
-// 给每个 sortedUsers 增加 displayProgress 字段
-// sortedUsers.forEach(user => user.displayProgress = 0);
 
 function animateUserProgress(user) {
     const target = user.progress;

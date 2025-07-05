@@ -382,7 +382,7 @@ const caution = () => {
   background: rgba(255,255,255,0.7);
   box-shadow: 0 4px 24px rgba(0,0,0,0.10);
   backdrop-filter: blur(10px);
-  transition: all 0.3s ease-in-out;
+  transition: all 0.15s ease-in-out;
 
   cursor: pointer;
 }
@@ -390,6 +390,8 @@ const caution = () => {
   background: rgba(255,255,255,0.8);
   box-shadow: 0 4px 24px rgba(0,0,0,0.15);
   backdrop-filter: blur(20px);
+
+  transform: scale(1.02);
 }
 
 .course-process h2 {
@@ -465,6 +467,31 @@ const caution = () => {
   width: 130px;
   height: 180px;
   text-align: center;
+
+  transition: all 0.3s ease-in-out;
+  position: relative;
+  overflow: hidden;
+}
+
+.course-info-left::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 25%;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.1), transparent);
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+  border-radius: 0 0 10px 10px;
+}
+
+.course-info-left:hover {
+  box-shadow: 0 0 16px 2px #d0d1d2;
+}
+
+.course-info-left:hover::before {
+  opacity: 1;
 }
 
 .course-info-right {
