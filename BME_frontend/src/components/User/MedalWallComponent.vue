@@ -56,238 +56,293 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="background">
-    <div class="medal-wall">
-      <h1 class="medal-title">勋章墙</h1>
-      <div class="content">
-        <div class="left-bar">
-          <button class="category-button" :class="{active:currentCategory===''}" @click="currentCategory=''">全部</button>
-          <button class="category-button" :class="{active:currentCategory==='硬件组'}" @click="currentCategory='硬件组'">硬件组</button>
-          <button class="category-button" :class="{active:currentCategory==='软件组'}" @click="currentCategory='软件组'">软件组</button>
-          <button class="category-button" :class="{active:currentCategory==='先进制造组'}" @click="currentCategory='先进制造组'">先进制造组</button>
-          <button class="category-button" :class="{active:currentCategory==='特殊勋章'}" @click="currentCategory='特殊勋章'">特殊勋章</button>
+  <div class="medal-wall-container">
+    <!-- 头部区域 -->
+    <div class="header">
+      <h1 class="title">勋章墙</h1>
+      <p class="subtitle">展示您在训练营的成长与收获</p>
+    </div>
+    
+    <!-- 分类导航 -->
+    <div class="category-nav">
+      <button 
+        class="category-btn" 
+        :class="{active: currentCategory === ''}" 
+        @click="currentCategory = ''"
+      >
+        全部
+      </button>
+      <button 
+        class="category-btn" 
+        :class="{active: currentCategory === '硬件组'}" 
+        @click="currentCategory = '硬件组'"
+      >
+        硬件组
+      </button>
+      <button 
+        class="category-btn" 
+        :class="{active: currentCategory === '软件组'}" 
+        @click="currentCategory = '软件组'"
+      >
+        软件组
+      </button>
+      <button 
+        class="category-btn" 
+        :class="{active: currentCategory === '先进制造组'}" 
+        @click="currentCategory = '先进制造组'"
+      >
+        先进制造组
+      </button>
+      <button 
+        class="category-btn" 
+        :class="{active: currentCategory === '特殊勋章'}" 
+        @click="currentCategory = '特殊勋章'"
+      >
+        特殊勋章
+      </button>
+    </div>
+
+    <!-- 勋章网格 -->
+    <div class="medals-grid" v-if="filteredMedals.length > 0">
+      <div 
+        class="medal-card" 
+        v-for="medal in filteredMedals" 
+        :key="medal.id"
+        :class="{ 'medal-earned': medal.Get_Time }"
+      >
+        <div class="medal-image-wrapper">
+          <img 
+            :src="`/medals/${medal.Medal_Name}.png`" 
+            :alt="medal.Medal_Name_CN" 
+            class="medal-image"
+          />
+          <div v-if="medal.Get_Time" class="earned-badge">✓</div>
         </div>
-        <div class="medal-grid">
-          <div class="medal" v-for="medal in filteredMedals" :key="medal.id" v-if="filteredMedals.length > 0">
-            <img :src="`/medals/${medal.Medal_Name}.png`" :alt="medal.name" :class="medalClass(medal.Get_Time)" />
-            <div class="medal-info">
-              <h3>{{ medal.Medal_Name_CN }}</h3>
-              <p v-if="isGetMedal(medal.Get_Time)">获得时间：{{ medal.Get_Time }}</p>
-              <p v-else>尚未获得</p>
-            </div>
-          </div>
-          <div v-else>
-            <p>还没有勋章哦~</p>
-          </div>
-        </div>  
+        <div class="medal-details">
+          <h3 class="medal-name">{{ medal.Medal_Name_CN }}</h3>
+          <p class="medal-status">
+            {{ medal.Get_Time ? `获得于 ${medal.Get_Time}` : '尚未获得' }}
+          </p>
+        </div>
       </div>
+    </div>
+
+    <!-- 空状态 -->
+    <div v-else class="empty-state">
+      <div class="empty-icon">🏆</div>
+      <p class="empty-text">还没有勋章</p>
+      <p class="empty-hint">等待加速制作专属勋章</p>
     </div>
   </div>
 </template>
 
-<style>
-html,
-body,#app, .app-main {
-  margin: 0;
-  padding: 0;
-  width: 100%;
-  height: 100%;
-}
-</style>
-
 <style scoped>
-.background {
-  width: 100%;
-  height: 100vh;
-  padding: 20px;
-  box-sizing: border-box;
-  background: linear-gradient(to bottom, #e8f4ff,#fff);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  z-index: 0;
-
-  border-radius: 20px;
+.medal-wall-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  padding: 32px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-.medal-wall{
-  position: relative;
-  width: 90%;
-  height: 90%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  background: #fff;
-  border-radius: 10px;
-  box-shadow: 4px 4px 4px 4px rgba(46, 73, 103, 0.1);
-}
-
-.medal-title{
-  position: absolute;
-  height: 13%;
-  top: 0;
-  padding: 20px;
-  box-sizing: border-box;
-  width: 98%;
-  margin: 0;
+/* 头部区域 */
+.header {
   text-align: center;
+  margin-bottom: 48px;
+}
+
+.title {
   font-size: 40px;
-  border-bottom: 1.5px solid rgb(231, 231, 231);
+  font-weight: 700;
+  color: #2d3748;
+  margin: 0 0 8px 0;
+  letter-spacing: -0.025em;
 }
 
-.content{
-  display: flex;
-  position: absolute;
-  flex: 1;
-  width: 100%;
-  bottom: 0;
-  height: 87%; 
-  overflow-y: auto;
-  box-sizing: border-box;
-  /* padding: 20px; */
-  /* box-sizing: border-box; */
-}
-
-.content::-webkit-scrollbar {
-  display: none;
-}
-
-.left-bar{
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  width: 15%; 
-  position: relative;
-}
-
-.left-bar::after {
-  content: ''; /* 伪元素必须有 content 属性 */
-  position: absolute;
-  top: 10px; /* 边框的顶部位置 */
-  right: 0; /* 边框在盒子的右侧 */
-  width: 1.5px; /* 边框宽度 */
-  height: calc(100% - 20px); /* 边框高度比盒子短 20px */
-  background-color: rgb(231, 231, 231); /* 边框颜色 */
-}
-
-.category-button{
-  padding: 10px 20px;
-  border: none;
-  border-radius: 0%;
-  background-color: #fff;
-  cursor: pointer;
-  transition: 0.3s;
-
+.subtitle {
   font-size: 18px;
-  color: #444;
+  color: #718096;
+  margin: 0;
+  font-weight: 400;
 }
 
-.category-button:hover{
-  background: #f0f0f0;
+/* 分类导航 */
+.category-nav {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 48px;
+  flex-wrap: wrap;
 }
 
-.category-button.active {
-  background-color: #89c8ff;
-  color: #fff;
-  border: none;
-  outline: none;
-}
-
-.category-button:focus {
-  outline: none;
-}
-
-.medal-grid {
-  flex:1;
-  gap: 20px;
-  row-gap: 80px;
-  /* margin-top: 100px; */
-  overflow-y: auto;
-  padding: 20px;
-  height: 650px;
-  width: 95%;
-  display: grid;
-  grid-template-columns: repeat(5, 1fr); 
-  grid-row: 300px;
-  grid-column: 100px;
-}
-
-.medal-grid::-webkit-scrollbar {
-  display: none;
-}
-
-.medal {
-  border-radius: 20px;
-  padding: 15px;
-  width:90%;
-  text-align: center;
-  background: #fff;
-  box-shadow: 0px 0px 8px rgba(203, 213, 224, 0.838);
-  height: 200px;
-
-  transition: 0.3s;
+.category-btn {
+  padding: 12px 24px;
+  border: 2px solid #e2e8f0;
+  border-radius: 50px;
+  background: white;
+  color: #4a5568;
+  font-weight: 500;
   cursor: pointer;
-
-  overflow: hidden;
-  object-position: center;
-}
-.medal:hover {
-  transform: translateY(-10px);
+  transition: all 0.2s ease;
+  font-size: 15px;
 }
 
-.medal-icon {
-  width: 145px;
-  height: 145px;
-  /* margin-bottom: 10px; */
-  border-radius: 50%;
+.category-btn:hover {
+  border-color: #4299e1;
+  color: #2b6cb0;
+  transform: translateY(-1px);
+}
 
+.category-btn.active {
+  background: #4299e1;
+  border-color: #4299e1;
+  color: white;
+  box-shadow: 0 4px 12px rgba(66, 153, 225, 0.3);
+}
+
+/* 勋章网格 */
+.medals-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* 勋章卡片 */
+.medal-card {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  text-align: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  border: 1px solid #f7fafc;
+}
+
+.medal-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.1);
+}
+
+.medal-card.medal-earned {
+  border-color: #68d391;
+  background: linear-gradient(135deg, #fff 0%, #f0fff4 100%);
+}
+
+/* 勋章图片区域 */
+.medal-image-wrapper {
   position: relative;
-  /* top: -20px; */
-  /* left: 3px; */
+  display: inline-block;
+  margin-bottom: 16px;
+}
 
-  /* opacity: 0.1;
-  filter: grayscale(60%); */
-  
-  box-shadow: 0px 0px 20px #bbb, 0px 0px 20px #bbb inset;
-
+.medal-image {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
   object-fit: cover;
-  
+  transition: all 0.3s ease;
 }
-.medal-icon-unclaimed {
-  width: 145px;
-  height: 145px;
+
+.medal-card:not(.medal-earned) .medal-image {
+  opacity: 0.3;
+  filter: grayscale(100%);
+}
+
+.medal-earned .medal-image {
+  box-shadow: 0 8px 20px rgba(66, 153, 225, 0.3);
+}
+
+/* 获得标识 */
+.earned-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  width: 24px;
+  height: 24px;
+  background: #48bb78;
+  color: white;
   border-radius: 50%;
-
-  position: relative;
-
-  opacity: 0.1;
-  filter: grayscale(60%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.medal-icon-old {
-  width: 120px;
-  height: 120px;
-  margin-bottom: 10px;
-  border-radius: 8px;
+/* 勋章详情 */
+.medal-details {
+  margin-top: 16px;
 }
 
-.medal-info {
-  position: relative;
-  /* top: -35px; */
+.medal-name {
+  font-size: 18px;
+  font-weight: 600;
+  color: #2d3748;
+  margin: 0 0 8px 0;
 }
 
-.medal-info h3 {
-  font-size: 16px;
-  margin: 5px 0;
-  color: #555;
-}
-
-.medal-info p {
+.medal-status {
   font-size: 14px;
-  color: #999;
+  color: #718096;
+  margin: 0;
+}
 
-  margin-top: 10px;
+.medal-earned .medal-status {
+  color: #38a169;
+  font-weight: 500;
+}
+
+/* 空状态 */
+.empty-state {
+  text-align: center;
+  padding: 64px 32px;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.empty-icon {
+  font-size: 64px;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.empty-text {
+  font-size: 24px;
+  font-weight: 600;
+  color: #4a5568;
+  margin: 0 0 8px 0;
+}
+
+.empty-hint {
+  font-size: 16px;
+  color: #718096;
+  margin: 0;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .medal-wall-container {
+    padding: 16px;
+  }
+  
+  .title {
+    font-size: 32px;
+  }
+  
+  .medals-grid {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 16px;
+  }
+  
+  .category-nav {
+    gap: 4px;
+  }
+  
+  .category-btn {
+    padding: 8px 16px;
+    font-size: 14px;
+  }
 }
 </style>

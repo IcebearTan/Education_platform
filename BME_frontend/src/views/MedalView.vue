@@ -68,7 +68,7 @@ export default {
 }
 
 .homeMainContainer{
-  padding-left: 20px;
+  padding: 0px;
   min-height: 100vh;
   /* background-color: rgba(129, 51, 33, 0.898); */
   background-color: rgb(255, 255, 255);

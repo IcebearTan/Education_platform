@@ -160,12 +160,6 @@ const hoverDay = ref(null);
 <style scoped>
 .calendarContainer{
   width: 100%;
-  /* height: 300px; */
-  /* background-color: #fff; */
-  /* border-radius: 5px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  margin-right: 10px; */
-  /* margin-top: 10px; */
   margin-bottom: 15px;
 }
 .calendarCard{
@@ -173,10 +167,11 @@ const hoverDay = ref(null);
   height: 242px;
   background-color: #fff;
   border-radius: 10px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  box-shadow: #e7edf5 0px 0px 10px 0px;
+
 
   margin-right: 10px;
-  padding: 10px;
+  padding: 5px;
   padding-bottom: 0;
 }
 .calendarHeader{
@@ -195,14 +190,14 @@ const hoverDay = ref(null);
   display: grid;
   grid-auto-flow: column;
   grid-template-rows: repeat(7, 12px);
-  grid-auto-columns: 10px; 
+  grid-auto-columns: 12px; 
   gap: 6px; 
-  padding: 10px 35px 0px 40px;
+  padding: 10px 15px 0px 10px;
 }
 
 .day-cell {
   position: relative;
-  height: 10px;
+  height: 12px;
   border-radius: 2px;
   cursor: pointer;
   background: #ebedf0;

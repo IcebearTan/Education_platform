@@ -95,6 +95,7 @@ onMounted(() => {
 <style scoped>
 .right-side{
   border-radius: 10px;
+  background-color: #fff;
 
   box-shadow: #e7edf5 0px 0px 10px 0px;
   height: 200px;
@@ -105,6 +106,7 @@ onMounted(() => {
 
 .medal-card{
   border-radius: 10px;
+  background-color: #fff;
   box-shadow: #e7edf5 0px 0px 10px 0px;
   color: #555;
 
@@ -140,6 +142,7 @@ onMounted(() => {
 
 .left-side{
   border-radius: 10px;
+  background-color: #fff;
 
   box-shadow: #e7edf5 0px 0px 10px 0px;
 

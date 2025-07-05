@@ -21,7 +21,7 @@ onMounted(() => {
         
       </div>
       <div class="ActivityBody">
-        Null
+        敬请期待
       </div>
     </div>
   </div>
@@ -40,8 +40,9 @@ onMounted(() => {
   /* width: 100%; */
   height: 250px;
   background-color: #fff;
-  border-radius: 5px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  box-shadow: #e7edf5 0px 0px 10px 0px;
+
 
   margin-right: 10px;
 }
@@ -57,12 +58,13 @@ onMounted(() => {
   border-bottom: 1px solid #eee;
 }
 .ActivityBody{
-  height: 260px;
+  height: 200px;
   display: flex;
   justify-content: center;
   align-items: center;
 
-  font-size: 100px;
+  font-size: 80px;
   font-weight: bolder;
+  color: #c3c3c3;
 }
 </style>

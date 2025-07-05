@@ -23,13 +23,18 @@
         <el-form :model="form" ref="formRef" class="transparent-form">
           <div v-if="isLoading" class="scroll-container" @scroll="handleScroll"> 加载中…… </div>
           <div v-else class="scroll-container" @scroll="handleScroll">
-            <GroupCard
-              v-for="(group, index) in Groups"
-              :key="index"
-              :group="group"
-            />
+            <template v-if="Groups.length > 0">
+              <GroupCard
+                v-for="(group, index) in Groups"
+                :key="index"
+                :group="group"
+              />
+            </template>
+            <template v-else>
+              <div class="no-group">暂时没有加入小组</div>
+            </template>
           </div>
-      </el-form>
+        </el-form>
       </div>
     </div>
   </div>
@@ -65,55 +70,53 @@ const value = ref('全部小组')
 
 let Groups = ref([]);
 
-async function getGroupList()
-{
-  // console.log('Fetching Groups...');
+const getGroupList = async () => {
   try {
-  Groups.value.length = 0; // 清空之前的组数据
+    Groups.value.length = 0; // 清空之前的组数据
 
-  const res = await api.get(`/user/group`);
+    const res = await api.get(`/user/group`);
 
-  // 检查 project_groups 是否存在并且是数组
-  if (Array.isArray(res.data.project_group)) {
-    res.data.project_group.forEach(group => {
-      group.group_type = 'project'; // 给 group 加上类型标签
-      if (group.students.length > 0) {
-        group.student = ''; // 初始化组员字符串
-        for (let i = 0; i < group.students.length; i++) {
-          group.student += group.students[i].Student_Id + ':' + group.students[i].Student + ','; // 拼接组员的姓名和 ID
+    // 检查 project_groups 是否存在并且是数组
+    if (Array.isArray(res.data.project_group)) {
+      res.data.project_group.forEach(group => {
+        group.group_type = 'project'; // 给 group 加上类型标签
+        if (group.students.length > 0) {
+          group.student = ''; // 初始化组员字符串
+          for (let i = 0; i < group.students.length; i++) {
+            group.student += group.students[i].Student_Id + ':' + group.students[i].Student + ','; // 拼接组员的姓名和 ID
+          }
+          group.student = group.student.slice(0, -1); // 去掉最后一个逗号
+        } else {
+          group.student = '无'; // 如果没有组员，则显示无
         }
-        group.student = group.student.slice(0, -1); // 去掉最后一个逗号
-      } else {
-        group.student = '无'; // 如果没有组员，则显示无
-      }
-    });
-    Groups.value.push(...res.data.project_group);
-  } else {
-    console.warn("project_groups is not an array or is undefined");
-  }
+      });
+      Groups.value.push(...res.data.project_group);
+    } else {
+      console.warn("project_groups is not an array or is undefined");
+    }
 
-  // 检查 study_groups 是否存在并且是数组
-  if (Array.isArray(res.data.study_group)) {
-    res.data.study_group.forEach(group => {
-      group.group_type = 'study'; // 给 group 加上类型标签
-      if (group.students.length > 0) {
-        group.student = ''; // 初始化组员字符串
-        for (let i = 0; i < group.students.length; i++) {
-          group.student += group.students[i].Student_Id + ':' + group.students[i].Student + ','; // 拼接组员的姓名和 ID
+    // 检查 study_groups 是否存在并且是数组
+    if (Array.isArray(res.data.study_group)) {
+      res.data.study_group.forEach(group => {
+        group.group_type = 'study'; // 给 group 加上类型标签
+        if (group.students.length > 0) {
+          group.student = ''; // 初始化组员字符串
+          for (let i = 0; i < group.students.length; i++) {
+            group.student += group.students[i].Student_Id + ':' + group.students[i].Student + ','; // 拼接组员的姓名和 ID
+          }
+          group.student = group.student.slice(0, -1); // 去掉最后一个逗号
+        } else {
+          group.student = '无'; // 如果没有组员，则显示无
         }
-        group.student = group.student.slice(0, -1); // 去掉最后一个逗号
-      } else {
-        group.student = '无'; // 如果没有组员，则显示无
-      }
-    });
-    Groups.value.push(...res.data.study_group);
-  } else {
-    console.warn("study_groups is not an array or is undefined");
-  }
+      });
+      Groups.value.push(...res.data.study_group);
+    } else {
+      console.warn("study_groups is not an array or is undefined");
+    }
 
-} catch (error) {
-  console.error("Error fetching data:", error);
-}finally {
+  } catch (error) {
+    console.error("Error fetching data:", error);
+  } finally {
       }
 }
 
@@ -128,8 +131,7 @@ watch(value, () => {
   search();
 });
 
-// 定义 search 函数
-async function search() {
+const search = async () => {
   // console.log(`Searching for groups of type: ${value.value}`);
   // 根据 value 的值筛选 Groups
   if (value.value === '全部小组') {
@@ -160,7 +162,7 @@ async function search() {
 }
 
 
-function filterObjectsByMatchingValues(groups, validUserId) {
+const filterObjectsByMatchingValues = (groups, validUserId) => {
   // 筛选符合条件的组
   return groups.filter(group => {
     // 检查 teacher_id 是否匹配
@@ -178,7 +180,7 @@ function filterObjectsByMatchingValues(groups, validUserId) {
   });
 }
 
-function foreFilter() {
+const foreFilter = () => {
   // 从 localStorage 获取数据
   const myAppDataString = localStorage.getItem('my-app');
   
@@ -352,5 +354,11 @@ console.log("有问题请找谭谭");
   color: #666;
   margin-top: 20px;
   margin-right: 20px;
+}
+.no-group {
+  text-align: center;
+  color: #999;
+  font-size: 16px;
+  margin-top: 50px;
 }
 </style>
