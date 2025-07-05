@@ -123,6 +123,11 @@ onMounted(() => {
 </template>
 
 <style scoped>
+/* 全局标题字体设置 */
+h1, h2 {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+}
+
 .marquee-container {
   width: 100%;
   overflow: hidden;

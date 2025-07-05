@@ -456,6 +456,7 @@ const caution = () => {
   justify-content: center;
   font-size: 30px;
   font-weight: bold;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
   background-color: #91bdff;
   box-shadow: 0 0 12px 2px #d2dbe9;
   color: #fff;

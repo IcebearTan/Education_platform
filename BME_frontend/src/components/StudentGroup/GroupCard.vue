@@ -226,6 +226,7 @@ async function fetchUserAvatars(){
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 
   font-weight: bold;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
   width: 90px;
   height: 120px;
 

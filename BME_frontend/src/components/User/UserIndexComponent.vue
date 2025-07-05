@@ -11,6 +11,7 @@ import api from '../../api';
 import CalendarComponent from './CalendarComponent.vue';
 import UserActivityComponent from './UserActivityComponent.vue';
 import UserIndexGroupComponent from './UserIndexGroupComponent.vue';
+import SeatLayoutComponent from '../SeatLayoutComponent.vue';
 
 const User_Info = ref({})
 
@@ -84,8 +85,13 @@ onMounted(() => {
           </span>
         </div>
       </div>
-      <calendar-component/>
-      <user-activity-component/>
+      <div>
+        <calendar-component/>
+      </div>
+      <!-- <user-activity-component/> -->
+      <div>
+        <SeatLayoutComponent />
+      </div>
     </el-col>
   </el-row>
   
