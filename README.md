@@ -53,8 +53,19 @@
 ## 非常重要！一定要测试运行没有问题以后再提交代码
 ## 千万不要多人编辑一个组件！特别是已有组件！
 
-## 许可证
-这个项目采用 [MIT 许可证](LICENSE)。
+## 📄 License
+
+本项目采用 [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License](https://creativecommons.org/licenses/by-nc-sa/4.0/) 许可证。
+
+### 许可证说明
+- ✅ **允许**：教育用途、学术研究、个人学习、非营利组织使用
+- ❌ **禁止**：商业用途、盈利性质的使用
+- 📝 **要求**：署名原作者、相同许可证分享改进版本
+
+![CC BY-NC-SA](https://licensebuttons.net/l/by-nc-sa/4.0/88x31.png)
+
+### English
+This project is licensed under [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/).
 
 ## 致谢
 - 感谢 Jerry 提供后端开发支持
