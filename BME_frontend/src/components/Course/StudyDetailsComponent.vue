@@ -204,6 +204,14 @@ const checkEnrollment = async () => {
   }
 }
 
+const checkUnlock = (chapterOrder) => {
+  if (userProgress.value >= chapterOrder) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
 // 在组件挂载后执行
 onMounted(() => {
   fetchCourseDetails()
@@ -272,7 +280,7 @@ const caution = () => {
         <StudentProgressComponent :user-progress="userProgress" />
       </div>
       <div class="class-rank">
-        <StudentRankComponent />
+        <StudentRankComponent :course-id="courseId" />
       </div>
     </div>
 

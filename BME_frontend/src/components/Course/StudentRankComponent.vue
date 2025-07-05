@@ -28,55 +28,103 @@
 </template>
 
 <script setup>
-import { reactive, onMounted } from 'vue';
+import { reactive, onMounted, defineProps, ref, computed, watch } from 'vue';
+import api from '../../api';
+
+const props = defineProps({
+    courseId: {
+        type: String,
+        required: true
+    }
+})
+
+const courseId = props.courseId;
+const progressList = ref([]);
+
+const getProgressList = async () => {
+    try {
+        const res = await api({
+            url: `/learningProgress/group_through_courseid`,
+            method: 'get',
+            params: {
+                Course_Id: courseId
+            }
+        });
+
+        progressList.value = res.data.data;
+    } catch (err) {
+        console.error(err);
+        return [];
+    }
+}
+// 处理排序和提取
+const sortedUsers = computed(() => {
+    if (!progressList.value.result) return [];
+    return progressList.value.result.map(item => ({
+        user_id: item.user_id,
+        username: item.username,
+        progress: item.records[0]?.progress ?? 0
+        }))
+        .sort((a, b) => b.progress - a.progress); // 按进度降序
+});
+
+const users = ref([]);
+// 监听 sortedUsers 变化，生成 users 并初始化动画
+watch(sortedUsers, (newList) => {
+  users.value = newList.map(user => ({
+    ...user,
+    displayProgress: 0
+  }));
+  users.value.forEach(user => animateUserProgress(user));
+}, { immediate: true });
 
 const animationSpeed = 15; // 数字越小动画越快，可根据需要调整
 
-const users = reactive([
-    {
-        index: 1,
-        username: 'Icebear',
-        progress: 16,
-    },
-    {
-        index: 2,
-        username: 'Icebear2',
-        progress: 15,
-    },
-    {
-        index: 3,
-        username: 'Icebear3',
-        progress: 14,
-    },
-    {
-        index: 4,
-        username: 'Icebear4',
-        progress: 13,
-    },
-    {
-        index: 5,
-        username: 'Icebear5',
-        progress: 12,
-    },
-    {
-        index: 6,
-        username: 'Icebear6',
-        progress: 11,
-    },
-    {
-        index: 7,
-        username: 'Icebear7',
-        progress: 10,
-    },
-    {
-        index: 8,
-        username: 'Icebear8',
-        progress: 9,
-    }
-])
+// const users = reactive([
+//     {
+//         index: 1,
+//         username: 'Icebear',
+//         progress: 16,
+//     },
+//     {
+//         index: 2,
+//         username: 'Icebear2',
+//         progress: 15,
+//     },
+//     {
+//         index: 3,
+//         username: 'Icebear3',
+//         progress: 14,
+//     },
+//     {
+//         index: 4,
+//         username: 'Icebear4',
+//         progress: 13,
+//     },
+//     {
+//         index: 5,
+//         username: 'Icebear5',
+//         progress: 12,
+//     },
+//     {
+//         index: 6,
+//         username: 'Icebear6',
+//         progress: 11,
+//     },
+//     {
+//         index: 7,
+//         username: 'Icebear7',
+//         progress: 10,
+//     },
+//     {
+//         index: 8,
+//         username: 'Icebear8',
+//         progress: 9,
+//     }
+// ])
 
-// 给每个 user 增加 displayProgress 字段
-users.forEach(user => user.displayProgress = 0);
+// 给每个 sortedUsers 增加 displayProgress 字段
+// sortedUsers.forEach(user => user.displayProgress = 0);
 
 function animateUserProgress(user) {
     const target = user.progress;
@@ -93,7 +141,10 @@ function animateUserProgress(user) {
 }
 
 onMounted(() => {
-    users.forEach(user => {
+    getProgressList();
+
+    // 给每个 users 增加 displayProgress 字段
+    users.value.forEach(user => {
         user.displayProgress = 0;
         animateUserProgress(user);
     });
