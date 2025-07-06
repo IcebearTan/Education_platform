@@ -5,7 +5,7 @@ import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import api from '../../api'
 import { API_URL } from '../../api'
-import { Star, StarFilled } from '@element-plus/icons-vue'
+import { Star, StarFilled, Lock, Unlock } from '@element-plus/icons-vue'
 import StudentProgressComponent from './StudentProgressComponent.vue'
 import StudentRankComponent from './StudentRankComponent.vue'
 
@@ -63,6 +63,7 @@ const fetchCourseInfo = async () => {
 
     if (res.data.code === 200) {
       courseInfo.value = res.data
+      userProgress.value.chapters = res.data.Chapters || 0; // 设置章节数量
       console.log(courseInfo.value)
     }
   } catch (error) {
@@ -171,7 +172,14 @@ const wrapperBg = computed(() => {
 // 查询当前用户是否已经加入课程
 const isEnrolled = ref(false)
 const enrolledList = ref([])
-const userProgress = ref() //个人进度
+const userProgress = ref({
+  chapters: 0,
+  section_num: 0,
+  section_name: '',
+  chapter_num: 0,
+  chapter_name: '',
+  progress: 0,
+}) //个人进度
 
 const getEnrollments = async () => {
   try {
@@ -183,7 +191,6 @@ const getEnrollments = async () => {
     if (res.data.code === 200) {
       // console.log(res)
       enrolledList.value = res.data.data.records
-      console.log(enrolledList.value)
     }
   } catch (error) { }
 }
@@ -194,22 +201,24 @@ const checkEnrollment = async () => {
   const courseIdInt = parseInt(courseId.value, 10); // 转为整数
   // console.log(enrolledList.value.length)
   for (let i = 0; i < enrolledList.value.length; i++) {
-    console.log(enrolledList.value[i])
     if (enrolledList.value[i].course_id === courseIdInt) {
       // 已加入课程
       isEnrolled.value = true;
-      userProgress.value = enrolledList.value[i].progress;
+      Object.assign(userProgress.value, {
+        section_num: enrolledList.value[i].section_num,
+        section_name: enrolledList.value[i].section_name,
+        chapter_num: enrolledList.value[i].chapter_num,
+        chapter_name: enrolledList.value[i].chapter_name,
+        progress: enrolledList.value[i].progress
+      });
       break;
     }
   }
 }
 
 const checkUnlock = (chapterOrder) => {
-  if (userProgress.value >= chapterOrder) {
-    return true;
-  } else {
-    return false;
-  }
+  // 解锁条件：小节序号 ≤ 已完成章节数 + 1
+  return chapterOrder <= userProgress.value.chapter_num + 1;
 }
 
 // 在组件挂载后执行
@@ -241,7 +250,7 @@ const caution = () => {
             {{ courseInfo.Introduction }}
           </div>
           <div class="course-bottom">
-            <el-button type="primary" plain size="large" disabled="true" @click="caution()">{{ isEnrolled ? '正在学习' : '加入学习'}}</el-button>
+            <el-button type="primary" plain size="large" disabled="true" @click="caution()" class="no-cursor">{{ isEnrolled ? '正在学习' : '加入学习'}}</el-button>
             <el-button type="primary" size="large" @click="handleDownload()">下载内容</el-button>
           </div>
         </div>
@@ -258,10 +267,11 @@ const caution = () => {
               <span class="course-content-item-index">{{ index + 1 }}</span>
               <span style="position: relative; left: -15px">{{ item.name }}</span>
             </div>
-            <div class="course-content-item-sub" v-for="(subItem, subIndex) in item.subChapters" :key="subIndex">
+            <div class="course-content-item-sub" v-for="(subItem, subIndex) in item.subChapters" :key="subIndex"
+                 :class="{ 'locked': !isEnrolled || !checkUnlock(index + 1) }">
               <div>{{ subItem.name }}</div>
-              <div>
-                <el-icon>
+              <div v-if="!isEnrolled || !checkUnlock(index + 1)">
+                <el-icon class="lock-icon">
                   <Lock />
                 </el-icon>
               </div>
@@ -280,7 +290,7 @@ const caution = () => {
         <StudentProgressComponent :user-progress="userProgress" />
       </div>
       <div class="class-rank">
-        <StudentRankComponent :course-id="courseId" />
+        <StudentRankComponent :course-id="courseId" :chapters="courseInfo.Chapters" />
       </div>
     </div>
 
@@ -578,6 +588,15 @@ const caution = () => {
   background-color: #ededed;
 }
 
+.course-content-item-sub.locked {
+  color: #ccc;
+  cursor: pointer;
+}
+
+.lock-icon {
+  color: #ccc;
+}
+
 .course-description {
   color: #555;
 
@@ -590,5 +609,9 @@ const caution = () => {
 .course-wrapper {
   display: flex;
   justify-content: center;
+}
+
+.no-cursor {
+  cursor: auto !important;
 }
 </style>

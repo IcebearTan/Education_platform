@@ -1,60 +1,85 @@
 <template>
   <div class="student-progress">
     <div>
-        <div class="student-progress-title">个人进度</div>
-        <div class="student-progress-content">上次学到：</div>
-        <div class="student-progress-content">算法初步 - C语言程序设计第二章</div>
+      <div class="student-progress-title">个人进度</div>
+      <div class="student-progress-content">上次学到：</div>
+      <div class="student-progress-content">
+        <span v-if="props.userProgress.chapter_name">{{ props.userProgress.chapter_name }}</span>
+        <span v-if="props.userProgress.section_name"> - {{ props.userProgress.section_name }}</span>
+      </div>
     </div>
     <div style="margin-left: auto;">
-        <el-progress 
+      <el-progress 
         type="dashboard" 
         color="#3AC263" 
         :percentage="displayPercentage">
-            <template #default="{ percentage }">
-                <div class="percentage-label">{{ props.userProgress }} / {{ 16 }}</div>
-                <div class="percentage-label">已完成</div>
-            </template>
-        </el-progress>
+        <template #default>
+          <div class="percentage-label">{{ props.userProgress.chapter_num }} / {{ props.userProgress.chapters }}</div>
+          <div class="percentage-label">已完成</div>
+        </template>
+      </el-progress>
     </div>
-    
-    
   </div>
 </template>
 
 <script setup>
-import { defineComponent, onMounted, defineProps } from 'vue'
+import { defineComponent, onMounted, defineProps, watch } from 'vue'
 import { ref } from 'vue';
 
 const props = defineProps({
   userProgress: {
-    type: [Number, String], // 根据你的实际类型选择
-    default: 0
+    type: Object,
+    default: () => ({
+      chapters: 0,
+      // 章节数量，后端传递
+      section_num: 0,
+      section_name: '',
+      chapter_num: 0,
+      chapter_name: '',
+      progress: 0
+    })
   }
 })
 
-const percentage = ref(props.userProgress * 100 / 16)
-const displayPercentage = ref(0);
-let animating = false;
+// 进度百分比
+const percentage = ref(0)
+const displayPercentage = ref(0)
+let animationFrameId = null
+const animationSpeed = 5 // 数字越大动画越慢，越小越快，可自行调整
 
 function animateToTarget(target) {
-  if (animating) return;
-  animating = true;
+  if (animationFrameId) {
+    cancelAnimationFrame(animationFrameId)
+    animationFrameId = null
+  }
   function step() {
-    if (displayPercentage.value < target) {
-      displayPercentage.value += Math.max((target - displayPercentage.value) / 10, 0.1);
-      if (displayPercentage.value > target) displayPercentage.value = target;
-      requestAnimationFrame(step);
+    if (Math.abs(displayPercentage.value - target) > 0.1) {
+      displayPercentage.value += (target - displayPercentage.value) / animationSpeed
+      animationFrameId = requestAnimationFrame(step)
     } else {
-      displayPercentage.value = target;
-      animating = false;
+      displayPercentage.value = target
+      animationFrameId = null
     }
   }
-  step();
+  step()
+}
+
+function updateProgress() {
+  // 兼容后端传字符串，统一使用 chapter_num 来计算进度
+  const num = Number(props.userProgress.chapter_num) || 0
+  const total = Number(props.userProgress.chapters) || 1 // 避免为0
+  percentage.value = Math.min(num * 100 / total, 100)
+  animateToTarget(percentage.value)
 }
 
 onMounted(() => {
-  animateToTarget(percentage.value);
-});
+  updateProgress()
+})
+
+// 监听props变化，动态更新进度
+watch(() => props.userProgress.chapter_num, () => {
+  updateProgress()
+})
 </script>
 
 <style scoped>

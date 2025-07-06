@@ -3,10 +3,10 @@
     <!-- <div class="title">导师</div> -->
     <div class="instructor-container">
         <div class="block-instructor">
-            <el-avatar :size="50" src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png" />
+            <el-avatar :size="50" :src="teacher.avatar" />
         </div>
-        <div class="instructor-name">Jie Luo</div>
-        <div class="instructor-label">金牌导师</div>
+        <div class="instructor-name">{{ teacher.name }}</div>
+        <div class="instructor-label">{{ teacher.label }}</div>
     </div>
     <div class="title">小组排名</div>
     <div class="student-container">
@@ -17,9 +17,9 @@
             </div>
             <div class="username">{{ user.username }}</div>
             <div class="progress">
-                <div class="label">{{ user.progress }}/17</div>
+                <div class="label">{{ user.chapter_num }} / {{ props.chapters }}</div>
                 <div style="width: 20px; display: flex; align-items: center;">
-                    <el-progress type="circle" :percentage="user.displayProgress * 100 / 17" :width="20" :show-text="false" stroke-width="3"/>
+                    <el-progress type="circle" :percentage="user.displayProgress * 100 / props.chapters" :width="20" :show-text="false" stroke-width="3"/>
                 </div>
             </div>
         </div>
@@ -35,11 +35,21 @@ const props = defineProps({
     courseId: {
         type: String,
         required: true
+    },
+    chapters: {
+        type: Number,
+        default: 0 // 默认章节数
     }
 })
 
 const courseId = props.courseId;
 const progressList = ref([]);
+const teacher = ref({
+    id: '',
+    name: '',
+    avatar: 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png',
+    label: '导师'
+});
 
 const getProgressList = async () => {
     try {
@@ -52,20 +62,42 @@ const getProgressList = async () => {
         });
 
         progressList.value = res.data.data;
+        teacher.value.name = res.data.data.teacher_name || 'Jie Luo';
+        teacher.value.id = res.data.data.teacher_id || '';
+        getTeacherAvatar(res.data.teacher_id);
     } catch (err) {
         console.error(err);
         return [];
     }
 }
+
+const getTeacherAvatar = async (teacherId) => {
+    try {
+        const res = await api({
+            url: `/user/user_avatars_id`,
+            method: 'get',
+            params: {
+                User_Id: teacher.value.id
+            }
+        });
+
+        if (res.data.code === 200) {
+            teacher.value.avatar = 'data:image/jpeg;base64,' + res.data.User_Avatar;
+        }
+    } catch (err) {
+        console.error(err);
+    }
+}
+
 // 处理排序和提取
 const sortedUsers = computed(() => {
     if (!progressList.value.result) return [];
     return progressList.value.result.map(item => ({
         user_id: item.user_id,
         username: item.username,
-        progress: item.records[0]?.progress ?? 0
+        chapter_num: item.records[0]?.chapter_num ?? 0
         }))
-        .sort((a, b) => b.progress - a.progress); // 按进度降序
+        .sort((a, b) => b.chapter_num - a.chapter_num); // 按章节数降序
 });
 
 const users = ref([]);
@@ -93,10 +125,8 @@ const getUserAvatar = async (userId) => {
 
         if (res.data.code === 200) {
             userAvatars.value[userId] = 'data:image/jpeg;base64,' + res.data.User_Avatar;
-            console.log('yes')
         } else {
             userAvatars.value[userId] = defaultAvatarUrl; // 使用默认头像
-            console.log('no')
         }
     } catch (err) {
         console.error(err);
@@ -113,7 +143,7 @@ watch(sortedUsers, (users) => {
 const animationSpeed = 15; // 数字越小动画越快，可根据需要调整
 
 function animateUserProgress(user) {
-    const target = user.progress;
+    const target = user.chapter_num;
     function step() {
         if (user.displayProgress < target) {
             user.displayProgress += Math.max((target - user.displayProgress) / animationSpeed, 0.2);
