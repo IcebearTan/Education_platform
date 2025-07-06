@@ -1,7 +1,7 @@
 <template>
-    <div class="group-card" @click="toGroupDetails()">
+    <div class="group-card"  @click="toGroupDetails()">
       <div class="cover-container">
-        <div class="cover">C语言程序设计</div>
+        <div class="cover" :style="{ backgroundColor: randomColor(props.group.title) }">{{ props.group.title }}</div>
       </div>
       <div class="detail-container">
         <div class="group-title">{{props.group.group_name}}</div>
@@ -13,7 +13,7 @@
           <div class="students">
             <div class="avatars">
               <img 
-                v-for="(avatar, index) in userAvatars" 
+                v-for="(avatar, index) in userAvatars.slice(0, 3)" 
                 :key="index" 
                 :src="avatar" 
                 alt="Student Avatar" 
@@ -29,107 +29,125 @@
     </div>
   </template>
   
-  <script setup lang="ts">
-  import { defineProps , onBeforeMount, ref } from 'vue';
-  import { useRouter } from 'vue-router'
-  import api from '../../api';
-  
-  // 定义接收的 props
-  const props = defineProps({
-    group: {
-      type: Object,
-      required: true,
-      default: () => ({})
-    }
-  });
-  
-  // console.log(props.group);
-  const studentIds = ref([]);
-  const teacher_Avatar = ref('');
-  const userAvatars = ref([]);
+<script setup>
+import { defineProps , onBeforeMount, ref } from 'vue';
+import { useRouter } from 'vue-router'
+import api from '../../api';
 
-  const studentNum = props.group.students ? props.group.students.length : 0;
-  
-  onBeforeMount(() => {
-    proceStudentId();
-    fetchTeacherAvatar(); // 组件挂载前获取老师头像
-    fetchUserAvatars(); // 组件挂载前获取学生头像
-  });
-
-  // 跳转到小组详情页的方法
-  const router = useRouter();
-  const toGroupDetails = () => {
-      setTimeout(() => {
-        router.push({
-        path: '/user-center/student-group-details',
-        query: {
-          group: JSON.stringify(props.group), // 将 group 转为字符串
-          userAvatars: JSON.stringify(userAvatars.value) // 将 userAvatars 转为字符串
-        }
-    });
-      },100)
-    }
-
-  function proceStudentId(){
-    if (props.group.students && Array.isArray(props.group.students)) {
-    // 遍历 group.group 数组，将每个 Student_Id 添加到 studentIds.value 中
-    studentIds.value = props.group.students.map(student => student.Student_Id);
-    } else {
-      console.error("Invalid group data or group.group is not an array");
-    }
-
-    // console.log("Processed Student IDs:", studentIds.value);
+// 定义接收的 props
+const props = defineProps({
+  group: {
+    type: Object,
+    required: true,
+    default: () => ({})
   }
+});
 
-  async function fetchTeacherAvatar() {
-  try {
-    const response = await api({
-      url: '/user/user_avatars_id',
-      method: 'get',
-      params: { 
-        User_Id: props.group.teacher_id // 确保字段名正确
+// console.log(props.group);
+const studentIds = ref([]);
+const teacher_Avatar = ref('');
+const userAvatars = ref([]);
+
+const studentNum = props.group.students ? props.group.students.length : 0;
+
+const colorPalette = [
+    "#b391ff", // 蓝紫色: 和谐邻近色
+    "#91bdff", // 原始色: 柔和蓝色
+    "#91ffde", // 蓝绿色: 清新冷色调
+    "#ffcc91", // 橙黄色: 温暖对比色
+    "#ff91c0"  // 玫红色: 活力点缀色
+];
+
+const randomColor = (courseName) => {
+    // 简单哈希：将字符串转成数字和 
+    let hash = 0;
+    for (let i = 0; i < courseName.length; i++) {
+        hash = courseName.charCodeAt(i) + (hash << 6) + (hash << 16) - hash;
+    }
+    // 取余映射到色板 
+    const index = Math.abs(hash) % colorPalette.length;
+    return colorPalette[index];
+};
+
+onBeforeMount(() => {
+  proceStudentId();
+  fetchTeacherAvatar(); // 组件挂载前获取老师头像
+  fetchUserAvatars(); // 组件挂载前获取学生头像
+});
+
+// 跳转到小组详情页的方法
+const router = useRouter();
+const toGroupDetails = () => {
+    setTimeout(() => {
+      router.push({
+      path: '/user-center/student-group-details',
+      query: {
+        // group: JSON.stringify(props.group), // 将 group 转为字符串
+        // userAvatars: JSON.stringify(userAvatars.value) // 将 userAvatars 转为字符串
       }
-    });
-
-    // 检查 API 返回的数据是否包含头像
-    if (response.data.User_Avatar) {
-      teacher_Avatar.value = `data:image/png;base64,${response.data.User_Avatar}`; // 直接赋值头像 URL
-    } else {
-      teacher_Avatar.value = 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png'; // 默认头像
-    }
-  } catch (error) {
-    console.log(`Error fetching avatar for teacher ${props.group.teacher_id}:`, error);
-    teacher_Avatar.value = 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png'; // 出错时使用默认头像
+  });
+    },100)
   }
+
+function proceStudentId(){
+  if (props.group.students && Array.isArray(props.group.students)) {
+  // 遍历 group.group 数组，将每个 Student_Id 添加到 studentIds.value 中
+  studentIds.value = props.group.students.map(student => student.Student_Id);
+  } else {
+    console.error("Invalid group data or group.group is not an array");
+  }
+
+  // console.log("Processed Student IDs:", studentIds.value);
 }
 
-  async function fetchUserAvatars(){
-    userAvatars.value = []; // 初始化头像数组
-    for (const userId of studentIds.value) {
-        try {
-            const response = await api({
-                url: '/user/user_avatars_id',
-                method: 'get',
-                params: { // 使用 params 传递单个 ID
-                    User_Id: userId
-                }
-            });
-            // 假设 API 返回一个包含头像 URL 的对象
-            if (response.data.User_Avatar) {
-                userAvatars.value.push(`data:image/png;base64,${response.data.User_Avatar}`); // 将头像 URL 添加到数组中
-            } else {
-                userAvatars.value.push('https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png'); // 默认头像
-            }
-        } catch (error) {
-            console.log(`Error fetching avatar for user ${userId}:`, error);
-            userAvatars.value.push('https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png'); // 出错时使用默认头像或 null
-        }
+async function fetchTeacherAvatar() {
+try {
+  const response = await api({
+    url: '/user/user_avatars_id',
+    method: 'get',
+    params: { 
+      User_Id: props.group.teacher_id // 确保字段名正确
     }
-    // console.log("User Avatars:", userAvatars.value);
+  });
+
+  // 检查 API 返回的数据是否包含头像
+  if (response.data.User_Avatar) {
+    teacher_Avatar.value = `data:image/png;base64,${response.data.User_Avatar}`; // 直接赋值头像 URL
+  } else {
+    teacher_Avatar.value = 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png'; // 默认头像
+  }
+} catch (error) {
+  console.log(`Error fetching avatar for teacher ${props.group.teacher_id}:`, error);
+  teacher_Avatar.value = 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png'; // 出错时使用默认头像
+}
 }
 
+async function fetchUserAvatars(){
+  userAvatars.value = []; // 初始化头像数组
+  for (const userId of studentIds.value) {
+      try {
+          const response = await api({
+              url: '/user/user_avatars_id',
+              method: 'get',
+              params: { // 使用 params 传递单个 ID
+                  User_Id: userId
+              }
+          });
+          // 假设 API 返回一个包含头像 URL 的对象
+          if (response.data.User_Avatar) {
+              userAvatars.value.push(`data:image/png;base64,${response.data.User_Avatar}`); // 将头像 URL 添加到数组中
+          } else {
+              userAvatars.value.push('https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png'); // 默认头像
+          }
+      } catch (error) {
+          console.log(`Error fetching avatar for user ${userId}:`, error);
+          userAvatars.value.push('https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png'); // 出错时使用默认头像或 null
+      }
+  }
+  // console.log("User Avatars:", userAvatars.value);
+}
 
-  </script>
+</script>
   
 <style scoped>
 .avatars{
@@ -208,6 +226,7 @@
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 
   font-weight: bold;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
   width: 90px;
   height: 120px;
 

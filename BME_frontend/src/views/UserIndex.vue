@@ -82,20 +82,24 @@ onMounted(() => {
                 style="display: flex; justify-content: center; align-items: center; border-bottom: solid 1px #e6e6e6; padding-bottom: 1px;">
                 <MenuComponent />
             </el-header>
-            <el-main style="min-height: 100vh; width: 1300px; margin: auto; overflow: hidden;">
-                <div style="position: relative; display: flex; margin-top: 15px; margin-bottom: 15px;">
-                    <div style="margin-right: 10px;">
-                        <el-avatar @click="visible = !visible" shape="square" size="large" class="avatar"
-                            :src="User_Avatar" alt="image" />
-                    </div>
+            <el-main style="min-height: 100vh; background-color: #f5f7fa; width: 100%;">
+                <div style="width: 1305px; margin: auto; overflow: hidden; padding: 5px;">
+                    <div style="position: relative; display: flex; margin-top: 15px; margin-bottom: 15px; ">
+                        <div style="margin-right: 10px;">
+                            <el-avatar @click="visible = !visible" shape="square" size="large" class="avatar"
+                                :src="User_Avatar" alt="image" />
+                        </div>
 
-                    <div style="margin-left: 10px;">
-                        <div style="font-size: larger; font-weight: bold; margin-bottom: 5px;">{{ username }}</div>
-                        <div style="font-size: 15px; color: #666;">Email：{{ user_email }}</div>
-                        <div style="position: absolute; bottom: 5px; font-size: 15px; color: #666;">#uid：{{ uid }}</div>
+                        <div style="margin-left: 10px;">
+                            <div style="font-size: larger; font-weight: bold; margin-bottom: 5px;">{{ username }}</div>
+                            <div style="font-size: 15px; color: #666;">Email：{{ user_email }}</div>
+                            <div style="position: absolute; bottom: 5px; font-size: 15px; color: #666;">#uid：{{ uid }}</div>
+                        </div>
+                    </div>
+                    <div>
+                        <UserIndexComponent />
                     </div>
                 </div>
-                <UserIndexComponent />
             </el-main>
             <el-footer class="page-footer">
                 <PageFooterComponent />

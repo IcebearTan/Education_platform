@@ -13,36 +13,39 @@
             </template>
             <div style="display: flex; flex-direction: column;">
               <div class="more-item">
-                <div class="more-item-button" @click="toRank()">排行榜</div>
-                <div class="more-item-button" @click="toTasks()">任务</div>
+                <div class="more-item-button" :class="{active: currentTab === 'rank'}" @click="toRank()">排行榜</div>
+                <div class="more-item-button" :class="{active: currentTab === 'task'}" @click="toTasks()">通知</div>
               </div>
-              <el-button type="danger" style="margin: 0; " plain>退出小组</el-button>
+              <el-button type="danger" style="margin: 0; " plain>请假</el-button>
             </div>
           </el-popover>
           
         </div>
       </div>
       <div style="margin-top: 30px;">
-        <router-view></router-view>
+        <StudentGroupTask v-if="currentTab === 'task'" />
+        <StudentGroupRank v-else-if="currentTab === 'rank'" />
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { defineComponent } from 'vue'
-import { ref } from 'vue'
-import { useRouter, RouterView } from 'vue-router'
+import { defineComponent, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import StudentGroupTask from './StudentGroupTask.vue'
+import StudentGroupRank from './StudentGroupRank.vue'
 
 const router = useRouter()
+const currentTab = ref('task') // 'task' 或 'rank'
 
 const goback = () => {
   router.push('/user-center/my-groups')
 }
 const toRank = () => {
-  if (router.currentRoute.value.path !== '/user-center/student-group-details' && router.currentRoute.value.path !== '/user-center/student-group-details/rank') {
-    router.push('/user-center/student-group-details/rank')
+  if (currentTab.value !== 'rank') {
+    currentTab.value = 'rank'
   } else {
     ElMessage({
       message: '当前页面已经是排行榜页面',
@@ -52,8 +55,8 @@ const toRank = () => {
   }
 }
 const toTasks = () => {
-  if (router.currentRoute.value.path !== '/user-center/student-group-details/tasks') {
-    router.push('/user-center/student-group-details/tasks')
+  if (currentTab.value !== 'task') {
+    currentTab.value = 'task'
   } else {
     ElMessage({
       message: '当前页面已经是任务页面',
@@ -125,22 +128,27 @@ const toTasks = () => {
   
   margin-bottom: 10px;
 }
-.more-item-button{
+.more-item-button {
   width: 100%;
   height: 35px;
   cursor: pointer;
-
   display: flex;
   justify-content: center;
   align-items: center;
-
   font-size: 15px;
-  /* font-weight: bold; */
-  color: #444;
+  color: #0ac0ba;
+  border-radius: 6px;
+  border: 1.5px solid transparent;
+  background: transparent;
+  transition: background 0.2s, color 0.2s, border 0.2s;
 }
-.more-item-button:hover{
-  background-color: #f5f4f4;
-  transition: background-color 0.2s ease-in-out;
+.more-item-button.active {
+  border: 1.5px solid #91fffb;
+  background: #f4ffff;
+  color: #0ac0ba;
+}
+.more-item-button:hover {
+  background: #f4ffff;
 }
 .more-item-button:active{
   opacity: 0.5;

@@ -1,141 +1,134 @@
-<script lang="ts">
-import { defineComponent } from 'vue'
-import { useStore } from 'vuex';
-import { useRouter } from 'vue-router';
-import { useRoute } from 'vue-router';
-import { ref, reactive, onMounted } from 'vue';
+<script setup>
+import { ref, onMounted } from 'vue';
 import api from '../../api';
 
-export default defineComponent({
-    setup(props, context) {
-        const store = useStore();
-        const router = useRouter();
-        const route = useRoute();
+const options = [
+  { value: '1', label: '学习小组' },
+  { value: '2', label: '项目小组' }
+];
+const value = ref('1');
 
-        const groupList = ref([]);
-        const teacher = ref()
-
-        const fetchGroup = async () => {
-            const res = await api({
-                url: '/user/group',
-                method: 'get',
-            }).then((res) => {
-                // console.log(res);
-                groupList.value = res.data.group;
-                teacher.value = res.data.teacher;
-            }).catch((err) => {
-                console.log(err);
-            })
-        }
-
-        const isShow = ref(true);
-        const options = ref([
-            {
-                value: '1',
-                label: '学习小组',
-            },
-            {
-                value: '2',
-                label: '项目小组',
-            }
-        ])
-        const value = ref('1')
-
-        const changeGroup = (val) => {
-            if (val === '1') {
-                return true;
-            } else {
-                return false;
-            }
-        }
-
-        onMounted(() => {
-            fetchGroup();
-        })
-        
-        return {
-            groupList,
-            teacher,
-            isShow,
-            options,
-            value,
-            changeGroup,
-        }
+const studyGroupList = ref([
+    {
+        Group_Name: '学习小组1',
+        teacher: '张老师'
     },
-})
+    {
+        Group_Name: '学习小组2',
+        teacher: '李老师'
+    },
+    {
+        Group_Name: '学习小组3',
+        teacher: '王老师'
+    },
+    {
+        Group_Name: '学习小组4',
+        teacher: '赵老师'
+    }
+]);
+const projectGroupList = ref([
+    {
+        Group_Name: '学习小组1',
+        teacher: '张老师'
+    },
+    {
+        Group_Name: '学习小组2',
+        teacher: '李老师'
+    },
+    {
+        Group_Name: '学习小组3',
+        teacher: '王老师'
+    },
+    {
+        Group_Name: '学习小组4',
+        teacher: '赵老师'
+    }
+]);
+
+const getGroupList = async () => {
+    try {
+        const res = await api({
+            url: '/user/group',
+            method: 'get'
+        })
+
+        if (res.data.code === 200) {
+            studyGroupList.value = res.data.study_group || [];
+            projectGroupList.value = res.data.project_group || [];
+        }
+    } catch (error) {
+        console.log(error)
+    }
+};
+
+onMounted(() => {
+    //   fetchGroup();
+    getGroupList();
+});
+
+// 当前只做切换演示，实际可根据 groupList 结构区分
+const isStudyGroup = () => value.value === '1';
 </script>
 
 <template>
   <div class="group-container">
     <div class="title">
-        <div class="group-kind">我的小组</div>
-        <div>
-            <el-select
-            v-model="value"
-            placeholder="Select"
-            size="small"
-            style="width: 100px"
-            >
-            <el-option
-                v-for="item in options"
-                :key="item.value"
-                :label="item.label"
-                :value="item.value"
-            />
-            </el-select>
-        </div>
+      <div class="group-kind">我的小组</div>
+      <div>
+        <el-select
+          v-model="value"
+          placeholder="Select"
+          size="small"
+          style="width: 100px"
+        >
+          <el-option
+            v-for="item in options"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value"
+          />
+        </el-select>
+      </div>
     </div>
-    <div class="content" v-if="changeGroup(value)">
-        <div class="group-box">
-            <div style="width: 10px; height: 40px; background-color: aqua;"></div>
-            <div class="group-content">
-                <div>C语言程序设计</div>
-                <div>导师：Jie Luo</div>
-            </div>
+    <div class="content" v-if="isStudyGroup()">
+      <div
+        class="group-box"
+        v-if="studyGroupList.length > 0"
+        v-for="(group, idx) in studyGroupList"
+        :key="group.Group_Name + idx"
+      >
+        <div class="group-content">
+          <div>{{ group.title }}</div>
+          <div>导师：{{ group.teacher || '未知' }}</div>
         </div>
-        <div class="group-box">
-            <div style="width: 10px; height: 40px; background-color: aquamarine;"></div>
-            <div class="group-content">
-                <div>C语言程序设计</div>
-                <div>导师：Jie Luo</div>
-            </div>
-        </div>
-        <div class="group-box">
-            <div style="width: 10px; height: 40px; background-color: aqua;"></div>
-            <div class="group-content">
-                <div>C语言程序设计</div>
-                <div>导师：Jie Luo</div>
-            </div>
-        </div>
-        <div class="group-box">
-            <div style="width: 10px; height: 40px; background-color: aquamarine;"></div>
-            <div class="group-content">
-                <div>C语言程序设计</div>
-                <div>导师：Jie Luo</div>
-            </div>
-        </div>
-        <div class="group-box">
-            <div style="width: 10px; height: 40px; background-color: aqua;"></div>
-            <div class="group-content">
-                <div>C语言程序设计</div>
-                <div>导师：Jie Luo</div>
-            </div>
-        </div>
+      </div>
+      <div class="no-group" v-else>暂无小组</div>
     </div>
     <div class="content" v-else>
-        <div class="group-box">
-            <div style="width: 10px; height: 40px; background-color: aqua;"></div>
-            <div class="group-content">
-                <div>网页开发组</div>
-                <div>负责人：Icebear</div>
-            </div>
+        <div
+        class="group-box"
+        v-if="projectGroupList.length > 0"
+        v-for="(group, idx) in projectGroupList"
+        :key="group.Group_Name + idx"
+      >
+        <div class="group-content">
+          <div>{{ group.title }}</div>
+          <div>导师：{{ group.teacher || '未知' }}</div>
         </div>
+      </div>
+      <div class="no-group" v-else>暂无小组</div>
     </div>
-    
   </div>
 </template>
 
 <style scoped>
+.no-group {
+    text-align: center;
+    color: #999;
+    font-size: 16px;
+    margin-top: 50px;
+}
+
 .title{
     padding: 20px;
     padding-bottom: 0;
@@ -163,70 +156,63 @@ export default defineComponent({
     width: auto;
     height: 150px;
 }
-/* .group-box{
-    height: 100%;
-    width: 45%;
+.group-box {
+    width: 85%;
+    min-height: 52px;
     display: flex;
-    flex-direction: column;
     align-items: center;
-    justify-content: center;
-
-    padding-top: 5px;
-    padding-bottom: 5px;
-
-    border-radius: 10px;
-    border: dashed 1px #ffffff;
-
-    transition: all 0.3s ease-in-out;
-}
-.group-box:hover{
-    background-color: #f3f8ff;
+    background: linear-gradient(135deg, #f8fbff 0%, #f1f7ff 100%);
+    border: 1px solid #e1ecf7;
+    border-radius: 12px;
+    margin: 8px 0;
+    padding: 0 16px;
+    position: relative;
     cursor: pointer;
-    border: dashed 1px #6AD5FC;
-
-}
-.group-title{
-    margin-bottom: 10px;
-    color: #444;
-}
-.groups{
-    font-size: small;
-    margin-top: 10px;
-
-    color: #666;
-} */
-.group-box{
-    width: 90%;
-    height: 40px;
-
-    display: flex;
-    /* justify-content: space-between; */
-    align-items: center;
-    /* border: solid 2px #b2dfff; */
-    /* border-left: solid 5px #ccc; */
-
-    box-shadow: #ccc 0px 0px 5px;
-    border-radius: 10px;
-
-    margin: 5px;
-    margin-bottom: 10px;
-
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     overflow: hidden;
-
-    /* padding-left: 5px solid #ccc; */
-
 }
-.group-content{
+
+.group-box::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    border-radius: 12px 0 0 12px;
+}
+
+.group-box:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(102, 126, 234, 0.15);
+    background: linear-gradient(135deg, #ffffff 0%, #f8fbff 100%);
+    border-color: #c7d8f0;
+}
+
+.group-box:hover::before {
+    width: 6px;
+}
+
+.group-content {
     display: flex;
     justify-content: space-between;
     align-items: center;
-
     width: 100%;
+    margin-left: 12px;
+    color: #2c3e50;
+    font-size: 15px;
+}
 
-    margin-left: 5px;
-    margin-right: 10px;
+.group-content > div:first-child {
+    font-weight: 600;
+    color: #34495e;
+    letter-spacing: 0.3px;
+}
 
-    color: #444;
+.group-content > div:last-child {
+    color: #7f8c8d;
+    font-size: 14px;
+    font-weight: 500;
 }
 .instructor{
    display: flex;

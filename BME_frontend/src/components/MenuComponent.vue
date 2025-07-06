@@ -58,22 +58,12 @@ const fetchUserInfo = async () => {
   }
 }
 const checkLogin = () => {
-    // if (token) {
-    //     isLogin.value = true
-    //     return true
-    // } else {
-    //     isLogin.value = false
-    //     return false
-    // }
     api({
         url: "/user/user_index",
         method: "get",
     }).then((res) => {
         isLogin.value = true
-        // fetchUserInfo()
-        // User_Info.value = res.data
         setUserAvatar()
-        // console.log(res)
     }).catch((error) => {
         isLogin.value = false
         store.dispatch('logout')

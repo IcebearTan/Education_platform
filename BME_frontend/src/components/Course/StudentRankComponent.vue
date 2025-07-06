@@ -13,13 +13,13 @@
         <div class="single-student-container" v-for="(user, index) in users" :key="index">
             <div :class="{'index': true, 'index-gold': index === 0, 'index-silver': index === 1, 'index-bronze': index === 2}">{{ index + 1 }}</div>
             <div class="block">
-                <el-avatar :size="40" src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png" />
+                <el-avatar :size="40" :src="userAvatars[user.user_id] || defaultAvatarUrl" />
             </div>
             <div class="username">{{ user.username }}</div>
             <div class="progress">
                 <div class="label">{{ user.progress }}/17</div>
                 <div style="width: 20px; display: flex; align-items: center;">
-                    <el-progress type="circle" :percentage="user.progress * 100 / 17" :width="20" :show-text="false" stroke-width="3"/>
+                    <el-progress type="circle" :percentage="user.displayProgress * 100 / 17" :width="20" :show-text="false" stroke-width="3"/>
                 </div>
             </div>
         </div>
@@ -28,51 +28,113 @@
 </template>
 
 <script setup>
-import { defineComponent } from 'vue'
-import { reactive } from 'vue';
+import { reactive, onMounted, defineProps, ref, computed, watch } from 'vue';
+import api from '../../api';
 
-const users = reactive([
-    {
-        index: 1,
-        username: 'Icebear',
-        progress: 16,
-    },
-    {
-        index: 2,
-        username: 'Icebear2',
-        progress: 15,
-    },
-    {
-        index: 3,
-        username: 'Icebear3',
-        progress: 14,
-    },
-    {
-        index: 4,
-        username: 'Icebear4',
-        progress: 13,
-    },
-    {
-        index: 5,
-        username: 'Icebear5',
-        progress: 12,
-    },
-    {
-        index: 6,
-        username: 'Icebear6',
-        progress: 11,
-    },
-    {
-        index: 7,
-        username: 'Icebear7',
-        progress: 10,
-    },
-    {
-        index: 8,
-        username: 'Icebear8',
-        progress: 9,
+const props = defineProps({
+    courseId: {
+        type: String,
+        required: true
     }
-])
+})
+
+const courseId = props.courseId;
+const progressList = ref([]);
+
+const getProgressList = async () => {
+    try {
+        const res = await api({
+            url: `/learningProgress/group_through_courseid`,
+            method: 'get',
+            params: {
+                Course_Id: courseId
+            }
+        });
+
+        progressList.value = res.data.data;
+    } catch (err) {
+        console.error(err);
+        return [];
+    }
+}
+// 处理排序和提取
+const sortedUsers = computed(() => {
+    if (!progressList.value.result) return [];
+    return progressList.value.result.map(item => ({
+        user_id: item.user_id,
+        username: item.username,
+        progress: item.records[0]?.progress ?? 0
+        }))
+        .sort((a, b) => b.progress - a.progress); // 按进度降序
+});
+
+const users = ref([]);
+// 监听 sortedUsers 变化，生成 users 并初始化动画
+watch(sortedUsers, (newList) => {
+  users.value = newList.map(user => ({
+    ...user,
+    displayProgress: 0
+  }));
+  users.value.forEach(user => animateUserProgress(user));
+}, { immediate: true });
+
+const userAvatars = ref({}); // { [user_id]: avatarUrl }
+const defaultAvatarUrl = 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png';
+
+const getUserAvatar = async (userId) => {
+    try {
+        const res = await api({
+            url: `/user/user_avatars_id`,
+            method: 'get',
+            params: {
+                User_Id: userId
+            }
+        });
+
+        if (res.data.code === 200) {
+            userAvatars.value[userId] = 'data:image/jpeg;base64,' + res.data.User_Avatar;
+            console.log('yes')
+        } else {
+            userAvatars.value[userId] = defaultAvatarUrl; // 使用默认头像
+            console.log('no')
+        }
+    } catch (err) {
+        console.error(err);
+        userAvatars.value[userId] = defaultAvatarUrl; // 使用默认头像
+    }
+};
+
+watch(sortedUsers, (users) => {
+  users.forEach(user => {
+    getUserAvatar(user.user_id);
+  });
+}, { immediate: true });
+
+const animationSpeed = 15; // 数字越小动画越快，可根据需要调整
+
+function animateUserProgress(user) {
+    const target = user.progress;
+    function step() {
+        if (user.displayProgress < target) {
+            user.displayProgress += Math.max((target - user.displayProgress) / animationSpeed, 0.2);
+            if (user.displayProgress > target) user.displayProgress = target;
+            requestAnimationFrame(step);
+        } else {
+            user.displayProgress = target;
+        }
+    }
+    step();
+}
+
+onMounted(() => {
+    getProgressList();
+
+    // 给每个 users 增加 displayProgress 字段
+    users.value.forEach(user => {
+        user.displayProgress = 0;
+        animateUserProgress(user);
+    });
+});
 
 </script>
 

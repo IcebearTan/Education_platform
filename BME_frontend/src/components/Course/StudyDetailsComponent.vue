@@ -3,12 +3,9 @@ import { onMounted, ref, computed } from 'vue'
 import { useStore } from 'vuex'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-// import api from '../../api'
-// import { API_URL } from '../../api'
 import api from '../../api'
 import { API_URL } from '../../api'
-
-import MenuComponent from '../MenuComponent.vue'
+import { Star, StarFilled } from '@element-plus/icons-vue'
 import StudentProgressComponent from './StudentProgressComponent.vue'
 import StudentRankComponent from './StudentRankComponent.vue'
 
@@ -20,6 +17,19 @@ const courseId = ref(router.currentRoute.value.query.id)
 const courseInfo = ref([])
 
 const formatedCourseDetails = ref([])
+
+const difficulty = 3 // 课程难度，这里暂时写死，实际应该从后端获取
+
+const items = [
+    { label: '医学', type: 'success' },
+    { label: '计算机', type: 'info' },
+    { label: '人工智能', type: 'warning' },
+    { label: '医疗器械', type: 'danger' },
+    { label: '医学', type: 'success' },
+    { label: '计算机', type: 'info' },
+    { label: '人工智能', type: 'warning' },
+    { label: '医疗器械', type: 'danger' }
+];
 
 const colorPalette = [
     "#b391ff", // 蓝紫色: 和谐邻近色
@@ -158,12 +168,56 @@ const wrapperBg = computed(() => {
   return `linear-gradient(360deg, ${hexToRgba(coverColor.value, 0.55)} 0%, #f8f9ff 100%)`;
 });
 
+// 查询当前用户是否已经加入课程
+const isEnrolled = ref(false)
+const enrolledList = ref([])
+const userProgress = ref() //个人进度
+
+const getEnrollments = async () => {
+  try {
+    const res = await api({
+      url: '/learningProgress/student',
+      method: 'get',
+    })
+
+    if (res.data.code === 200) {
+      // console.log(res)
+      enrolledList.value = res.data.data.records
+      console.log(enrolledList.value)
+    }
+  } catch (error) { }
+}
+
+const checkEnrollment = async () => {
+  await getEnrollments()
+  // console.log(courseId.value)
+  const courseIdInt = parseInt(courseId.value, 10); // 转为整数
+  // console.log(enrolledList.value.length)
+  for (let i = 0; i < enrolledList.value.length; i++) {
+    console.log(enrolledList.value[i])
+    if (enrolledList.value[i].course_id === courseIdInt) {
+      // 已加入课程
+      isEnrolled.value = true;
+      userProgress.value = enrolledList.value[i].progress;
+      break;
+    }
+  }
+}
+
+const checkUnlock = (chapterOrder) => {
+  if (userProgress.value >= chapterOrder) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
 // 在组件挂载后执行
 onMounted(() => {
-  // courseId.value = router.value.quer.id
-
   fetchCourseDetails()
   fetchCourseInfo()
+
+  checkEnrollment()
 })
 
 // 方法：警告提示
@@ -187,7 +241,7 @@ const caution = () => {
             {{ courseInfo.Introduction }}
           </div>
           <div class="course-bottom">
-            <el-button type="primary" plain size="large" @click="caution()">加入学习</el-button>
+            <el-button type="primary" plain size="large" disabled="true" @click="caution()">{{ isEnrolled ? '正在学习' : '加入学习'}}</el-button>
             <el-button type="primary" size="large" @click="handleDownload()">下载内容</el-button>
           </div>
         </div>
@@ -220,12 +274,51 @@ const caution = () => {
       </div>
     </div>
 
-    <div>
+    <!-- 已经开始学习所展示的内容 -->
+    <div v-if="isEnrolled" style="width: 300px;">
       <div class="course-process">
-        <StudentProgressComponent />
+        <StudentProgressComponent :user-progress="userProgress" />
       </div>
       <div class="class-rank">
-        <StudentRankComponent />
+        <StudentRankComponent :course-id="courseId" />
+      </div>
+    </div>
+
+    <!-- 未加入学习展示的内容 -->
+    <div v-else style="width: 300px;">
+      <div class="course-difficulty">
+        <span style="margin-left: 8px; color: #888; font-size: 15px; top: 2px; position: relative;">课程难度</span>
+        <div>
+          <el-icon
+            v-for="n in 5"
+            :key="n"
+            :class="n <= difficulty ? 'star-icon' : 'star-outline-icon'"
+          >
+            <component :is="n <= difficulty ? StarFilled : Star" />
+          </el-icon>
+          <span style="margin-left: 8px; color: #888; font-size: 15px; top: 2px; position: relative;">中等</span>
+        </div>
+      </div>
+      <div class="course-period">
+        <span style="width: 50%; border-right: solid 1px #ddd;">
+          <div style="color: #111;">16 章 / 35 节</div>
+          <div style="font-size: 13px; color:#999; margin-top: 10px;">章节数量</div>
+        </span>
+        <span style="width: 40%;">
+          <div style="color: #111;">100 学时</div>
+          <div style="font-size: 13px; color:#999; margin-top: 10px;">预计时长</div>
+        </span>
+      </div>
+      <div class="course-tags">
+        <el-tag
+          v-for="item in items"
+          :key="item.label"
+          :type="item.type"
+          effect="light"
+          round
+        >
+          {{ item.label }}
+        </el-tag>
       </div>
     </div>
 
@@ -234,6 +327,41 @@ const caution = () => {
 </template>
 
 <style scoped>
+.course-tags{
+  display: flex;
+  justify-content:first baseline;
+  flex-wrap: wrap;
+  gap: 8px 5px;
+}
+.course-period {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 20px;
+  margin-bottom: 20px;
+
+  padding-left: 8px;
+}
+.course-difficulty{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+.star-icon {
+  color: #FFcf00;
+  font-size: 26px;
+  margin-right: 2px;
+  vertical-align: middle;
+}
+.star-outline-icon {
+  color: #e0e0e0;
+  font-size: 22px;
+  margin-right: 2px;
+  vertical-align: middle;
+}
+
 .course-wrapper {
   padding-top: 20px;
   min-height: 950px;
@@ -247,11 +375,29 @@ const caution = () => {
   height: 120px;
   margin-top: 20px;
   margin-bottom: 20px;
-  border-radius: 10px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   padding: 20px;
   padding-bottom: 10px;
-  background-color: #fff;
+
+  border-radius: 16px;
+  background: rgba(255,255,255,0.7);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+  backdrop-filter: blur(10px);
+  transition: all 0.15s ease-in-out;
+
+  cursor: pointer;
+}
+.course-process:hover {
+  background: rgba(255,255,255,0.8);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+  backdrop-filter: blur(20px);
+
+  transform: scale(1.02);
+}
+
+.course-process h2 {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 10px;
 }
 
 .course-details {
@@ -264,6 +410,11 @@ const caution = () => {
   margin-top: 20px;
   margin-bottom: 20px;
 
+}
+
+.class-rank{
+  padding-right: 5px;
+  width: 320px;
 }
 
 @media (max-width: 768px) {
@@ -287,6 +438,7 @@ const caution = () => {
     margin-right: auto;
     /* 可以尝试让右侧栏在垂直堆叠时也居中 */
     margin-left: auto;
+
   }
 }
 
@@ -304,6 +456,7 @@ const caution = () => {
   justify-content: center;
   font-size: 30px;
   font-weight: bold;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
   background-color: #91bdff;
   box-shadow: 0 0 12px 2px #d2dbe9;
   color: #fff;
@@ -315,6 +468,31 @@ const caution = () => {
   width: 130px;
   height: 180px;
   text-align: center;
+
+  transition: all 0.3s ease-in-out;
+  position: relative;
+  overflow: hidden;
+}
+
+.course-info-left::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 25%;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.1), transparent);
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+  border-radius: 0 0 10px 10px;
+}
+
+.course-info-left:hover {
+  box-shadow: 0 0 16px 2px #d0d1d2;
+}
+
+.course-info-left:hover::before {
+  opacity: 1;
 }
 
 .course-info-right {

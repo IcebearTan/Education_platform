@@ -50,6 +50,8 @@ const getCourseList = async () => {
             method: 'get',
         })
         courseList.value = res.data  // 将返回的数据赋值给响应式变量
+        console.log(courseList.value)
+
     } catch (err) {
         console.error(err)
     }
@@ -375,6 +377,7 @@ onMounted(() => {
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 
     font-weight: bold;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
     min-width: 65px;
     max-width: 65px;
     height: 90px;

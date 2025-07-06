@@ -1,6 +1,6 @@
 <script>
 import AboutUsComponent from "../components/AboutUsComponent.vue"
-
+import SeatLayoutComponent from "../components/SeatLayoutComponent.vue";
 import MenuComponent from "../components/MenuComponent.vue";
 import PageFooterComponent from "../components/PageFooterComponent.vue";
 import api from '../api';
@@ -11,7 +11,7 @@ export default {
     components: {
         AboutUsComponent,
         MenuComponent,
-        PageFooterComponent
+        PageFooterComponent,
     },
 
     data() {
@@ -38,12 +38,14 @@ const User_Avatar = ref('');
 </script>
 
 <template>
-    <div class="common-layout">
-        <el-container>
+    <div>
+        <el-container  class="common-layout">
             <el-header>
                 <MenuComponent />
             </el-header>
-            <AboutUsComponent />
+            <el-main style="width: 1300px;">
+                <SeatLayoutComponent />
+            </el-main>
             <el-footer class="page-footer">
                 <PageFooterComponent />
             </el-footer>
@@ -53,6 +55,13 @@ const User_Avatar = ref('');
 
 
 <style scoped>
+.common-layout {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
 .el-menu--horizontal>.el-menu-item:nth-child(1) {
     margin-right: auto;
 }

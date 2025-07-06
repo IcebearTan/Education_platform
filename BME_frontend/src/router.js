@@ -30,6 +30,9 @@ import StudentGroupTask from './components/StudentGroup/StudentGroupTask.vue';
 
 const router = createRouter({
     history: createWebHistory(),
+    scrollBehavior() {
+        return { top: 0 }
+    },
     routes: [
         {
             path: '/',
@@ -87,23 +90,6 @@ const router = createRouter({
                     path: '/user-center/student-group-details',
                     name: 'student-group-details',
                     component: StudentGroupsDetails,
-                    children: [
-                        {
-                            path: '/user-center/student-group-details',
-                            name: 'student-group-details-default',
-                            component: StudentGroupRank,
-                        },
-                        {
-                            path: '/user-center/student-group-details/rank',
-                            name: 'student-group-details-rank',
-                            component: StudentGroupRank,
-                        },
-                        {
-                            path: '/user-center/student-group-details/tasks',
-                            name: 'student-group-details-tasks',
-                            component: StudentGroupTask,
-                        }
-                    ]
                 }
             ]
         },
