@@ -3,16 +3,19 @@
     <el-dialog
       v-model="pendcourseVisible"
       title="课程进度设置"
-      width="30%"
+      width="450px"
+      :close-on-click-modal="false"
+      class="progress-dialog"
     >
       <div>
-        <!-- 课程名称下拉框 -->
-        <el-form label-width="80px">
+        <el-form label-width="100px">
           <el-form-item label="课程名称">
             <el-select
               v-model="selectedCourse"
               placeholder="请选择课程"
               @change="handleCourseChange"
+              style="width: 100%"
+              class="custom-select"
             >
               <el-option
                 v-for="course in courses"
@@ -23,24 +26,44 @@
             </el-select>
           </el-form-item>
 
-          <!-- 进度下拉框 -->
-          <el-form-item label="课程进度">
+          <!-- 章选择下拉框 -->
+          <el-form-item label="选择章">
             <el-select
-              v-model="selectedProgress"
-              placeholder="请选择进度"
+              v-model="selectedChapter"
+              placeholder="请选择章"
+              @change="handleChapterSelect"
+              style="width: 100%"
+              class="custom-select"
             >
               <el-option
-                v-for="(chapter, index) in chapterOptions"
-                :key="index"
-                :label="`${chapter}/${selectedCourse.total}章节`"
-                :value="chapter"
+                v-for="chapter in chaptersList"
+                :key="chapter.order"
+                :label="`第${chapter.num}章：${chapter.name}`"
+                :value="chapter.order"
+              />
+            </el-select>
+          </el-form-item>
+
+          <!-- 节选择下拉框 -->
+          <el-form-item label="选择节">
+            <el-select
+              v-model="selectedProgress"
+              placeholder="请选择节"
+              style="width: 100%"
+              class="custom-select"
+              :disabled="!selectedChapter || sectionsList.length === 0"
+            >
+              <el-option
+                v-for="section in sectionsList"
+                :key="section.order"
+                :label="`第${section.num}节：${section.name}`"
+                :value="section.order"
               />
             </el-select>
           </el-form-item>
         </el-form>
       </div>
 
-      <!-- 对话框底部按钮 -->
       <template #footer>
         <span class="dialog-footer">
           <el-button @click="pendcourseVisible = false">取消</el-button>
@@ -53,12 +76,13 @@
       <el-dialog
       :title="title"
       v-model="dialogVisible"
-      width="30%"
-      center
+      width="500px"
+      :close-on-click-modal="false"
+      class="progress-dialog"
     >
       <!-- 动态加载提示 -->
       <div v-if="isloading" class="loading-container">
-        loading...
+        <el-icon class="is-loading"><Loading /></el-icon> 正在加载中...
       </div>
 
       <!-- 用户列表 -->
@@ -73,7 +97,9 @@
             <!-- 用户名称 -->
             <div class="user-header">
               <span class="user-name">{{ user.name }}</span>
-              <el-button @click="pendCourse(user)">新增记录</el-button>
+              <!-- <el-button type="primary" size="small" @click="pendCourse(user)">
+                <el-icon><Plus /></el-icon> 新增记录
+              </el-button> -->
             </div>
 
             <!-- 课程进度列表 -->
@@ -83,7 +109,26 @@
               :key="pIndex"
             >
               <!-- 进度条标题 -->
-              <div class="progress-chapter">{{ course.course_name }}</div>
+              <div class="progress-title">
+                <span class="course-name">{{ course.course_name }}</span>
+              </div>
+
+              <!-- 当前章节信息 -->
+              <div v-if="course.chapterInfo.chapter_num" class="chapter-info">
+                <div class="chapter-header">
+                  当前进度：
+                  <span class="chapter-num">第{{ course.chapterInfo.chapter_num }}章</span>
+                  <span v-if="course.chapterInfo.section_num" class="section-num">
+                    第{{ course.chapterInfo.section_num }}节
+                  </span>
+                </div>
+                <div class="chapter-name">
+                  {{ course.chapterInfo.chapter_name }}
+                  <span v-if="course.chapterInfo.section_name">
+                    - {{ course.chapterInfo.section_name }}
+                  </span>
+                </div>
+              </div>
 
               <!-- 进度条 -->
               <div class="progress-bar-container">
@@ -94,28 +139,39 @@
                     :style="{ width: `${(course.progress / course.total) * 100}%` }"
                   ></div>
                 </div>
+              </div>
 
-                <!-- 下拉框和进度显示 -->
-                <div class="progress-details-container">
-                  <!-- 下拉框 -->
-                  <select
-                    v-model="course.currentChapter"
-                    @change="handleChapterChange(user, course)"
-                  >
-                    <option
-                      v-for="(chapter, cIndex) in course.chapters"
-                      :key="cIndex"
-                      :value="chapter"
-                    >
-                      {{ chapter }}
-                    </option>
-                  </select>
-
-                  <!-- 当前章节数显示 -->
-                  <span class="current-chapter-display">
-                    / {{ course.total }} 章节
-                  </span>
-                </div>
+              <!-- 章节选择区域 -->
+              <div class="chapter-selection">
+                <el-select
+                  v-model="course.currentChapterForSelect"
+                  placeholder="选择章"
+                  @change="handleChapterSelectInProgress(user, course)"
+                  size="small"
+                >
+                  <el-option
+                    v-for="option in course.organizedOptions?.chapters || []"
+                    :key="option.value"
+                    :label="option.label"
+                    :value="option.value"
+                  />
+                </el-select>
+                
+                <el-select
+                  v-model="course.currentChapter"
+                  placeholder="选择节"
+                  @change="handleChapterChange(user, course)"
+                  size="small"
+                  :disabled="!course.currentChapterForSelect"
+                >
+                  <el-option
+                    v-for="option in (course.organizedOptions?.sections && course.currentChapterForSelect ? 
+                      course.organizedOptions.sections[course.currentChapterForSelect] || [] : [])"
+                    :key="option.value"
+                    :label="option.label"
+                    :value="option.value"
+                  />
+                </el-select>
               </div>
             </div>
 
@@ -129,10 +185,12 @@
       </div>
 
       <!-- 对话框底部按钮 -->
-      <span slot="footer" class="dialog-footer">
-        <el-button @click="dialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="pendProgress">确 定</el-button>
-      </span>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="dialogVisible = false">取 消</el-button>
+          <el-button type="primary" @click="pendProgress">确 定</el-button>
+        </span>
+      </template>
     </el-dialog>
         <div class="header-container selectable">
         <div class="l-container">学习进度（按小组分类）列表
@@ -182,10 +240,11 @@
 
   <script setup>
   import api from '../api';
-  import { onBeforeMount } from 'vue';
+  import { onBeforeMount, computed } from 'vue';
   import { ref } from 'vue';
   import { ElDialog, ElMessage, ElMessageBox} from 'element-plus';
   import { useStore } from 'vuex'; // 添加store引入
+  import { Plus, Loading } from '@element-plus/icons-vue'; // 导入图标
 
   const store = useStore(); // 初始化store
 
@@ -240,145 +299,244 @@
   let Groups = ref([]);
 
   const records = ref([]);
-  const selectedCourseId = ref(null); // 新增：用于存储当前选中小组的课程ID
-  
-async function getGroupProgress()
-  {
+  const selectedCourseId = ref(null); // 用于存储当前选中小组的课程ID
+  const courseChapters = ref([]); // 存储课程章节列表
+
+  // 配置用户进度（点击表格中的按钮时调用）
+  function configProgress(group) {
+    dialogVisible.value = true;
+    selectedGroupid.value = group.group_id;
+    selectedCourseId.value = group.course_id; // 设置当前选中的课程ID
+    getGroupProgress();
+  }
+
+  // 获取小组进度数据
+  async function getGroupProgress() {
     isloading.value = true;
     console.log('Fetching Progress data...');
-  try {
-    const res = await api.get(`/learningProgress/group?Group_Id=${selectedGroupid.value}`);
-    // console.log(res);
+    try {
+      const res = await api.get(`/learningProgress/group?Group_Id=${selectedGroupid.value}`);
 
-    if (res && res.data) {
-      title.value = res.data.data.group_name;
+      if (res && res.data) {
+        title.value = res.data.data.group_name;
 
-      users.value = res.data.data.result.map(user => {
-        return {
-          name: user.username,
-          id: user.user_id,
-          courses: user.records
-            .filter(record => record.course_id === selectedCourseId.value) // 筛选对应课程的记录
-            .map(record => {
-            return {
-              course_id: record.course_id,
-              course_name: record.course_name,
-              total: record.course_chapters,
-              progress: record.progress,
-              currentChapter: record.progress, // 设置默认的当前章节
-              chapters: Array.from({ length: record.course_chapters }, (_, i) => i + 1), // 假设章节从 1 到 total
-            };
-          }),
-        };
-      });
+        // 保存原始用户数据以便后续处理
+        const rawUsers = res.data.data.result;
+        
+        // 获取课程章节列表
+        await getCourseChapters(selectedCourseId.value);
+        
+        // 处理用户数据
+        users.value = rawUsers.map(user => {
+          return {
+            name: user.username,
+            id: user.user_id,
+            courses: user.records
+              .filter(record => record.course_id === selectedCourseId.value) // 筛选对应课程的记录
+              .map(record => {
+                // 组织章节选项为两级结构
+                const chapters = [];
+                const sectionsMap = {};
+                
+                // 提取所有章
+                courseChapters.value.filter(ch => ch.Chapter_Priority === 0).forEach(chapter => {
+                  const chapterNum = courseChapters.value.filter(
+                    ch => ch.Chapter_Priority === 0 && ch.Chapter_Order <= chapter.Chapter_Order
+                  ).length;
+                  
+                  chapters.push({
+                    value: chapter.Chapter_Order,
+                    label: `第${chapterNum}章：${chapter.Chapter_Name}`
+                  });
+                  
+                  // 为每一章初始化节数组
+                  sectionsMap[chapter.Chapter_Order] = [];
+                });
+                
+                // 按章组织所有节
+                courseChapters.value.filter(ch => ch.Chapter_Priority === 1).forEach(section => {
+                  // 查找该节所属的章
+                  for (let i = section.Chapter_Order - 1; i >= 1; i--) {
+                    const potentialParent = courseChapters.value.find(
+                      ch => ch.Chapter_Order === i && ch.Chapter_Priority === 0
+                    );
+                    if (potentialParent) {
+                      // 计算节号
+                      const sectionNum = courseChapters.value.filter(
+                        ch => ch.Chapter_Priority === 1 && 
+                            potentialParent.Chapter_Order < ch.Chapter_Order && 
+                            ch.Chapter_Order <= section.Chapter_Order
+                      ).length;
+                      
+                      // 添加到所属章的节数组
+                      if (sectionsMap[potentialParent.Chapter_Order]) {
+                        sectionsMap[potentialParent.Chapter_Order].push({
+                          value: section.Chapter_Order,
+                          label: `第${sectionNum}节：${section.Chapter_Name}`
+                        });
+                      }
+                      break;
+                    }
+                  }
+                });
+
+                // 查找当前进度对应的章节信息
+                const currentChapter = courseChapters.value.find(
+                  chapter => chapter.Chapter_Order === record.progress
+                ) || { Chapter_Name: "未知章节", Chapter_Order: record.progress, Chapter_Priority: 1 };
+
+                // 找到当前节所属的章
+                let parentChapterOrder = null;
+                if (currentChapter && currentChapter.Chapter_Priority === 1) {
+                  for (let i = currentChapter.Chapter_Order - 1; i >= 1; i--) {
+                    const potentialParent = courseChapters.value.find(
+                      ch => ch.Chapter_Order === i && ch.Chapter_Priority === 0
+                    );
+                    if (potentialParent) {
+                      parentChapterOrder = potentialParent.Chapter_Order;
+                      break;
+                    }
+                  }
+                }
+
+                // 如果是章，不预选章
+                if (currentChapter.Chapter_Priority === 0) {
+                  parentChapterOrder = null;
+                }
+
+                return {
+                  course_id: record.course_id,
+                  course_name: record.course_name,
+                  total: record.course_chapters,
+                  progress: record.progress,
+                  currentChapter: record.progress, // 当前选中的节
+                  currentChapterForSelect: parentChapterOrder, // 当前节所属的章
+                  chapterInfo: {
+                    chapter_num: record.chapter_num || 0,
+                    section_num: record.section_num || 0,
+                    chapter_name: record.chapter_name || "未知章节",
+                    section_name: record.section_name || ""
+                  },
+                  // 组织成二级结构的选项
+                  organizedOptions: {
+                    chapters: chapters,
+                    sections: sectionsMap
+                  }
+                };
+              }),
+          };
+        });
+      }
+
+      isloading.value = false;
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      isloading.value = false;
     }
-
-    // console.log('Processed data:', users.value);
-    isloading.value = false;
-  } catch (error) {
-    console.error("Error fetching data:", error);
-  }
   }
 
-  function configProgress(group) {
-  dialogVisible.value = true;
-  selectedGroupid.value = group.group_id;
-  selectedCourseId.value = group.course_id; // 设置当前选中的课程ID
-  getGroupProgress();
+  // 获取课程章节列表
+  async function getCourseChapters(courseId) {
+    try {
+      const res = await api.get(`/course/chapter_list?Course_Id=${courseId}`);
+      if (res && res.data) {
+        courseChapters.value = res.data;
+      }
+    } catch (error) {
+      console.error("Error fetching course chapters:", error);
+      courseChapters.value = [];
+    }
   }
 
-// 处理章节选择变化的逻辑
-const handleChapterChange = (user, course) => {
-  console.log(course);
-  
-  console.log(`用户 ${user.name} 的课程 ${course.course_name} 选择了章节 ${course.currentChapter}`);
+  // 处理章节选择变化的逻辑
+  const handleChapterChange = (user, course) => {
+    console.log(`用户 ${user.name} 的课程 ${course.course_name} 选择了章节 ${course.currentChapter}`);
 
-  // 创建新的记录对象
-  const newRecord = {
-    Course_Id: course.course_id,
-    Progress: course.currentChapter,
-    User_Id: user.id,
+    // 只有在选择了具体的节时才更新记录
+    if (course.currentChapter) {
+      // 创建新的记录对象
+      const newRecord = {
+        Course_Id: course.course_id,
+        Progress: course.currentChapter,
+        User_Id: user.id,
+      };
+
+      // 根据 User_Id 和 Course_Id 找到对应的记录索引
+      const recordIndex = records.value.findIndex(
+        record =>
+          record.User_Id === user.id && record.Course_Id === course.course_id
+      );
+
+      if (recordIndex !== -1) {
+        // 如果已存在记录，则更新该记录
+        records.value[recordIndex].Progress = newRecord.Progress;
+      } else {
+        // 如果不存在记录，则添加新记录
+        records.value.push(newRecord);
+      }
+
+      console.log('更新后的 records:', records.value);
+    }
   };
 
-  // 根据 User_Id 和 Course_Id 找到对应的记录索引
-  const recordIndex = records.value.findIndex(
-    record =>
-      record.User_Id === user.id && record.Course_Id === course.course_id
-  );
-
-  if (recordIndex !== -1) {
-    // 如果已存在记录，则更新该记录
-    records.value[recordIndex].Progress = newRecord.Progress;
-  } else {
-    // 如果不存在记录，则添加新记录
-    records.value.push(newRecord);
-  }
-
-  console.log('更新后的 records:', records.value);
-};
-
-  async function getGroupList()
-  {
+  async function getGroupList() {
     console.log('Fetching Groups...');
-        try {
-          Groups.value.length = 0; // 清空之前的组数据
-          const res = await api.get(`/user/group/list`);
-          res.data.project_groups.forEach(group => {
-            group.group_type = 'project';  //给group加上类型标签
-            // 确保title字段存在，如果不存在则显示"未知课程"
-            if (!group.title) {
-              group.title = "未知课程";
-            }
-            if(group.group.length > 0) {
-              group.student = ''; //初始化组员字符串
-              for(let i = 0; i < group.group.length; i++) {
-                group.student += group.group[i].Student_Id + ':' + group.group[i].Student + ','; //将组员的姓名和ID拼接成字符串
-              }
-              group.student = group.student.slice(0, -1); //去掉最后一个逗号
-            } else {
-              group.student = '无'; //如果没有组员，则显示无
-            }
-          });
-          res.data.study_groups.forEach(group => {
-            group.group_type = 'study';
-            // 确保title字段存在，如果不存在则显示"未知课程"
-            if (!group.title) {
-              group.title = "未知课程";
-            }
-            if(group.group.length > 0) {
-              group.student = ''; //初始化组员字符串
-              for(let i = 0; i < group.group.length; i++) {
-                group.student += group.group[i].Student_Id + ':' + group.group[i].Student + ','; //将组员的姓名和ID拼接成字符串
-              }
-              group.student = group.student.slice(0, -1); //去掉最后一个逗号
-            } else {
-              group.student = '无'; //如果没有组员，则显示无
-            }
-          });
-          
-          // 获取当前用户ID
-          const currentUser = store.state.user;
-          
-          if (currentUser && currentUser.User_Id) {
-            // 筛选当前用户作为老师的小组
-            // 将用户ID转换为数字以避免前导零的问题
-            const currentUserId = Number(currentUser.User_Id);
-            const teacherGroups = [...res.data.project_groups, ...res.data.study_groups].filter(
-              group => Number(group.teacher_id) === currentUserId
-            );
-            Groups.value = teacherGroups;
-          } else {
-            // 如果无法获取用户信息，显示所有小组（保留原有行为）
-            Groups.value.push(...res.data.project_groups);
-            Groups.value.push(...res.data.study_groups);
+    try {
+      Groups.value.length = 0; // 清空之前的组数据
+      const res = await api.get(`/user/group/list`);
+      res.data.project_groups.forEach(group => {
+        group.group_type = 'project';  //给group加上类型标签
+        // 确保title字段存在，如果不存在则显示"未知课程"
+        if (!group.title) {
+          group.title = "未知课程";
+        }
+        if(group.group.length > 0) {
+          group.student = ''; //初始化组员字符串
+          for(let i = 0; i < group.group.length; i++) {
+            group.student += group.group[i].Student_Id + ':' + group.group[i].Student + ','; //将组员的姓名和ID拼接成字符串
           }
-          
-          // console.log(res);
-          // console.log("Groups:",Groups);
-          
-        } catch (error) {
-          console.error("Error fetching data:", error);
-  }
+          group.student = group.student.slice(0, -1); //去掉最后一个逗号
+        } else {
+          group.student = '无'; //如果没有组员，则显示无
+        }
+      });
+      res.data.study_groups.forEach(group => {
+        group.group_type = 'study';
+        // 确保title字段存在，如果不存在则显示"未知课程"
+        if (!group.title) {
+          group.title = "未知课程";
+        }
+        if(group.group.length > 0) {
+          group.student = ''; //初始化组员字符串
+          for(let i = 0; i < group.group.length; i++) {
+            group.student += group.group[i].Student_Id + ':' + group.group[i].Student + ','; //将组员的姓名和ID拼接成字符串
+          }
+          group.student = group.student.slice(0, -1); //去掉最后一个逗号
+        } else {
+          group.student = '无'; //如果没有组员，则显示无
+        }
+      });
+      
+      // 获取当前用户ID
+      const currentUser = store.state.user;
+      
+      if (currentUser && currentUser.User_Id) {
+        // 筛选当前用户作为老师的小组
+        // 将用户ID转换为数字以避免前导零的问题
+        const currentUserId = Number(currentUser.User_Id);
+        const teacherGroups = [...res.data.project_groups, ...res.data.study_groups].filter(
+          group => Number(group.teacher_id) === currentUserId
+        );
+        Groups.value = teacherGroups;
+      } else {
+        // 如果无法获取用户信息，显示所有小组（保留原有行为）
+        Groups.value.push(...res.data.project_groups);
+        Groups.value.push(...res.data.study_groups);
+      }
+      
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
   }
   
   async function pendProgress(){
@@ -402,7 +560,6 @@ const handleChapterChange = (user, course) => {
         ElMessage.error('更新失败，请稍后重试');
       }
     }
-
   }
 
   onBeforeMount(async () => {
@@ -492,20 +649,28 @@ const handleChapterChange = (user, course) => {
   const selectedCourse = ref(null);
   // 当前选中的进度
   const selectedProgress = ref(null);
+  // 当前选中的章
+  const selectedChapter = ref(null);
   // 根据选中的课程动态生成的进度选项
   const chapterOptions = ref([]);
+  // 章列表
+  const chaptersList = ref([]);
+  // 节列表
+  const sectionsList = ref([]);
   // 当前选中的用户id
   const selectedUserId = ref(null);
 
   const selectedGroupid = ref(null);
 
-  const courses = ref([
-  ]);
+  const courses = ref([]);
 
-  function claerForm () {
+  function claerForm() {
     selectedCourse.value = null;
     selectedProgress.value = null;
+    selectedChapter.value = null;
     chapterOptions.value = [];
+    chaptersList.value = [];
+    sectionsList.value = [];
     selectedUserId.value = null;
   }
 
@@ -533,68 +698,265 @@ const handleChapterChange = (user, course) => {
     }
   }
 
-    // 处理课程选择变化
-    const handleCourseChange = () => {
-      if (selectedCourse.value) {
-        // 根据选中的课程的总章节数生成进度选项
-        chapterOptions.value = Array.from(
-          { length: selectedCourse.value.total },
-          (_, index) => index + 1
-        );
-        // 默认选中第一个章节
-        selectedProgress.value = 1;
+  // 处理章选择变化
+  const handleChapterSelect = () => {
+    if (selectedChapter.value) {
+      // 根据选中的章筛选对应的节
+      sectionsList.value = chapterOptions.value
+        .filter(option => !option.isChapter && 
+          // 查找该节所属的章
+          findParentChapter(option.value) === selectedChapter.value
+        )
+        .map(section => {
+          const parentOrder = findParentChapter(section.value);
+          const parentChapter = chapterOptions.value.find(ch => ch.isChapter && ch.value === parentOrder);
+          const chapterNum = parentChapter ? getChapterNumFromLabel(parentChapter.label) : 0;
+          
+          return {
+            order: section.value,
+            name: section.label.split('：')[1],
+            num: getSectionNumFromLabel(section.label)
+          };
+        });
+        
+      // 如果有节，默认选中第一个
+      if (sectionsList.value.length > 0) {
+        selectedProgress.value = sectionsList.value[0].order;
       } else {
-        chapterOptions.value = [];
         selectedProgress.value = null;
       }
-    };
-
-    // 点击确认按钮时的处理逻辑
-  async function handleConfirm (){
-  // 检查课程、进度和用户 ID 是否都已选中
-  if (
-    selectedCourse.value &&
-    selectedProgress.value &&
-    selectedUserId.value
-  ) {
-    // 将选中的课程名称、课程进度和用户 ID 打包成一个对象
-    const record = {
-      Course_Id: selectedCourse.value.course_id,
-      Progress: selectedProgress.value,
-      User_Id: selectedUserId.value,
-    };
-    try {
-    // 发送 POST 请求到后端
-    await api.post('/learningProgress/update', record);
-
-    // 打印后端返回的响应
-    // console.log("Response from backend:", response);
-
-    // 显示成功消息
-    ElMessage.success('学习进度添加成功');
-
-    getGroupProgress();
-  } catch (error) {
-    // 捕获并打印错误
-    console.error('Failed to pend course progress:', error);
-
-    // 显示错误消息
-    ElMessage.error('学习进度添加失败，请稍后重试');
-  }
-    // 关闭弹窗
-    pendcourseVisible.value = false;
-    claerForm();
-  } else {
-    // 如果缺少必要信息，提示用户
-    ElMessage.warning('请选择课程、进度和确认用户 ID！');
-    claerForm();
-  }
-};
-
+    } else {
+      sectionsList.value = [];
+      selectedProgress.value = null;
+    }
+  };
   
+  // 辅助函数：从章节标签中提取章号
+  const getChapterNumFromLabel = (label) => {
+    const match = label?.match(/第(\d+)章/);
+    return match ? parseInt(match[1]) : 0;
+  };
+  
+  // 辅助函数：从章节标签中提取节号
+  const getSectionNumFromLabel = (label) => {
+    const match = label?.match(/第\d+章 第(\d+)节/);
+    return match ? parseInt(match[1]) : 0;
+  };
+  
+  // 查找节所属的章的order
+  const findParentChapter = (sectionOrder) => {
+    const section = courseChapters.value.find(ch => ch.Chapter_Order === sectionOrder);
+    if (!section || section.Chapter_Priority === 0) return null;
+    
+    // 向前查找最近的一个章
+    for (let i = section.Chapter_Order - 1; i >= 1; i--) {
+      const chapter = courseChapters.value.find(
+        ch => ch.Chapter_Order === i && ch.Chapter_Priority === 0
+      );
+      if (chapter) return chapter.Chapter_Order;
+    }
+    return null;
+  };
+
+  // 处理课程选择变化
+  const handleCourseChange = async () => {
+    if (selectedCourse.value) {
+      // 获取课程章节列表
+      try {
+        const res = await api.get(`/course/chapter_list?Course_Id=${selectedCourse.value.course_id}`);
+        if (res && res.data) {
+          courseChapters.value = res.data;
+          
+          // 组织章节数据
+          const organized = {};
+          
+          // 先找出所有的章（priority=0）
+          const mainChapters = res.data.filter(chapter => chapter.Chapter_Priority === 0);
+          
+          // 为每章创建一个对象，用于存储该章下的所有节
+          mainChapters.forEach(chapter => {
+            organized[chapter.Chapter_Order] = {
+              name: chapter.Chapter_Name,
+              sections: []
+            };
+          });
+          
+          // 将节（priority=1）分配到各自的章下
+          res.data.forEach(chapter => {
+            if (chapter.Chapter_Priority === 1) {
+              // 找到该节所属的章
+              let parentChapterOrder = null;
+              
+              // 从该节往前查找最近的一个章
+              for (let i = chapter.Chapter_Order - 1; i >= 1; i--) {
+                const potentialParent = res.data.find(
+                  ch => ch.Chapter_Order === i && ch.Chapter_Priority === 0
+                );
+                if (potentialParent) {
+                  parentChapterOrder = potentialParent.Chapter_Order;
+                  break;
+                }
+              }
+              
+              // 如果找到了所属的章，添加到该章的sections数组中
+              if (parentChapterOrder !== null && organized[parentChapterOrder]) {
+                organized[parentChapterOrder].sections.push({
+                  order: chapter.Chapter_Order,
+                  name: chapter.Chapter_Name
+                });
+              }
+            }
+          });
+          
+          // 生成章节选项
+          const options = [];
+          
+          // 遍历每一章
+          Object.keys(organized).forEach(chapterOrder => {
+            const chapter = organized[chapterOrder];
+            
+            // 添加章本身作为一个选项
+            const chapterNum = res.data.filter(
+              ch => ch.Chapter_Priority === 0 && ch.Chapter_Order <= parseInt(chapterOrder)
+            ).length;
+            
+            options.push({
+              value: parseInt(chapterOrder),
+              label: `第${chapterNum}章：${chapter.name}`,
+              isChapter: true
+            });
+            
+            // 添加该章下的所有节
+            chapter.sections.forEach(section => {
+              // 计算节号
+              const sectionNum = res.data.filter(
+                ch => ch.Chapter_Priority === 1 && 
+                     parseInt(chapterOrder) < ch.Chapter_Order && 
+                     ch.Chapter_Order <= section.order
+              ).length;
+              
+              options.push({
+                value: section.order,
+                label: `第${chapterNum}章 第${sectionNum}节：${section.name}`,
+                isChapter: false
+              });
+            });
+          });
+          
+          // 按value值（Chapter_Order）排序
+          options.sort((a, b) => a.value - b.value);
+          
+          chapterOptions.value = options;
+          
+          // 设置章列表
+          chaptersList.value = mainChapters.map(chapter => {
+            const chapterNum = res.data.filter(
+              ch => ch.Chapter_Priority === 0 && ch.Chapter_Order <= chapter.Chapter_Order
+            ).length;
+            
+            return {
+              order: chapter.Chapter_Order,
+              name: chapter.Chapter_Name,
+              num: chapterNum
+            };
+          });
+          
+          // 默认选择第一个章
+          if (chaptersList.value.length > 0) {
+            selectedChapter.value = chaptersList.value[0].order;
+            handleChapterSelect(); // 触发章选择事件以加载节
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching course chapters:", error);
+        chapterOptions.value = [];
+        chaptersList.value = [];
+        sectionsList.value = [];
+        selectedChapter.value = null;
+        selectedProgress.value = null;
+      }
+    } else {
+      chapterOptions.value = [];
+      chaptersList.value = [];
+      sectionsList.value = [];
+      selectedChapter.value = null;
+      selectedProgress.value = null;
+    }
+  };
+
+  // 处理编辑进度时章选择变化
+  const handleChapterSelectInProgress = (user, course) => {
+    // 当章选择改变时，重置节选择
+    course.currentChapter = null;
+  };
+
+  // 点击确认按钮时的处理逻辑
+  async function handleConfirm() {
+    // 检查课程、进度和用户 ID 是否都已选中
+    if (
+      selectedCourse.value &&
+      selectedProgress.value !== null &&
+      selectedUserId.value
+    ) {
+      // 将选中的课程名称、课程进度和用户 ID 打包成一个对象
+      const record = {
+        Course_Id: selectedCourse.value.course_id,
+        Progress: selectedProgress.value,
+        User_Id: selectedUserId.value,
+      };
+      try {
+        // 发送 POST 请求到后端
+        await api.post('/learningProgress/update', record);
+
+        // 显示成功消息
+        ElMessage.success('学习进度添加成功');
+
+        getGroupProgress();
+      } catch (error) {
+        // 捕获并打印错误
+        console.error('Failed to pend course progress:', error);
+
+        // 显示错误消息
+        ElMessage.error('学习进度添加失败，请稍后重试');
+      }
+      // 关闭弹窗
+      pendcourseVisible.value = false;
+      claerForm();
+    } else {
+      // 如果缺少必要信息，提示用户
+      ElMessage.warning('请选择课程、进度和确认用户 ID！');
+      claerForm();
+    }
+  };
   </script>
   
 <style scoped>
+.progress-dialog {
+  --el-dialog-bg-color: #f5f7fa;
+  --el-dialog-box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+}
+
+.progress-dialog :deep(.el-dialog__header) {
+  padding: 15px 20px;
+  border-bottom: 1px solid #ebeef5;
+  background-color: #f0f2f5;
+  border-radius: 8px 8px 0 0;
+}
+
+.progress-dialog :deep(.el-dialog__body) {
+  padding: 20px;
+}
+
+.progress-dialog :deep(.el-dialog__footer) {
+  padding: 15px 20px;
+  border-top: 1px solid #ebeef5;
+  text-align: right;
+}
+
+.custom-select :deep(.el-input__wrapper) {
+  background-color: #fff;
+}
 
   .header-container {
     display: flex;
@@ -648,104 +1010,165 @@ const handleChapterChange = (user, course) => {
   }
   /* 排名列表样式 */
   .ranking-list {
-  height: 400px; /* 设置弹窗内容的高度，确保内容可滚动 */
-  display: flex;
-  flex-direction: column; /* 用户列表垂直排列 */
-}
-
-/* 可滚动容器 */
-.scroll-container {
-  flex: 1; /* 确保滚动容器占满剩余空间 */
-  overflow-y: auto; /* 垂直滚动 */
-  /* 添加滚动条美化 */
-  ::-webkit-scrollbar {
-    width: 8px;
+    max-height: 450px; /* 设置弹窗内容的高度，确保内容可滚动 */
+    display: flex;
+    flex-direction: column; /* 用户列表垂直排列 */
   }
-  ::-webkit-scrollbar-thumb {
-    background-color: rgba(0, 0, 0, 0.2);
+
+  /* 可滚动容器 */
+  .scroll-container {
+    flex: 1; /* 确保滚动容器占满剩余空间 */
+    overflow-y: auto; /* 垂直滚动 */
+    max-height: 450px;
+  }
+
+  .scroll-container::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .scroll-container::-webkit-scrollbar-thumb {
+    background-color: #c0c4cc;
+    border-radius: 10px;
+  }
+
+  .scroll-container::-webkit-scrollbar-track {
+    background-color: #f5f7fa;
+  }
+
+  /* 每个用户项 */
+  .list-item {
+    display: flex;
+    flex-direction: column; /* 用户内部内容垂直排列 */
+    margin-bottom: 16px;
+    background-color: #fff;
+    border-radius: 8px;
+    padding: 15px;
+    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
+  }
+
+  /* 用户标题 */
+  .user-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px dashed #ebeef5;
+  }
+
+  .user-name {
+    font-size: 16px;
+    font-weight: bold;
+    color: #303133;
+  }
+
+  /* 进度条容器 */
+  .progress-item {
+    padding: 10px;
+    border-radius: 6px;
+    margin-bottom: 10px;
+    background-color: #f8f9fb;
+  }
+
+  .progress-title {
+    margin-bottom: 10px;
+  }
+
+  .course-name {
+    font-weight: 600;
+    color: #409eff;
+    font-size: 14px;
+  }
+
+  /* 章节信息样式 */
+  .chapter-info {
+    margin: 10px 0;
+    padding: 8px;
+    background-color: #f0f7ff;
+    border-radius: 6px;
+  }
+
+  .chapter-header {
+    font-size: 14px;
+    color: #606266;
+    margin-bottom: 5px;
+  }
+
+  .chapter-num, .section-num {
+    font-weight: 600;
+    color: #409eff;
+    margin-right: 5px;
+  }
+
+  .chapter-name {
+    font-size: 13px;
+    color: #606266;
+    font-style: italic;
+  }
+
+  /* 进度条 */
+  .progress-bar-container {
+    margin: 12px 0;
+  }
+
+  .progress-track {
+    width: 100%;
+    height: 8px;
+    background-color: #e4e7ed;
     border-radius: 4px;
+    position: relative;
+    overflow: hidden;
   }
-}
 
-/* 每个用户项 */
-.list-item {
-  display: flex;
-  flex-direction: column; /* 用户内部内容垂直排列 */
-  margin-bottom: 10px;
-}
+  .progress-bar {
+    height: 100%;
+    background-color: #409eff;
+    background-image: linear-gradient(45deg, rgba(255,255,255,.15) 25%, transparent 25%, transparent 50%, rgba(255,255,255,.15) 50%, rgba(255,255,255,.15) 75%, transparent 75%, transparent);
+    background-size: 1rem 1rem;
+    position: absolute;
+    top: 0;
+    left: 0;
+    border-radius: 4px;
+    transition: width 0.3s ease;
+  }
 
-/* 用户标题 */
-.user-header {
-  display: flex;
-  align-items: center;
-  margin-bottom: 5px;
-}
+  /* 章节选择区域 */
+  .chapter-selection {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+  }
 
-.user-name {
-  font-size: 18px;
-  font-weight: bold;
-}
+  .chapter-selection .el-select {
+    flex: 1;
+  }
 
-/* 进度条容器 */
-.progress-item {
-  display: flex;
-  align-items: center;
-  margin-bottom: 5px;
-}
+  /* 加载状态 */
+  .loading-container {
+    text-align: center;
+    padding: 30px;
+    font-size: 16px;
+    color: #909399;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
 
-/* 章节信息 */
-.progress-chapter {
-  font-size: 14px;
-  color: #666;
-  margin-right: 10px;
-}
+  .user-separator {
+    height: 1px;
+    width: 100%;
+    background-color: #ebeef5;
+    margin: 10px 0;
+  }
 
-/* 进度条及其按键的容器 */
-.progress-bar-container {
-  display: flex;
-  align-items: center;
-}
-
-/* 进度条 */
-.progress-track {
-  width: 150px; /* 进度条宽度 */
-  height: 10px;
-  background-color: #ddd;
-  position: relative;
-}
-
-.progress-bar {
-  height: 100%;
-  background-color: #00c851;
-  position: absolute;
-  top: 0;
-  left: 0;
-}
-
-/* 进度条旁边的按键 */
-.progress-button {
-  margin-left: 10px;
-  font-size: 12px; /* 调整按键字体大小 */
-}
-
-/* 加载状态 */
-.loading-container {
-  text-align: center;
-  font-size: 18px;
-  color: #666;
-}
-
-/* 弹窗底部按钮组 */
-.dialog-footer {
-  display: flex;
-  justify-content: flex-end; /* 按钮组右对齐 */
-  margin-top: 10px;
-}
-.user-separator {
-  height: 1px;
-  width: 100%;
-  background-color: #ddd;
-  margin: 10px 0;
-}
-  </style>
+  .no-progress {
+    padding: 15px;
+    text-align: center;
+    color: #909399;
+    font-style: italic;
+    background-color: #f8f9fb;
+    border-radius: 6px;
+  }
+</style>
   
