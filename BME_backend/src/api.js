@@ -7,11 +7,11 @@ const LocalAPI_URL = 'http://localhost:5000';
 
 
 const api = axios.create({
-    baseURL: API_URL,
+    baseURL: LocalAPI_URL,
     headers: {
         'Content-Type': 'application/json'
     },
-    withCredentials: true, // 修改为true，允许跨域请求携带凭证
+    withCredentials: false, 
 
 
 });
