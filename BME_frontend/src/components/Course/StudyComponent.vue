@@ -281,17 +281,22 @@ onMounted(() => {
 }
 
 .boxCard {
-    /* min-width: 350px; */
     width: 31%;
     height: 110px;
-
     margin: 10px;
-    border-radius: 6px;
-
-    box-shadow: 0 2px 10px 0 rgba(53, 53, 53, 0.1);
-    transition: all 0.3s ease;
-
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: 0 2px 12px 0 rgba(64, 158, 255, 0.07), 0 1.5px 8px 0 rgba(53,53,53,0.04);
+    transition: box-shadow 0.22s cubic-bezier(.4,0,.2,1), transform 0.22s cubic-bezier(.4,0,.2,1);
     cursor: pointer;
+    border: 1px solid #f3f6fa;
+}
+
+.boxCard:hover {
+    transform: translateY(-6px) scale(1.025);
+    box-shadow: 0 8px 32px 0 rgba(64, 158, 255, 0.13), 0 2px 12px 0 rgba(53,53,53,0.08);
+    border: 1px solid #e0eaff;
+    background: #fafdff;
 }
 
 /* 媒体查询：当屏幕宽度小于等于 768px 时 (竖屏模式) */

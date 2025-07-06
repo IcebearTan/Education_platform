@@ -78,12 +78,7 @@ const handleMouseLeave = () => {
             <Expand />
           </el-icon>
         </div>
-
-
       </el-header>
-
-
-
       <!-- 移动端菜单 (条件渲染) -->
       <MobileMenuComponent v-if="isMobile && isMobileMenuOpen" @close="toggleMobileMenu" />
 
@@ -286,6 +281,7 @@ const handleMouseLeave = () => {
   /* padding-left: 20px; */
   min-height: 100vh;
   min-width: 0px;
+  padding: 0;
   /* 宽度自适应 */
   /* background-color: rgba(129, 51, 33, 0.898); */
   background-color: rgb(255, 255, 255);

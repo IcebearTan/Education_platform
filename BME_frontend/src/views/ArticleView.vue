@@ -64,10 +64,8 @@ onUnmounted(() => {
       <!-- 移动端菜单 -->
       <MobileMenuComponent v-if="isMobile && isMobileMenuOpen" @close="toggleMobileMenu" />
 
-      <el-main style="padding-left: 20px; min-height: 100vh; display: flex; justify-content: center;">
-        <div class="article-container">
-          <ArticleDetailComponent :id="Article_Id" />
-        </div>
+      <el-main class="article-main-container">
+        <ArticleDetailComponent :id="Article_Id" />
       </el-main>
       <el-footer class="page-footer">
         <PageFooterComponent />
@@ -156,18 +154,16 @@ onUnmounted(() => {
 
 
 .common-layout {
-  min-height: 100%;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  background: #f8f9fa;
 }
 
-.article-container {
-  width: 1000px;
-  min-height: 1000px;
-
-  border-radius: 5px;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+.article-main-container {
+  padding: 0;
+  min-height: calc(100vh - 60px);
+  background: #f8f9fa;
 }
 
 .footer {

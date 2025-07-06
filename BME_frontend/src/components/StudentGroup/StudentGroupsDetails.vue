@@ -7,7 +7,7 @@
         </div>
         <div class="title-text">
           {{ currentUserPermissions.name }} - C语言程序设计
-          <el-tag :color="currentUserPermissions.color" style="margin-left: 10px; color: white;">
+          <el-tag :color="userRole === 'teacher' ? '#b391ff' : currentUserPermissions.color" style="margin-left: 10px; color: white;">
             {{ currentUserPermissions.name }}
           </el-tag>
         </div>
@@ -25,11 +25,12 @@
                   class="more-item-button" 
                   :class="{
                     active: (action.id === 'view_tasks' && currentTab === 'task') || 
-                            (action.id === 'view_rank' && currentTab === 'rank')
+                            (action.id === 'view_rank' && currentTab === 'rank'),
+                    'is-disabled': action.id === 'view_rank'
                   }"
-                  @click="handleAction(action)"
+                  @click="action.id === 'view_rank' ? null : handleAction(action)"
+                  :style="action.id === 'view_rank' ? 'pointer-events: none; opacity: 0.5;' : ''"
                 >
-                  <span style="margin-right: 5px;">{{ action.icon }}</span>
                   {{ action.label }}
                 </div>
               </div>
@@ -56,18 +57,6 @@
       <div style="margin-top: 30px;">
         <StudentGroupTask v-if="currentTab === 'task'" />
         <StudentGroupRank v-else-if="currentTab === 'rank'" />
-        <div v-else-if="currentTab === 'management'" class="management-panel">
-          <el-card>
-            <template #header>
-              <span>教师管理面板</span>
-            </template>
-            <el-space direction="vertical" style="width: 100%">
-              <el-button type="primary" @click="openTaskDialog">发布新任务</el-button>
-              <el-button type="success" @click="openApprovalDialog">待审批请假 (3)</el-button>
-              <el-button type="warning" @click="openNoticeDialog">发送通知</el-button>
-            </el-space>
-          </el-card>
-        </div>
       </div>
     </div>
 
@@ -559,20 +548,21 @@ onMounted(() => {
   opacity: 0.5;
 }
 
-.more-item{
+.more-item {
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   margin-bottom: 10px;
+  gap: 14px;
 }
 
 .more-item-button {
-  width: 100%;
-  height: 40px;
+  width: 120px;
+  height: 32px;
   cursor: pointer;
   display: flex;
-  justify-content: flex-start;
+  justify-content: center;
   align-items: center;
   font-size: 14px;
   color: #0ac0ba;
@@ -580,18 +570,19 @@ onMounted(() => {
   border: 1.5px solid transparent;
   background: transparent;
   transition: background 0.2s, color 0.2s, border 0.2s;
-  padding: 0 12px;
-  margin-bottom: 5px;
+  margin: 0 auto;
+  font-weight: 500;
+  letter-spacing: 0.5px;
 }
 
 .more-item-button.active {
-  border: 1.5px solid #91fffb;
-  background: #f4ffff;
+  border: 1.5px solid #0ac0ba;
+  background: #e6faf9;
   color: #0ac0ba;
 }
 
 .more-item-button:hover {
-  background: #f4ffff;
+  background: #e6faf9;
 }
 
 .more-item-button:active {

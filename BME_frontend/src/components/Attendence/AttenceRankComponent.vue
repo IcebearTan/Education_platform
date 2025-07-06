@@ -116,7 +116,7 @@ onMounted(() => {
 <style scoped>
 .rank-container{
     /* margin-left: auto; */
-    width: 275px;
+    /* width: 275px; */
 }
 .title{
   font-size: 20px;

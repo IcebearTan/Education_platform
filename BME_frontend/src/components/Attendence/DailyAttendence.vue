@@ -34,24 +34,48 @@
           <div v-else class="stats-container">
             <el-button class="check-button" @click="router.push('/login')" type="primary" plain>登录/注册</el-button>
           </div>
-          <div class="month-labels">
-              <span 
-                v-for="(month, index) in visibleMonths" 
-                :key="month"
-                :style="{left: monthStartIndices[index] * 2.5 + 'px'}">{{ month }}</span>
-          </div>
       </div>
-      <div class="calendar-grid" v-if="formeCheckStatus.length > 0">
-        <div 
-            v-for="(day, index) in formeCheckStatus"
-            :key="index"
-            class="day-cell"
-            :class="{ 'checked': isChecked(formeCheckStatus[index].status), 'today': isToday(day.date) }"
-            :title="formeCheckStatus[index].date + ' ' + formeCheckStatus[index].total_hours + 'h'"
-        >
-            <div v-if="isToday(formeCheckStatus[index].date, index)" class="today-marker"></div>
+      
+      <!-- 重新设计的月份日历区域 - 水平布局 -->
+      <div class="months-container" v-if="formeCheckStatus.length > 0">
+        <!-- 第一个月 -->
+        <div class="month-section">
+          <div class="month-header">
+            <span class="month-title">{{ visibleMonths[0] }}</span>
+          </div>
+          <div class="month-grid">
+            <div 
+                v-for="(day, index) in formeCheckStatus.slice(0, monthStartIndices[1])"
+                :key="index"
+                class="day-cell"
+                :class="{'checked': isChecked(day.status), 'today': isToday(day.date)}"
+                :title="day.date + ' ' + day.total_hours + 'h'"
+            >
+                <div v-if="isToday(day.date, index)" class="today-marker"></div>
+            </div>
+          </div>
         </div>
         
+        <!-- 月份间隔 - 垂直分割线 -->
+        <!-- <div class="month-divider"></div> -->
+        
+        <!-- 第二个月 -->
+        <div class="month-section">
+          <div class="month-header">
+            <span class="month-title">{{ visibleMonths[1] }}</span>
+          </div>
+          <div class="month-grid">
+            <div 
+                v-for="(day, index) in formeCheckStatus.slice(monthStartIndices[1])"
+                :key="index + monthStartIndices[1]"
+                class="day-cell"
+                :class="{'checked': isChecked(day.status), 'today': isToday(day.date)}"
+                :title="day.date + ' ' + day.total_hours + 'h'"
+            >
+                <div v-if="isToday(day.date, index + monthStartIndices[1])" class="today-marker"></div>
+            </div>
+          </div>
+        </div>
       </div>
   </div>
   <div v-else class="calendar-container" :style="{ height: checkLogin() ? 'auto' : '100px'  }">
@@ -486,38 +510,50 @@ watch(isloading, (newValue) => {
 .calendar-container {
   position: relative;
   font-family: Arial, sans-serif;
-  max-width: 220px;
   width: 100%;     
-  padding: 10px; 
+  padding: 20px; 
   background: #fff;
-  border-radius: 8px;
+  border-radius: 12px;
   box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .calendar-header {
   display: flex;
   flex-direction: column;
-  margin-bottom: 5px;
+  align-items: center;
+  width: 100%;
+  /* margin-bottom: 16px; */
 }
 
 .week-calendar {
   display: flex;
-  justify-content: center;  /* 水平居中子元素 */
-  margin-bottom: 5px;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 16px;
   background: #ffffff;
-  border-radius: 8px;
-  font-size: 15px;
-  font-weight:800;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 800;
+  padding: 4px 8px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+  min-width: 0;
+  max-width: 265px;
 }
 
 .day-card {
-  display:flex;
+  display: flex;
   flex-direction: column;
   text-align: center;
   justify-content: center;
-  padding:4px;
-  border-radius: 5px;
-  cursor:pointer;
+  padding: 6px 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  margin: 0 2px;
+  transition: all 0.2s ease;
 }
 
 .day-number {
@@ -546,22 +582,23 @@ watch(isloading, (newValue) => {
 .stats-container {
   display: flex;
   justify-content: center;
-  margin-bottom: 10px;
-  margin-top: 10px;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 16px;
+  margin-top: 0;
 }
 
 .stat-item {
   display: flex;
   align-items: center;
-  /* gap: 8px; */
+  justify-content: center;
   background: #faf8f8;
-  padding: 8px 16px;
-  border-radius: 6px;
+  padding: 12px 20px;
+  border-radius: 10px;
   border: #ffffff solid 1px;
-
-  transition: all 0.132s ease-in-out;
-
-  /* box-shadow: 0 0px 2px #4fc3f7; */
+  transition: all 0.3s ease;
+  min-width: 240px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 
 .stat-item:hover {
@@ -576,47 +613,88 @@ watch(isloading, (newValue) => {
 }
 
 .continuous-days{
-  /* font-size: 1.4em;
-  color:black; */
+  /* 保留空样式规则以备后用 */
+  display: inline;
 }
 
 .check-button{
-  width: 220px;
-}
-
-.month-labels {
-  position: relative;
-  height: 20px;
-  /* margin-bottom: 10px; */
-  margin-left: 55px;
-  overflow: visible;
-  z-index: 10; /* 确保月份不被格子遮盖 */
-
-  color: #969696;
-}
-
-.month-labels span {
-  position: absolute;
-  top: 0;
-  font-size: 12px;
-  background-color: white; /* 避免覆盖格子不清晰 */
-  padding: 0 4px;
-  z-index: 10;
+  width: 240px;
+  height: 40px;
+  font-size: 15px;
+  border-radius: 10px;
 }
 
 .checked{
   background-color:#4fc3f7 !important;
 }
 
-.calendar-grid {
+/* 重新设计的月份容器样式 - 水平布局 */
+.months-container {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 32px;
+  width: 100%;
+  max-width: 100%;
+}
+
+.month-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 0 0 auto;
+}
+
+.month-header {
+  margin-bottom: 12px;
+}
+
+.month-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #4fc3f7;
+  background: linear-gradient(135deg, #4fc3f7, #67c23a);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  /* padding: 8px 16px; */
+  border-radius: 20px;
+  background-color: rgba(79, 195, 247, 0.1);
+  /* border: 2px solid rgba(79, 195, 247, 0.2); */
+  display: inline-block;
+}
+
+.month-grid {
   display: grid;
   grid-auto-flow: column;
-  max-width: 299px;
   grid-template-rows: repeat(7, 20px);
   grid-auto-columns: 16px; 
   gap: 3px; 
-  overflow: hidden;
   justify-content: center;
+}
+
+.month-divider {
+  width: 3px;
+  height: 140px;
+  background: linear-gradient(180deg, transparent, rgba(79, 195, 247, 0.3), transparent);
+  border-radius: 2px;
+  position: relative;
+  align-self: stretch;
+  margin-top: 50px;
+}
+
+.month-divider::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 8px;
+  height: 8px;
+  background: #4fc3f7;
+  border-radius: 50%;
+  box-shadow: 0 0 10px rgba(79, 195, 247, 0.5);
 }
 
 
@@ -627,6 +705,7 @@ watch(isloading, (newValue) => {
   border-radius: 3px;
   cursor: pointer;
   background: #ebedf0;
+  transition: all 0.2s ease;
 }
 
 .day-cell:hover {
@@ -645,7 +724,7 @@ watch(isloading, (newValue) => {
 }
 
 @media (max-width: 768px) {
-    .calendar-container {
+  .calendar-container {
     width: 100%;
     max-width: 480px;
     padding: 16px;
@@ -658,25 +737,64 @@ watch(isloading, (newValue) => {
 
   .check-button {
     width: 100% !important;
+    max-width: 300px;
     font-size: 16px;
-    margin: 10px 0;
+    margin: 8px 0;
   }
 
   .stats-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
+    width: 100%;
+    padding: 0 16px;
   }
 
   .stat-item {
     width: 100%;
+    max-width: 300px;
     text-align: center;
+    min-width: auto;
   }
 
   .document {
     font-size: 14px;
   }
+
+  .months-container {
+    flex-direction: column;
+    gap: 20px;
+    align-items: center;
+  }
+
+  .month-divider {
+    width: 80%;
+    height: 2px;
+    margin-top: 0;
+    background: linear-gradient(90deg, transparent, rgba(79, 195, 247, 0.3), transparent);
+  }
+
+  .month-divider::before {
+    top: -4px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .month-grid {
+    transform: scale(0.9);
+  }
+
+  .month-title {
+    font-size: 14px;
+    padding: 6px 12px;
+  }
+
+  .week-calendar {
+    padding: 6px;
+    margin-bottom: 12px;
+  }
+
+  .day-card {
+    padding: 4px 6px;
+    margin: 0 1px;
+  }
 }
 
-</style>    
+</style>
