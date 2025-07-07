@@ -541,7 +541,7 @@ watch(isloading, (newValue) => {
   padding: 4px 8px;
   box-shadow: 0 1px 4px rgba(0,0,0,0.05);
   min-width: 0;
-  max-width: 265px;
+  max-width: 280px;
 }
 
 .day-card {
