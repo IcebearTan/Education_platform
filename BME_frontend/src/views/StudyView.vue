@@ -6,7 +6,6 @@ import MobileMenuComponent from "../components/MobileMenuComponent.vue";
 // import StudyComponent from '../components/StudyComponent.vue'
 import PageFooterComponent from "../components/PageFooterComponent.vue";
 import { useStore } from 'vuex';
-import { ElMessage } from 'element-plus';
 import api from "../api";
 import { Expand } from '@element-plus/icons-vue'; // 只导入实际使用的图标
 import { ref, onMounted, onUnmounted } from 'vue';
@@ -26,21 +25,13 @@ const checkScreenSize = () => {
 };
 
 const toggleMobileMenu = () => {
-  isMobileMenuOpen.value = !isMobileMenuOpen.value;
+  isMobileMenuOpen.value = !isMobileMenu.value;
 };
 
 onMounted(() => {
   checkScreenSize();
   window.addEventListener('resize', checkScreenSize);
-
-  // 用户登录状态检查
-  api({
-    url: "/user/user_index",
-    method: "get",
-  }).catch((error) => {
-    ElMessage.error('用户未登录');
-    router.push('/login');
-  });
+  // 移除 /study 的登录拦截和用户信息请求，允许未登录访问
 });
 
 onUnmounted(() => {

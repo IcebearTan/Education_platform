@@ -1,7 +1,4 @@
 <script>
-import { useStore } from 'vuex'
-import { User } from '@element-plus/icons-vue'
-
 export default {
     data() {
         return {
@@ -32,66 +29,7 @@ import api from '../api'
 
 const buttonRef = ref()
 const popoverRef = ref()
-const store = useStore()
 const router = useRouter()
-
-const User_Avatar = ref('');
-
-const token = localStorage.getItem('token')
-const isLogin = ref(false)
-const checkLogin = () => {
-    // if (token) {
-    //     isLogin.value = true
-    //     return true
-    // } else {
-    //     isLogin.value = false
-    //     return false
-    // }
-    api({
-        url: "/user/user_index",
-        method: "get",
-    }).then((res) => {
-        isLogin.value = true
-        setUserAvatar()
-        console.log(res)
-    }).catch((error) => {
-        isLogin.value = false
-        store.dispatch('logout')
-    })
-}
-
-const fetchUserAvatar = async () => {
-    api({
-      url: "/user/user_avatars", // 请求头像的URL
-      method: "get",
-    })
-    .then((avatarRes) => {
-        if (avatarRes.data.code === 200) {
-            User_Avatar.value = `data:image/png;base64,${avatarRes.data.User_Avatar}`;  // 头像URL存储在res.data.avatarUrl中
-        } else {
-            User_Avatar.value = 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png';
-            ElMessage.error('用户尚未上传头像');
-        }  
-    })
-    .catch((error) => {
-        if (error.response.status === 400) {
-            User_Avatar.value = 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png';
-            ElMessage.error('MenuComponent:用户尚未上传头像或未知的错误');
-        } else if (error.response.status === 401) {
-            router.push('/login')
-            ElMessage.error('登录已过期，请重新登录');
-        }
-    })
-}
-
-const setUserAvatar = () => {
-    if (store.state.avatar) {
-        User_Avatar.value = `data:image/png;base64,${store.state.avatar}`
-    } else {
-        User_Avatar.value = 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png'
-    }
-    // User_Avatar.value = `data:image/png;base64,${store.state.avatar}`
-}
 
 const isExpanded = ref(false)
 
@@ -110,53 +48,12 @@ const isSearchInputExpand = () => {
 const searchInputClass = ref('search-input')
 const searchInput = ref(null)
 
-onBeforeMount(() => {
-    checkLogin()
-})
-
 onMounted(() => {
     
-    // console.log(isLogin.value)
-    // if (isLogin.value) {
-    //     // fetchUserAvatar()
-    //     setUserAvatar()
-    // } else {
-        
-    // }
 })
 
 const onClickOutside = () => {
   unref(popoverRef).popperRef?.delayHide?.()
-}
-
-const logOut = () => {
-    store.dispatch('logout')
-
-    localStorage.removeItem('token')
-    // router.push('/login')
-    window.location.reload()
-}
-
-const handleUserInfo = () => {
-    if (router.currentRoute.value.path != '/user-center/user-info') {
-        setTimeout(() => {
-            window.location.reload()
-        }, 200)
-        router.push('/user-center/user-info')
-    }else {
-        window.location.reload()
-    }
-}
-
-const handleUserGroup = () => {
-    if (router.currentRoute.value.path != '/user-center/my-groups') {
-        setTimeout(() => {
-            window.location.reload()
-        }, 200)
-        router.push('/user-center/my-groups')
-    }else {
-        window.location.reload()
-    }
 }
 </script>
 

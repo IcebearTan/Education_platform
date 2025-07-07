@@ -48,15 +48,15 @@ const fetchUserInfo = async () => {
     if (response.data.code === 200) {
       User_Info.value = response.data;
     } else {
-      ElMessage.error('获取用户信息失败');
+      // 只做本地清理，不弹窗不跳转
+      localStorage.removeItem('token')
     }
   } catch (error) {
-    if (error.response.status === 401) {
-      ElMessage.error('登录失效，请重新登录');
-      router.push('/login');//这里还没做完
-    }
+    // 只做本地清理，不弹窗不跳转
+    localStorage.removeItem('token')
   }
 }
+const publicRoutes = ['/', '/home', '/article', '/register', '/login'];
 const checkLogin = () => {
     api({
         url: "/user/user_index",
@@ -67,6 +67,8 @@ const checkLogin = () => {
     }).catch((error) => {
         isLogin.value = false
         store.dispatch('logout')
+        localStorage.removeItem('token')
+        // 不再弹窗和跳转，交给全局拦截器
     })
 }
 
@@ -80,16 +82,16 @@ const fetchUserAvatar = async () => {
             User_Avatar.value = `data:image/png;base64,${avatarRes.data.User_Avatar}`;  // 头像URL存储在res.data.avatarUrl中
         } else {
             User_Avatar.value = 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png';
-            ElMessage.error('用户尚未上传头像');
+            // ElMessage.error('用户尚未上传头像'); // 不再弹窗
         }  
     })
     .catch((error) => {
-        if (error.response.status === 400) {
+        if (error.response && error.response.status === 400) {
             User_Avatar.value = 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png';
-            ElMessage.error('MenuComponent:用户尚未上传头像或未知的错误');
-        } else if (error.response.status === 401) {
-            router.push('/login')
-            ElMessage.error('登录已过期，请重新登录');
+            // ElMessage.error('MenuComponent:用户尚未上传头像或未知的错误'); // 不再弹窗
+        } else if (error.response && error.response.status === 401) {
+            localStorage.removeItem('token')
+            // 不再弹窗和跳转，交给全局拦截器
         }
     })
 }
@@ -121,14 +123,13 @@ const searchInputClass = ref('search-input')
 const searchInput = ref(null)
 
 onMounted(() => {
-    checkLogin()
-    // console.log(isLogin.value)
-    // if (isLogin.value) {
-    //     // fetchUserAvatar()
-    //     setUserAvatar()
-    // } else {
-        
-    // }
+    if (token) {
+        checkLogin()
+    } else {
+        isLogin.value = false
+        // 未登录时直接展示登录/注册
+        User_Avatar.value = 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png'
+    }
 })
 
 const onClickOutside = () => {
@@ -137,9 +138,7 @@ const onClickOutside = () => {
 
 const logOut = () => {
     store.dispatch('logout')
-
     localStorage.removeItem('token')
-    // router.push('/login')
     window.location.reload()
 }
 

@@ -100,10 +100,7 @@ const isMasterBrowser = ref(true); // 本次加载是否为主浏览器，主浏
 
 const checkLogin = () => {
   const token = localStorage.getItem('token');
-  if (!token) {
-    return false; // 未登录
-  }
-  return true; // 已登录
+  return !!token;
 }
 
 async function isTodayChecked(){
@@ -482,18 +479,18 @@ const getTooltipText = (day) => {
 }
 
 onMounted(() => {
-  // loadDataFromLocalStorage(); // 加载本地数据
-  // console.log(isVisible.value);
+  // 未登录时不请求数据，直接展示登录按钮
+  if (!checkLogin()) {
+    isloading.value = false;
+    return;
+  }
   fetchCheckStatus();
   getCheckTime(); // 获取上次签到时间
   checkIsVisible(); // 检查是否显示打卡
-  
   setInterval(() => {
     nowTime.value = new Date();
   }, 1000)
-
   freshTime.value = new Date();
-  // console.log(checklnStatus.value);
 });
 onUnmounted(() => {
   // saveDataToLocalStorage(); // 保存数据

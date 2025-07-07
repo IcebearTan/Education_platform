@@ -182,6 +182,12 @@ const userProgress = ref({
 }) //个人进度
 
 const getEnrollments = async () => {
+  // 未登录时不请求
+  const token = localStorage.getItem('token');
+  if (!token) {
+    enrolledList.value = [];
+    return;
+  }
   try {
     const res = await api({
       url: '/learningProgress/student',

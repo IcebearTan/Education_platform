@@ -28,4 +28,28 @@ api.interceptors.request.use(config => {
     return Promise.reject(error);
 });
 
+api.interceptors.response.use(
+    response => response,
+    error => {
+        if (error.response && error.response.status === 401) {
+            // 避免多次弹窗
+            if (!window.__hasShownLoginExpire) {
+                window.__hasShownLoginExpire = true;
+                import('element-plus').then(({ ElMessage }) => {
+                    ElMessage.error('登录失效，请重新登录');
+                });
+                localStorage.removeItem('token');
+                // 延迟跳转，保证提示能完整显示
+                setTimeout(() => {
+                    if (window.location.pathname !== '/login') {
+                        window.location.href = '/login';
+                    }
+                    window.__hasShownLoginExpire = false;
+                }, 1000);
+            }
+        }
+        return Promise.reject(error);
+    }
+);
+
 export default api;

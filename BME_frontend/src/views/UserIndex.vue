@@ -26,22 +26,18 @@ export default {
         api({
             url: "/user/user_index",
             method: "get",
-        }).catch((error) => {
-            // if (error.response.status == 422){
-            // ElMessage.error('登录失效，请重新登录')
-            router.push('/login')
-            // }
-
-        }).then((res) => {
-            // if (res.response.status == 422) {
-            //   ElMessage.error('Oops, this is a error message.')
-            // }
-
+        })
+        .then((res) => {
             if (res.data.code == 200) {
-                // console.log(res)
                 this.username = res.data.User_Name
                 this.user_email = res.data.User_Email
                 this.uid = res.data.User_Id
+            }
+        })
+        .catch((error) => {
+            // 只做本地跳转，不再弹窗，401 交给全局拦截器
+            if (error.response && error.response.status === 401) {
+                this.$router.push('/login')
             }
         })
     }

@@ -39,9 +39,10 @@ const fetchUserInfo = async () => {
       throw new Error(res?.data?.msg || '获取用户信息失败')
     }
   } catch (error) {
-    ElMessage.error('登录失效，请重新登录')
-    router.push('/login')
-    // 可选：console.log(error)
+    // 只做本地跳转，异常提示交给全局拦截器
+    if (error.response && error.response.status === 401) {
+      router.push('/login')
+    }
   }
 }
 

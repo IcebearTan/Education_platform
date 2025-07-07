@@ -12,11 +12,13 @@ const User_Info = ref({})
 const User_Avatar = ref('');
 
 const activeIndex = ref('/')
+const loading = ref(true)
 
 const router = useRouter()
 const store = useStore()
 
 const fetchUserInfo = async () => {
+  loading.value = true
   try {
     const response = await api({
       url: "/user/user_index",
@@ -28,10 +30,12 @@ const fetchUserInfo = async () => {
       ElMessage.error('获取用户信息失败');
     }
   } catch (error) {
-    if (error.response.status === 401) {
-      ElMessage.error('登录失效，请重新登录');
-      router.push('/login');//这里还没做完
+    // 只做本地跳转，异常提示交给全局拦截器
+    if (error.response && error.response.status === 401) {
+      router.push('/login');
     }
+  } finally {
+    loading.value = false
   }
 }
 
@@ -50,10 +54,10 @@ const fetchUserAvatar = async () => {
     } else {
       ElMessage.error('获取头像失败');
     }
-  } catch (error) { 
-    if (error.response.status === 401) {
-      // ElMessage.error('登录失效，请重新登录');
-      router.push('/login');//这里还没做完
+  } catch (error) {
+    // 只做本地跳转，异常提示交给全局拦截器
+    if (error.response && error.response.status === 401) {
+      router.push('/login');
     } else {
       User_Avatar.value = 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png'; 
       ElMessage.error('UserCenterComponent:用户尚未上传头像或未知的错误');
@@ -73,10 +77,9 @@ const vertifyUserMode = () => {
 }
 
 onMounted(() => {
-  
-  fetchUserInfo();
-  fetchUserAvatar();
-
+  fetchUserInfo().then(() => {
+    fetchUserAvatar();
+  });
   activeIndex.value = router.currentRoute.value.path;
 })
 </script>

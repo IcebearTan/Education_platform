@@ -115,6 +115,7 @@ const getGroupList = async () => {
     }
 
   } catch (error) {
+    // 只做console，不弹窗不跳转
     console.error("Error fetching data:", error);
   } finally {
       }

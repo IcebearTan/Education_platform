@@ -3,6 +3,7 @@ import { ref, reactive } from 'vue';
 import api from '../../api';
 import md5 from 'js-md5';
 import { ElMessage } from 'element-plus';
+import { useRouter } from 'vue-router';
 
 export default {
   setup() {
@@ -16,6 +17,7 @@ export default {
     });
 
     const registerFormRef = ref(null);
+    const router = useRouter();
 
     // 验证码倒数模块
     const getCode = ref('获取验证码');
@@ -133,42 +135,36 @@ export default {
 
     // 提交注册表单
     const submitForm = async () => {
-      if (!validateForm()) {
-        return;
-      }
-
-      const User_Password = md5(registerForm.password);
-
-      // 向后端发送注册信息
-      api({
-        url: "/auth/register",
-        method: "post",
-        data: {
-          User_Name: registerForm.username,
-          User_Password: User_Password,
-          User_Email: registerForm.email,
-          User_Captcha: registerForm.code,
-        },
-      }).then((res) => {
-        if (res.data.code == 200) {
-          console.log(res.data.token, 'token');
-          localStorage.setItem("token", res.data.token);
-          ElMessage({
-            message: '注册成功',
-            type: 'success'
-          });
-          this.$router.push('/login');
-        } else {
-          ElMessage({
-            message: '注册失败',
-            type: 'error'
-          });
+      if (!registerFormRef.value) return;
+      registerFormRef.value.validate(async (valid) => {
+        if (!valid) {
+          ElMessage({ message: '请检查表单填写', type: 'error' });
+          return;
         }
-      }).catch((err) => {
-        ElMessage({
-          message: '注册失败',
-          type: 'error'
-        });
+        const User_Password = md5(registerForm.password);
+        try {
+          const res = await api({
+            url: "/auth/register",
+            method: "post",
+            data: {
+              User_Name: registerForm.username,
+              User_Password: User_Password,
+              User_Email: registerForm.email,
+              User_Captcha: registerForm.code,
+            },
+          });
+          if (res.data.code == 200) {
+            localStorage.setItem("token", res.data.token);
+            ElMessage({ message: '注册成功', type: 'success' });
+            setTimeout(() => {
+              router.push('/login');
+            }, 500);
+          } else {
+            ElMessage({ message: res.data.msg || '注册失败', type: 'error' });
+          }
+        } catch (err) {
+          ElMessage({ message: '注册失败', type: 'error' });
+        }
       });
     };
 

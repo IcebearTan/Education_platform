@@ -40,12 +40,16 @@ onMounted(() => {
     api({
         url: "/user/user_index",
         method: "get",
-    }).catch((error) => {
-        ElMessage.error('登录失效，请重新登录');
-        router.push('/login');
-    }).then((res) => {
+    })
+    .then((res) => {
         if (res.data.code == 200) {
             username.value = res.data.User_Name;
+        }
+    })
+    .catch((error) => {
+        // 只做本地跳转，异常提示交给全局拦截器
+        if (error.response && error.response.status === 401) {
+            router.push('/login');
         }
     });
 
