@@ -81,7 +81,21 @@
       <div class="sidebar-section toc-section">
         <h3 class="section-title">目录</h3>
         <div class="toc-content">
-          <p class="placeholder-text">文章目录将在此显示</p>
+          <div v-if="toc.length === 0" class="placeholder-text">暂无目录</div>
+          <ul v-else class="toc-list">
+            <li 
+              v-for="item in toc" 
+              :key="item.id"
+              class="toc-item"
+              :class="`toc-level-${item.level}`"
+              @click="scrollToHeading(item.id)"
+            >
+              <a class="toc-link">
+                <span class="toc-index">{{ item.index }}</span>
+                {{ item.text }}
+              </a>
+            </li>
+          </ul>
         </div>
       </div>
 
@@ -133,6 +147,59 @@ export default defineComponent({
         const articleTitle = ref('');
         const articleTime = ref('');
         const articleAuthor = ref('');
+        const toc = ref([]); // 目录数组
+
+        // 生成目录（带多级序号）
+        const generateTOC = (htmlContent) => {
+            if (!htmlContent) return [];
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = htmlContent;
+            const headings = tempDiv.querySelectorAll('h1, h2, h3, h4, h5, h6');
+            const tocList = [];
+            const numberStack = [0, 0, 0, 0, 0, 0]; // h1-h6
+            let lastLevel = 1;
+            headings.forEach((heading, index) => {
+                const level = parseInt(heading.tagName.charAt(1)); // 1-6
+                // 维护多级序号
+                if (level > lastLevel) {
+                    // 新子级
+                    numberStack[level - 1] = 1;
+                } else if (level === lastLevel) {
+                    numberStack[level - 1]++;
+                } else {
+                    // 回到上级，后面级别清零
+                    numberStack[level - 1]++;
+                    for (let i = level; i < 6; i++) numberStack[i] = 0;
+                }
+                lastLevel = level;
+                // 生成序号字符串
+                const indexStr = numberStack.slice(0, level).filter(n => n > 0).join('.');
+                const id = `toc-heading-${index}`;
+                const text = heading.textContent.trim();
+                heading.id = id;
+                tocList.push({
+                    id,
+                    text,
+                    level,
+                    index: indexStr,
+                    element: heading
+                });
+            });
+            article.value = tempDiv.innerHTML;
+            return tocList;
+        };
+
+        // 目录项点击跳转
+        const scrollToHeading = (headingId) => {
+            const element = document.getElementById(headingId);
+            if (element) {
+                element.scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'start',
+                    inline: 'nearest'
+                });
+            }
+        };
 
         const getArticle = async () => {
             try {
@@ -147,9 +214,13 @@ export default defineComponent({
                 console.log(response.data);
                 articleTitle.value = response.data.Article_Title;
                 articleTime.value = response.data.Publish_Time;
-                articleAuthor.value = response.data.Article_Author
-                article.value = JSON.parse(response.data.html_content); // 更新响应式数据
-                // console.log(article.value.html_content);
+                articleAuthor.value = response.data.Article_Author;
+                
+                const htmlContent = JSON.parse(response.data.html_content);
+                article.value = htmlContent;
+                
+                // 生成目录
+                toc.value = generateTOC(htmlContent);
             } catch (error) {
                 console.error(error);
             }
@@ -178,7 +249,9 @@ export default defineComponent({
             articleTitle,
             articleTime,
             articleAuthor,
-            formatTime
+            toc,
+            formatTime,
+            scrollToHeading
         }
   },
 })
@@ -310,6 +383,14 @@ export default defineComponent({
   margin: 32px 0 16px 0;
   color: #1a1a1a;
   font-weight: 600;
+  scroll-margin-top: 80px; /* 为锚点跳转添加顶部偏移 */
+}
+
+.content-body h4, .content-body h5, .content-body h6 {
+  margin: 24px 0 12px 0;
+  color: #1a1a1a;
+  font-weight: 600;
+  scroll-margin-top: 80px;
 }
 
 .content-body h1 { font-size: 28px; }
@@ -455,6 +536,70 @@ export default defineComponent({
   text-align: center;
   padding: 20px 0;
   margin: 0;
+}
+
+/* 目录样式 */
+.toc-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.toc-item {
+  margin-bottom: 8px;
+  transition: all 0.2s ease;
+}
+
+.toc-link {
+  display: block;
+  padding: 8px 12px;
+  color: #495057;
+  text-decoration: none;
+  border-radius: 6px;
+  font-size: 14px;
+  line-height: 1.4;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-left: 3px solid transparent;
+}
+
+.toc-index {
+  color: #b0b0b0;
+  font-size: 13px;
+  margin-right: 6px;
+  min-width: 32px;
+  display: inline-block;
+}
+
+.toc-link:hover {
+  background: #f8f9fa;
+  color: #667eea;
+  border-left-color: #667eea;
+}
+
+/* 不同级别标题的缩进 */
+.toc-level-1 .toc-link {
+  font-weight: 600;
+  padding-left: 12px;
+}
+
+.toc-level-2 .toc-link {
+  padding-left: 20px;
+  font-size: 13px;
+}
+
+.toc-level-3 .toc-link {
+  padding-left: 28px;
+  font-size: 13px;
+  color: #6c757d;
+}
+
+.toc-level-4 .toc-link,
+.toc-level-5 .toc-link,
+.toc-level-6 .toc-link {
+  padding-left: 36px;
+  font-size: 12px;
+  color: #6c757d;
 }
 
 /* 作者卡片 */

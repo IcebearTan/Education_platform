@@ -1,61 +1,51 @@
 <!-- 使用vue3语法 -->
 <script setup>
-import { onMounted, computed } from 'vue'
-import { ref } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useRouter } from 'vue-router'
-import { useStore } from 'vuex';
+import { useStore } from 'vuex'
+import api from '../../api'
 
-
-import api from '../../api';
-import CalendarComponent from './CalendarComponent.vue';
-import UserActivityComponent from './UserActivityComponent.vue';
-import UserIndexGroupComponent from './UserIndexGroupComponent.vue';
-import SeatLayoutComponent from '../SeatLayoutComponent.vue';
+import CalendarComponent from './CalendarComponent.vue'
+import UserActivityComponent from './UserActivityComponent.vue'
+import UserIndexGroupComponent from './UserIndexGroupComponent.vue'
+import SeatLayoutComponent from '../SeatLayoutComponent.vue'
 
 const User_Info = ref({})
-
 const router = useRouter()
 const store = useStore()
 
-// 计算属性：将技能标签字符串分割成数组
+// 技能标签分割为数组，支持多分隔符
 const skillTags = computed(() => {
-  if (!User_Info.value.Skill_Tags) return []
-  // 支持多种分隔符：逗号、分号、竖线、空格等
-  return User_Info.value.Skill_Tags
-    .split(/[,，;；|｜\s]+/)
-    .filter(tag => tag.trim() !== '')
-    .map(tag => tag.trim())
+  const tags = User_Info.value.Skill_Tags
+  if (!tags || typeof tags !== 'string') return []
+  return tags.split(/[,，;；|｜\s]+/).map(tag => tag.trim()).filter(Boolean)
 })
 
-// 为不同的标签分配不同的类型，让标签更有视觉层次
-const getTagType = (index) => {
-  const types = ['primary', 'success', 'info', 'warning', 'danger']
-  return types[index % types.length]
-}
+// 标签类型分配
+const tagTypes = ['primary', 'success', 'info', 'warning', 'danger']
+const getTagType = index => tagTypes[index % tagTypes.length]
 
-const toMedalWall = () => {
-  router.push('/medal/user-medal')
-}
-// 将获取到的用户数据打印到控制台
-onMounted(() => {
-  api({
-    url: "/user/user_index",
-    method: "get",
-  }).catch((error) => {
+const toMedalWall = () => router.push('/medal/user-medal')
+
+// 获取用户信息，异常处理更健壮
+const fetchUserInfo = async () => {
+  try {
+    const res = await api({ url: '/user/user_index', method: 'get' })
+    if (res?.data?.code === 200) {
+      User_Info.value = res.data
+      console.log(User_Info.value)
+    } else {
+      throw new Error(res?.data?.msg || '获取用户信息失败')
+    }
+  } catch (error) {
     ElMessage.error('登录失效，请重新登录')
     router.push('/login')
-    console.log(error)
-
-  }).then((res) => {
-    if (res.data.code == 200) {
-      User_Info.value = res.data
-      // console.log(User_Info.value)
-    }
+    // 可选：console.log(error)
   }
-  )
-})
+}
 
+onMounted(fetchUserInfo)
 </script>
 
 <template>
@@ -64,13 +54,13 @@ onMounted(() => {
       <div class="left-side">
         <div>
           <div class="profile-title">个人简介</div>
-          <div class="profile-intro">{{ User_Info.Introduction }}</div>
+          <div class="profile-intro">{{ User_Info.Introduction || '暂无简介' }}</div>
           <div class="profile-info">
-            <div class="profile-info-item">性别：{{ User_Info.User_Sex }}</div>
-            <div class="profile-info-item">学院：{{ User_Info.Institute }}</div>
-            <div class="profile-info-item">专业：{{ User_Info.Major }}</div>
-            <div class="profile-info-item">入营时间：{{ User_Info.join_time }}</div>
-            <div class="profile-info-item">GithubID：{{ User_Info.Github_Id }}</div>
+            <div class="profile-info-item">性别：{{ User_Info.User_Sex || '未填写' }}</div>
+            <div class="profile-info-item">学校：{{ User_Info.College || '未填写' }}</div>
+            <div class="profile-info-item">专业：{{ User_Info.Major || '未填写' }}</div>
+            <div class="profile-info-item">入营时间：{{ User_Info.join_time || '未填写' }}</div>
+            <div class="profile-info-item">GithubID：{{ User_Info.Github_Id || '未填写' }}</div>
             <div class="profile-info-item profile-skill-tags">
               <div class="profile-skill-title">技能标签：</div>
               <div class="skill-tags-container">

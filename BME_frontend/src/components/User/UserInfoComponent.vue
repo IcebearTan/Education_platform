@@ -12,7 +12,8 @@ const store = useStore()
 import AvatarUploadComponent from './AvatarUploadComponent.vue';
 
 const splitStringBySpace = (str) => {
-  return str.split(' ');  // 使用空格作为分隔符来分割字符串
+  if (!str || typeof str !== 'string') return [];
+  return str.split(' ');
 };
 
 const joinArrayWithSpace = (arr) => {
@@ -48,7 +49,7 @@ onMounted(() => {
     // console.log(props.User_Info.User_Sex)
     form.username = props.User_Info.User_Name
     form.gender = props.User_Info.User_Sex
-    form.institution = props.User_Info.Institute
+    form.college = props.User_Info.College
     form.major = props.User_Info.Major
     form.introduction = props.User_Info.Introduction
     form.GithubId = props.User_Info.Github_Id
@@ -68,7 +69,7 @@ const props = defineProps({
 const form = reactive({
   username: '',
   gender: '',
-  institution: '',
+  college: '',
   major: '',
   introduction: '',
   GithubId: '',
@@ -120,7 +121,7 @@ const onSubmit = () => {
         method: 'post',
         data: {
           Github_Id: form.GithubId,
-          Institute: form.institution,
+          College: form.college,
           Introduction: form.introduction,
           Major: form.major,
           Sex: form.gender,
@@ -183,8 +184,8 @@ const onSubmit = () => {
           </el-row>
           <el-row :gutter="20">
             <el-col :span="12">
-              <el-form-item label="学院">
-                <el-input v-model="form.institution" placeholder="学院名称" clearable/>
+              <el-form-item label="学校">
+                <el-input v-model="form.college" placeholder="学校名称" clearable/>
               </el-form-item>
             </el-col>
             <el-col :span="12">
