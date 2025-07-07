@@ -80,15 +80,13 @@ onUnmounted(() => {
 .header-container {
   display: flex;
   justify-content: center;
-  /* 桌面居中 */
   align-items: center;
   border-bottom: solid 1px #e6e6e6;
   padding: 0;
-  /* 移除默认内边距 */
   height: 60px;
-  /* 固定高度 */
   position: relative;
-  /* 为了汉堡图标定位 */
+  background: #fff; /* 显式白色背景，防止被父级灰色影响 */
+  z-index: 10;
 }
 
 .desktop-menu-container {
@@ -190,6 +188,7 @@ onUnmounted(() => {
 /* 全局样式 */
 .el-header {
   padding: 0 !important;
+  background: #fff !important; /* 全局兜底，确保 header 始终为白色 */
 }
 
 .page-footer {
