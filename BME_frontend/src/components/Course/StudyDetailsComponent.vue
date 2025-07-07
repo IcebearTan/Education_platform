@@ -327,7 +327,7 @@ const courseHour = computed(() => {
       </div>
       <div class="course-period">
         <span style="width: 50%; border-right: solid 1px #ddd;">
-          <div style="color: #111;">{{ courseInfo.Chapters || 0 }} 章 / {{ courseInfo.Section_Count || 0 }} 节</div>
+          <div style="color: #111;">{{ courseInfo.Chapters || 0 }} 章 / {{ courseInfo.Sections || 0 }} 节</div>
           <div style="font-size: 13px; color:#999; margin-top: 10px;">章节数量</div>
         </span>
         <span style="width: 40%;">
