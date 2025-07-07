@@ -9,12 +9,12 @@
     </div>
 
     <!-- 老师视图：审批按钮 -->
-    <div v-if="userRole === 'teacher'" class="teacher-actions">
+    <!-- <div v-if="userRole === 'teacher'" class="teacher-actions">
       <el-button type="success" @click="openApprovalDialog">
         <el-icon><Check /></el-icon>
         审批请假 ({{ leaveListPending.length }})
       </el-button>
-    </div>
+    </div> -->
 
     <!-- 请假信息展示区块 -->
     <div class="leave-info-block">
@@ -28,7 +28,18 @@
             <h4 class="leave-subtitle">待审批</h4>
             <el-table :data="groupedMyLeaves.pending" size="small" style="margin-bottom: 24px;">
               <el-table-column prop="title" label="请假原因" width="120" />
-              <el-table-column prop="content" label="内容" />
+              <el-table-column label="内容">
+                <template #default="scope">
+                  <div
+                    class="leave-content-cell"
+                    :class="{ expanded: contentExpandMap[scope.row.id] }"
+                    @click="toggleContentExpand(scope.row.id)"
+                    :title="!contentExpandMap[scope.row.id] ? scope.row.content : ''"
+                  >
+                    <span>{{ scope.row.content }}</span>
+                  </div>
+                </template>
+              </el-table-column>
               <el-table-column prop="start_time" label="开始时间" width="140" />
               <el-table-column prop="end_time" label="结束时间" width="140" />
               <el-table-column prop="status" label="状态" width="80">
@@ -42,7 +53,18 @@
             <h4 class="leave-subtitle">已批准</h4>
             <el-table :data="groupedMyLeaves.approved" size="small" style="margin-bottom: 24px;">
               <el-table-column prop="title" label="请假原因" width="120" />
-              <el-table-column prop="content" label="内容" />
+              <el-table-column label="内容">
+                <template #default="scope">
+                  <div
+                    class="leave-content-cell"
+                    :class="{ expanded: contentExpandMap[scope.row.id] }"
+                    @click="toggleContentExpand(scope.row.id)"
+                    :title="!contentExpandMap[scope.row.id] ? scope.row.content : ''"
+                  >
+                    <span>{{ scope.row.content }}</span>
+                  </div>
+                </template>
+              </el-table-column>
               <el-table-column prop="start_time" label="开始时间" width="140" />
               <el-table-column prop="end_time" label="结束时间" width="140" />
               <el-table-column prop="status" label="状态" width="80">
@@ -56,7 +78,18 @@
             <h4 class="leave-subtitle">已拒绝</h4>
             <el-table :data="groupedMyLeaves.rejected" size="small">
               <el-table-column prop="title" label="请假原因" width="120" />
-              <el-table-column prop="content" label="内容" />
+              <el-table-column label="内容">
+                <template #default="scope">
+                  <div
+                    class="leave-content-cell"
+                    :class="{ expanded: contentExpandMap[scope.row.id] }"
+                    @click="toggleContentExpand(scope.row.id)"
+                    :title="!contentExpandMap[scope.row.id] ? scope.row.content : ''"
+                  >
+                    <span>{{ scope.row.content }}</span>
+                  </div>
+                </template>
+              </el-table-column>
               <el-table-column prop="start_time" label="开始时间" width="140" />
               <el-table-column prop="end_time" label="结束时间" width="140" />
               <el-table-column prop="status" label="状态" width="80">
@@ -83,7 +116,18 @@
             <el-table :data="groupedAllLeaves.pending" size="small" style="margin-bottom: 24px;">
               <el-table-column prop="student_name" label="学生姓名" width="100" />
               <el-table-column prop="title" label="请假原因" width="120" />
-              <el-table-column prop="content" label="内容" />
+              <el-table-column label="内容">
+                <template #default="scope">
+                  <div
+                    class="leave-content-cell"
+                    :class="{ expanded: contentExpandMap[scope.row.id] }"
+                    @click="toggleContentExpand(scope.row.id)"
+                    :title="!contentExpandMap[scope.row.id] ? scope.row.content : ''"
+                  >
+                    <span>{{ scope.row.content }}</span>
+                  </div>
+                </template>
+              </el-table-column>
               <el-table-column prop="start_time" label="开始时间" width="140" />
               <el-table-column prop="end_time" label="结束时间" width="140" />
               <el-table-column label="快速操作" width="160">
@@ -99,7 +143,18 @@
             <el-table :data="groupedAllLeaves.approved" size="small" style="margin-bottom: 24px;">
               <el-table-column prop="student_name" label="学生姓名" width="100" />
               <el-table-column prop="title" label="请假原因" width="120" />
-              <el-table-column prop="content" label="内容" />
+              <el-table-column label="内容">
+                <template #default="scope">
+                  <div
+                    class="leave-content-cell"
+                    :class="{ expanded: contentExpandMap[scope.row.id] }"
+                    @click="toggleContentExpand(scope.row.id)"
+                    :title="!contentExpandMap[scope.row.id] ? scope.row.content : ''"
+                  >
+                    <span>{{ scope.row.content }}</span>
+                  </div>
+                </template>
+              </el-table-column>
               <el-table-column prop="start_time" label="开始时间" width="140" />
               <el-table-column prop="end_time" label="结束时间" width="140" />
               <el-table-column prop="status" label="状态" width="80">
@@ -114,7 +169,18 @@
             <el-table :data="groupedAllLeaves.rejected" size="small">
               <el-table-column prop="student_name" label="学生姓名" width="100" />
               <el-table-column prop="title" label="请假原因" width="120" />
-              <el-table-column prop="content" label="内容" />
+              <el-table-column label="内容">
+                <template #default="scope">
+                  <div
+                    class="leave-content-cell"
+                    :class="{ expanded: contentExpandMap[scope.row.id] }"
+                    @click="toggleContentExpand(scope.row.id)"
+                    :title="!contentExpandMap[scope.row.id] ? scope.row.content : ''"
+                  >
+                    <span>{{ scope.row.content }}</span>
+                  </div>
+                </template>
+              </el-table-column>
               <el-table-column prop="start_time" label="开始时间" width="140" />
               <el-table-column prop="end_time" label="结束时间" width="140" />
               <el-table-column prop="status" label="状态" width="80">
@@ -190,6 +256,7 @@
     </el-dialog>
 
     <!-- 请假审批弹窗（老师专用） -->
+    <!--
     <el-dialog
         :lock-scroll=false
         v-model="approvalDialogVisible"
@@ -209,18 +276,18 @@
           </template>
         </el-table-column>
       </el-table>
-      
       <template #footer>
         <div class="dialog-footer">
           <el-button @click="approvalDialogVisible = false">关闭</el-button>
         </div>
       </template>
     </el-dialog>
+    -->
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, reactive } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Plus, Check } from '@element-plus/icons-vue'
 import api from '../../api'
@@ -262,20 +329,27 @@ const myLeaveList = ref([])
 const leaveLoading = ref(false)
 const leaveError = ref('')
 
+// 内容展开状态（key: leave id, value: true/false）
+const contentExpandMap = reactive({})
+
 // 获取请假列表
 async function fetchLeaveList() {
   leaveLoading.value = true
   leaveError.value = ''
   try {
+    let params = {}
+    if (props.userRole === 'teacher') {
+      params.group_id = props.groupId
+    }
     const res = await api({
       url: '/information/leave/query',
       method: 'get',
-      params: { group_id: props.groupId }
+      params
     })
     if (res.data && res.data.data) {
+      console.log(res.data.data)
       leaveListApproved.value = res.data.data.approved || []
       leaveListPending.value = res.data.data.pending || []
-      // 我的请假记录（假设有 userId 字段，或用后端返回的 my_leaves）
       myLeaveList.value = res.data.data.my_leaves || []
     } else {
       leaveError.value = '暂无请假信息'
@@ -349,12 +423,8 @@ const handleDialogClose = (done) => {
 // 批准请假
 const approveLeave = async (row, idx) => {
   try {
-    // 这里可以调用后端审批接口
-    // await api.post('/leave/approve', { id: row.id })
-    
-    if (typeof idx === 'number') {
-      leaveListPending.value.splice(idx, 1)
-    }
+    await api.post('information/leave/approve', { id: row.id, status: 1 })
+    await fetchLeaveList()
     ElMessage.success(`已批准 ${row.student_name || row.student} 的请假申请`)
   } catch (error) {
     ElMessage.error('操作失败，请重试')
@@ -364,12 +434,8 @@ const approveLeave = async (row, idx) => {
 // 拒绝请假
 const rejectLeave = async (row, idx) => {
   try {
-    // 这里可以调用后端审批接口
-    // await api.post('/leave/reject', { id: row.id })
-    
-    if (typeof idx === 'number') {
-      leaveListPending.value.splice(idx, 1)
-    }
+    await api.post('information/leave/approve', { id: row.id, status: 2 })
+    await fetchLeaveList()
     ElMessage.warning(`已拒绝 ${row.student_name || row.student} 的请假申请`)
   } catch (error) {
     ElMessage.error('操作失败，请重试')
@@ -413,6 +479,11 @@ onMounted(() => {
 defineExpose({
   refreshData: fetchLeaveList
 })
+
+// 内容展开状态切换
+function toggleContentExpand(id) {
+  contentExpandMap[id] = !contentExpandMap[id]
+}
 </script>
 
 <style scoped>
@@ -510,5 +581,32 @@ defineExpose({
 
 .el-button + .el-button {
   margin-left: 8px;
+}
+
+.leave-content-cell {
+  max-width: 180px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 0.2s;
+  padding: 2px 6px;
+}
+.leave-content-cell:hover {
+  background: #f0f8ff;
+}
+.leave-content-cell.expanded {
+  white-space: normal;
+  word-break: break-all;
+  max-width: 400px;
+  background: #f6faff;
+  box-shadow: 0 2px 8px rgba(64,158,255,0.08);
+  z-index: 2;
+}
+.expand-btn {
+  display: none;
 }
 </style>

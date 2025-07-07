@@ -233,6 +233,23 @@ onMounted(() => {
 const caution = () => {
   ElMessage.error('前面的内容以后再来探索吧！')
 }
+
+const difficultyMap = {
+  1: '简单',
+  2: '较易',
+  3: '中等',
+  4: '较难',
+  5: '困难'
+}
+
+const courseDifficulty = computed(() => {
+  const d = courseInfo.value?.Course_Difficulty
+  return d ? difficultyMap[d] || '未知' : '未知'
+})
+
+const courseHour = computed(() => {
+  return courseInfo.value?.Course_Class_Hour ? courseInfo.value.Course_Class_Hour + ' 学时' : '未知'
+})
 </script>
 
 <template>
@@ -254,7 +271,6 @@ const caution = () => {
             <el-button type="primary" size="large" @click="handleDownload()">下载内容</el-button>
           </div>
         </div>
-
       </div>
       <div class="course-contents">
         <div style="height: 50px;width: 90%; padding-bottom: 20px; border-bottom: solid 1px #ddd; margin-bottom: 10px;">
@@ -302,20 +318,20 @@ const caution = () => {
           <el-icon
             v-for="n in 5"
             :key="n"
-            :class="n <= difficulty ? 'star-icon' : 'star-outline-icon'"
+            :class="n <= (courseInfo.Course_Difficulty == null ? 0 : courseInfo.Course_Difficulty) ? 'star-icon' : 'star-outline-icon'"
           >
-            <component :is="n <= difficulty ? StarFilled : Star" />
+            <component :is="n <= (courseInfo.Course_Difficulty == null ? 0 : courseInfo.Course_Difficulty) ? StarFilled : Star" />
           </el-icon>
-          <span style="margin-left: 8px; color: #888; font-size: 15px; top: 2px; position: relative;">中等</span>
+          <span style="margin-left: 8px; color: #888; font-size: 15px; top: 2px; position: relative;">{{ courseDifficulty }}</span>
         </div>
       </div>
       <div class="course-period">
         <span style="width: 50%; border-right: solid 1px #ddd;">
-          <div style="color: #111;">16 章 / 35 节</div>
+          <div style="color: #111;">{{ courseInfo.Chapters || 0 }} 章 / {{ courseInfo.Section_Count || 0 }} 节</div>
           <div style="font-size: 13px; color:#999; margin-top: 10px;">章节数量</div>
         </span>
         <span style="width: 40%;">
-          <div style="color: #111;">100 学时</div>
+          <div style="color: #111;">{{ courseHour }}</div>
           <div style="font-size: 13px; color:#999; margin-top: 10px;">预计时长</div>
         </span>
       </div>
@@ -333,7 +349,6 @@ const caution = () => {
     </div>
 
   </div>
-
 </template>
 
 <style scoped>

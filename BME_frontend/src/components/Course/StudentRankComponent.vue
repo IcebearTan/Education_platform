@@ -123,13 +123,12 @@ const getUserAvatar = async (userId) => {
             }
         });
 
-        if (res.data.code === 200) {
+        if (res.data.code === 200 && res.data.User_Avatar) {
             userAvatars.value[userId] = 'data:image/jpeg;base64,' + res.data.User_Avatar;
         } else {
             userAvatars.value[userId] = defaultAvatarUrl; // 使用默认头像
         }
     } catch (err) {
-        console.error(err);
         userAvatars.value[userId] = defaultAvatarUrl; // 使用默认头像
     }
 };
