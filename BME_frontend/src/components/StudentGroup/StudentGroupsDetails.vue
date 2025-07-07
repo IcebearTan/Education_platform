@@ -6,7 +6,7 @@
           <el-icon class="back-arrow"><Back /></el-icon>
         </div>
         <div class="title-text">
-          {{ currentUserPermissions.name }} - C语言程序设计
+          {{ groupTitle }}
           <el-tag :color="userRole === 'teacher' ? '#b391ff' : currentUserPermissions.color" style="margin-left: 10px; color: white;">
             {{ currentUserPermissions.name }}
           </el-tag>
@@ -83,7 +83,7 @@
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { Back, MoreFilled } from '@element-plus/icons-vue'
 import { useStore } from 'vuex'
@@ -94,6 +94,7 @@ import StudentGroupLeave from './StudentGroupLeave.vue'
 import api from '../../api'
 
 const router = useRouter()
+const route = useRoute()
 const store = useStore()
 const currentTab = ref('task')
 
@@ -165,6 +166,12 @@ const noticeForm = ref({
   content: '',
   recipients: 'all'
 })
+
+// 解析 group_id 并直接作为标题
+const groupTitle = computed(() => route.query.group_id || '小组详情')
+
+// 动态小组标题（可后续对接API或props）
+const defaultGroupTitle = ref('C语言程序设计')
 
 // 统一的操作处理函数
 const handleAction = (action) => {
@@ -319,7 +326,8 @@ onMounted(() => {
   min-height: 0;
   max-height: 850px;
   overflow-y: auto;
-  padding-bottom: 20px;
+  /* padding-bottom: 20px; */
+  padding: 10px;
 }
 
 .title{

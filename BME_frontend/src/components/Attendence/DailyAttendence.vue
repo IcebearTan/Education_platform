@@ -32,6 +32,7 @@
               </div>
           </div>
           <div v-else class="stats-container">
+            <div class="welcome-text-simple"> - 欢迎来到训练营 - </div>
             <el-button class="check-button" @click="router.push('/login')" type="primary" plain>登录/注册</el-button>
           </div>
       </div>
@@ -510,8 +511,10 @@ watch(isloading, (newValue) => {
 .calendar-container {
   position: relative;
   font-family: Arial, sans-serif;
-  width: 100%;     
-  padding: 20px; 
+  width: 100%;
+  min-height: 175px;     
+  padding: 20px;
+  padding-top: 15px;
   background: #fff;
   border-radius: 12px;
   box-shadow: 0 2px 10px rgba(0,0,0,0.1);
@@ -552,7 +555,7 @@ watch(isloading, (newValue) => {
   padding: 6px 8px;
   border-radius: 8px;
   cursor: pointer;
-  margin: 0 2px;
+  margin: 0 1px;
   transition: all 0.2s ease;
 }
 
@@ -581,6 +584,7 @@ watch(isloading, (newValue) => {
 
 .stats-container {
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   width: 100%;
@@ -595,7 +599,7 @@ watch(isloading, (newValue) => {
   background: #faf8f8;
   padding: 12px 20px;
   border-radius: 10px;
-  border: #ffffff solid 1px;
+  border: #faf8f8 solid 1px;
   transition: all 0.3s ease;
   min-width: 240px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.05);
@@ -721,6 +725,15 @@ watch(isloading, (newValue) => {
   height: 4px;
   background: #ff6b6b;
   border-radius: 50%;
+}
+
+.welcome-text-simple {
+  color: #b0b0b0;
+  font-size: 1em;
+  font-weight: 400;
+  margin-bottom: 8px;
+  letter-spacing: 1px;
+  text-align: center;
 }
 
 @media (max-width: 768px) {

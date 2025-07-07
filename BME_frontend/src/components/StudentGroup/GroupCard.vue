@@ -78,16 +78,14 @@ onBeforeMount(() => {
 // 跳转到小组详情页的方法
 const router = useRouter();
 const toGroupDetails = () => {
-    setTimeout(() => {
-      router.push({
-      path: '/user-center/student-group-details',
-      query: {
-        // group: JSON.stringify(props.group), // 将 group 转为字符串
-        // userAvatars: JSON.stringify(userAvatars.value) // 将 userAvatars 转为字符串
-      }
-  });
-    },100)
-  }
+  // 只传 group_id，避免 query 过长和兼容性问题
+  router.push({
+    path: '/user-center/student-group-details',
+    query: {
+      group_id: props.group.title // 假设 group_id 字段存在
+    }
+  })
+}
 
 function proceStudentId(){
   if (props.group.students && Array.isArray(props.group.students)) {

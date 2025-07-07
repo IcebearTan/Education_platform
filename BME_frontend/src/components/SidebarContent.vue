@@ -62,19 +62,19 @@ const quickActions = ref([
     icon: '📚',
     route: '/study'
   },
-  {
-    id: 'progress',
-    title: '学习进度',
-    description: '查看学习情况',
-    icon: '📊',
-    route: '/progress'
-  },
+  // {
+  //   id: 'progress',
+  //   title: '学习进度',
+  //   description: '查看学习情况',
+  //   icon: '📊',
+  //   route: '/progress'
+  // },
   {
     id: 'groups',
     title: '学习小组',
-    description: '加入学习小组',
+    description: '查看学习小组',
     icon: '👥',
-    route: '/groups'
+    route: '/user-center/my-groups'
   },
   {
     id: 'profile',
@@ -100,6 +100,7 @@ const handleActionClick = (action) => {
 }
 
 .sidebar-section {
+  /* min-height: 150px; */
   background: #fff;
   border-radius: 16px;
   box-shadow: 0 2px 20px rgba(0,0,0,0.06);
