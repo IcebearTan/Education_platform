@@ -45,7 +45,7 @@
     </div>
 
     <!-- 通知发送弹窗 -->
-    <el-dialog 
+    <!-- <el-dialog 
       v-model="noticeDialogVisible" 
       title="发送通知" 
       width="600px"
@@ -77,7 +77,7 @@
           <el-button type="primary" @click="submitNotice">发送通知</el-button>
         </div>
       </template>
-    </el-dialog>
+    </el-dialog> -->
   </div>
 </template>
 
@@ -132,8 +132,7 @@ const rolePermissions = {
     actions: [
       { id: 'view_tasks', label: '任务管理', icon: '📝', type: 'primary' },
       { id: 'view_rank', label: '查看排行榜', icon: '🏆' },
-      { id: 'view_leave', label: '请假管理', icon: '✅', type: 'success' },
-      { id: 'send_notice', label: '发送通知', icon: '📢', type: 'warning' }
+      { id: 'view_leave', label: '请假管理', icon: '✅', type: 'success' }
     ],
     tabs: ['task', 'rank', 'leave', 'management']
   }
@@ -185,9 +184,9 @@ const handleAction = (action) => {
     case 'view_leave':
       toLeave()
       break
-    case 'send_notice':
-      openNoticeDialog()
-      break
+    // case 'send_notice':
+    //   openNoticeDialog()
+    //   break
     case 'manage_group':
       currentTab.value = 'management'
       break
@@ -237,13 +236,13 @@ const toLeave = () => {
 }
 
 // 新增的弹窗处理函数
-const openNoticeDialog = () => {
-  if (hasPermission('send_notice')) {
-    noticeDialogVisible.value = true
-  } else {
-    ElMessage.error('权限不足')
-  }
-}
+// const openNoticeDialog = () => {
+//   if (hasPermission('send_notice')) {
+//     noticeDialogVisible.value = true
+//   } else {
+//     ElMessage.error('权限不足')
+//   }
+// }
 
 // 提交任务发布
 const submitTask = async () => {
@@ -289,15 +288,15 @@ function mapPriority(val) {
 }
 
 // 提交通知发送
-const submitNotice = async () => {
-  try {
-    ElMessage.success('通知发送成功')
-    noticeDialogVisible.value = false
-    noticeForm.value = { title: '', content: '', recipients: 'all' }
-  } catch (error) {
-    ElMessage.error('发送失败，请重试')
-  }
-}
+// const submitNotice = async () => {
+//   try {
+//     ElMessage.success('通知发送成功')
+//     noticeDialogVisible.value = false
+//     noticeForm.value = { title: '', content: '', recipients: 'all' }
+//   } catch (error) {
+//     ElMessage.error('发送失败，请重试')
+//   }
+// }
 
 onMounted(() => {
   // 可以在这里从 API 获取用户角色和权限
