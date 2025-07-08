@@ -27,11 +27,11 @@
               <div class="news-card-stats">
                 <span class="stat-item">
                   <span class="stat-icon">👍</span>
-                  <span class="stat-count">{{ article.likes || 0 }}</span>
+                  <span class="stat-count">{{ article.likeCount || 0 }}</span>
                 </span>
                 <span class="stat-item">
                   <span class="stat-icon">👀</span>
-                  <span class="stat-count">{{ article.views || 0 }}</span>
+                  <span class="stat-count">{{ article.viewCount || 0 }}</span>
                 </span>
               </div>
             </div>

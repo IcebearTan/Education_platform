@@ -6,7 +6,7 @@
       <article class="article-main">
         <header class="article-header">
           <div class="article-category">
-            <span class="category-tag">技术分享</span>
+            <span class="category-tag">网页推文</span>
           </div>
           
           <h1 class="article-title">{{ articleTitle }}</h1>
@@ -25,11 +25,11 @@
             <div class="article-actions">
               <div class="action-item">
                 <i class="action-icon">👁</i>
-                <span>0</span>
+                <span>{{ viewCount }}</span>
               </div>
-              <div class="action-item">
-                <i class="action-icon">👍</i>
-                <span>0</span>
+              <div class="action-item" @click="handleLike" style="cursor:pointer;">
+                <i class="action-icon">{{ isLiked ? '❤️' : '👍' }}</i>
+                <span>{{ likeCount }}</span>
               </div>
               <div class="action-item">
                 <i class="action-icon">💬</i>
@@ -48,15 +48,15 @@
         <footer class="article-footer">
           <div class="interaction-section">
             <div class="interaction-buttons">
-              <button class="btn-interaction like">
-                <i class="icon">👍</i>
-                <span>点赞</span>
+              <button class="btn-interaction like" @click="handleLike" :class="{ 'liked': isLiked }">
+                <i class="icon">{{ isLiked ? '❤️' : '👍' }}</i>
+                <span>{{ isLiked ? '已点赞' : '点赞' }}</span>
               </button>
-              <button class="btn-interaction comment">
+              <button class="btn-interaction comment" @click="handleComingSoon">
                 <i class="icon">💬</i>
                 <span>评论</span>
               </button>
-              <button class="btn-interaction share">
+              <button class="btn-interaction share" @click="handleComingSoon">
                 <i class="icon">📤</i>
                 <span>分享</span>
               </button>
@@ -130,6 +130,7 @@ import { defineComponent } from 'vue'
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import api from '../../api';
+import { ElMessage } from 'element-plus';
 
 export default defineComponent({
 
@@ -148,6 +149,9 @@ export default defineComponent({
         const articleTime = ref('');
         const articleAuthor = ref('');
         const toc = ref([]); // 目录数组
+        const viewCount = ref(0);
+        const likeCount = ref(0);
+        const isLiked = ref(false); // 新增：用户是否已点赞的状态
 
         // 生成目录（带多级序号）
         const generateTOC = (htmlContent) => {
@@ -226,6 +230,52 @@ export default defineComponent({
             }
         };
 
+        // 获取统计数据（浏览或点赞）
+        const getStatistic = async (like = false, view = false) => {
+            try {
+                const token = localStorage.getItem('token');
+                // 已登录传 user: 'loginUser'，未登录传 user: ''
+                let user = token ? 'loginUser' : '';
+                const res = await api({
+                    method: 'post',
+                    url: '/article/statistic',
+                    data: {
+                        Article_Id: props.id,
+                        like,
+                        view,
+                        user
+                    }
+                });
+                // 不在post中更新统计，由fetchStatistic专门负责
+                console.log('统计操作完成:', res.data);
+            } catch (err) {
+                console.error('获取统计数据失败', err);
+            }
+        };
+
+        // 获取统计数据（仅get，返回最新统计信息）
+        const fetchStatistic = async () => {
+            try {
+                const token = localStorage.getItem('token');
+                let user = token ? 'loginUser' : '';
+                const res = await api({
+                    method: 'get',
+                    url: '/article/statistic',
+                    params: {
+                        Article_Id: props.id,
+                        user
+                    }
+                });
+                likeCount.value = res.data?.like_count ?? 0;
+                viewCount.value = res.data?.view_count ?? 0;
+                // 关键：获取用户是否已点赞状态
+                isLiked.value = res.data?.user_liked ?? false;
+                console.log('最新统计数据:', { likeCount: likeCount.value, viewCount: viewCount.value, isLiked: isLiked.value });
+            } catch (err) {
+                console.error('获取最新统计数据失败', err);
+            }
+        };
+
         // 格式化时间
         const formatTime = (timeStr) => {
             if (!timeStr) return '';
@@ -241,9 +291,39 @@ export default defineComponent({
         onMounted(async () => {
             console.log(route.query.Article_Id); // 打印查询参数
             await getArticle(); // 获取文章数据
+            // 1. 首先get，获取当前用户是否已浏览/点赞，防止重复计数
+            await fetchStatistic();
+            // 2. 如果未浏览过，则post view
+            if (!viewCount.value) {
+                await getStatistic(false, true); // 仅浏览
+                await fetchStatistic(); // post后再get一次，刷新展示
+            }
         });
 
-        
+        // 点赞事件
+        const handleLike = async () => {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                ElMessage.warning('请先登录后再点赞');
+                return;
+            }
+            // 根据当前点赞状态，切换点赞或取消点赞
+            const shouldLike = !isLiked.value;
+            await getStatistic(shouldLike, true); // view始终为true
+            await fetchStatistic(); // 重新获取状态
+            
+            if (shouldLike) {
+                ElMessage.success('点赞成功');
+            } else {
+                ElMessage.info('已取消点赞');
+            }
+        };
+
+        // 评论和分享按钮统一提示
+        const handleComingSoon = () => {
+            ElMessage.info('敬请期待');
+        };
+
         return {
             article,
             articleTitle,
@@ -251,7 +331,12 @@ export default defineComponent({
             articleAuthor,
             toc,
             formatTime,
-            scrollToHeading
+            scrollToHeading,
+            viewCount,
+            likeCount,
+            isLiked, // 导出点赞状态
+            handleLike,
+            handleComingSoon
         }
   },
 })
@@ -465,9 +550,15 @@ export default defineComponent({
   transform: translateY(-1px);
 }
 
-.btn-interaction.like:hover {
+.btn-interaction.like {
+  background: #f8f9fa;
+  color: #495057;
+}
+
+.btn-interaction.like.liked {
   background: #fff5f5;
   color: #e53e3e;
+  border: 1px solid #e53e3e;
 }
 
 .btn-interaction.comment:hover {

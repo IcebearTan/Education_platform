@@ -21,7 +21,33 @@ const fetchArticles = async () => {
       url: '/article/list',
       method: 'get',
     });
-    articles.value = response.data;
+    const articleList = response.data;
+    console.log('文章列表:', articleList);
+    // 并发请求每篇文章的统计数据
+    const statsPromises = articleList.map(article =>
+      api({
+        url: '/article/statistic',
+        method: 'get',
+        params: { Article_Id: article.Article_Id }
+      }).then(statRes => {
+        const merged = {
+          ...article,
+          viewCount: statRes.data?.view_count ?? 0,
+          likeCount: statRes.data?.like_count ?? 0,
+        };
+        console.log(`文章ID: ${article.Article_Id} 统计数据:`, statRes.data, '合并后:', merged);
+        return merged;
+      }).catch((err) => {
+        console.warn(`获取文章ID: ${article.Article_Id} 统计数据失败`, err);
+        return {
+          ...article,
+          viewCount: 0,
+          likeCount: 0,
+        };
+      })
+    );
+    articles.value = await Promise.all(statsPromises);
+    console.log('最终合并后的 articles:', articles.value);
   } catch (error) {
     console.error('Failed to fetch articles:', error);
   }

@@ -347,10 +347,14 @@ async function fetchLeaveList() {
       params
     })
     if (res.data && res.data.data) {
-      console.log(res.data.data)
+      // 兼容后端返回，学生端直接合并 approved 和 pending，按 status 分类
+      const all = [
+        ...(res.data.data.approved || []),
+        ...(res.data.data.pending || [])
+      ]
+      myLeaveList.value = all
       leaveListApproved.value = res.data.data.approved || []
       leaveListPending.value = res.data.data.pending || []
-      myLeaveList.value = res.data.data.my_leaves || []
     } else {
       leaveError.value = '暂无请假信息'
     }

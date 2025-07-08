@@ -22,7 +22,10 @@
       <div v-for="([date, dayTasks]) in groupedTasks" :key="date" class="date-task">
         <div class="date">{{ formatDate(date) }}</div>
         <div v-for="task in dayTasks" :key="task.id" class="task-box">
-          <div class="title">{{ task.title }}</div>
+          <div class="title">
+            <span v-if="task._priority" class="priority-tag" :class="'priority-' + task._priority">{{ task._priority }}</span>
+            {{ task.title }}
+          </div>
           <div class="content">{{ task.content }}</div>
           <div class="box-footer">
             <div class="deadline">截止时间：{{ task.end_time }}</div>
@@ -74,6 +77,7 @@
               <el-option label="高" value="high"></el-option>
               <el-option label="中" value="normal"></el-option>
               <el-option label="低" value="low"></el-option>
+              <el-option label="不重要" value="unimportant"></el-option>
             </el-select>
           </el-form-item>
         </el-form>
@@ -159,10 +163,11 @@ function formatDateTime(val) {
 
 function mapPriority(val) {
   switch(val) {
-    case 'urgent': return 0;
-    case 'high': return 1;
-    case 'normal': return 2;
-    case 'low': return 3;
+    case 'urgent': return 1;
+    case 'high': return 2;
+    case 'normal': return 3;
+    case 'low': return 4;
+    case 'unimportant': return 5;
     default: return 2;
   }
 }
@@ -174,26 +179,27 @@ async function fetchTasks() {
     const res = await api({
       url: '/information/task/query',
       method: 'get',
-      // params: {
-      //   group_id: props.groupId
-      // }
+      // params: { group_id: props.groupId }
     });
-    // 适配后端新结构，合并三类优先级任务
+    // 适配后端新结构，合并五类优先级任务
     let list = [];
     if (res.data && res.data.data) {
+      const urgent = Array.isArray(res.data.data.urgent_priority) ? res.data.data.urgent_priority : [];
       const high = Array.isArray(res.data.data.high_priority) ? res.data.data.high_priority : [];
       const medium = Array.isArray(res.data.data.medium_priority) ? res.data.data.medium_priority : [];
       const low = Array.isArray(res.data.data.low_priority) ? res.data.data.low_priority : [];
-      // 合并并加上优先级字段
+      const unimportant = Array.isArray(res.data.data.unimportant_priority) ? res.data.data.unimportant_priority : [];
       list = [
+        ...urgent.map(t => ({ ...t, _priority: '紧急' })),
         ...high.map(t => ({ ...t, _priority: '高' })),
         ...medium.map(t => ({ ...t, _priority: '中' })),
         ...low.map(t => ({ ...t, _priority: '低' })),
+        ...unimportant.map(t => ({ ...t, _priority: '不重要' })),
       ];
     }
     if (list.length > 0) {
-      // 按优先级排序（高→中→低）
-      const priorityOrder = { '高': 1, '中': 2, '低': 3 };
+      // 按优先级排序（紧急→高→中→低→不重要）
+      const priorityOrder = { '紧急': 0, '高': 1, '中': 2, '低': 3, '不重要': 4 };
       tasks.value = list.sort((a, b) => priorityOrder[a._priority] - priorityOrder[b._priority]);
     } else {
       error.value = '暂无任务数据';
@@ -214,48 +220,33 @@ const submitTask = async () => {
     submitLoading.value = true;
     error.value = '';
     try {
+      const payload = {
+        Title: taskForm.value.title,
+        Content: taskForm.value.content,
+        End_Time: formatDateTime(taskForm.value.deadline),
+        Priority: mapPriority(taskForm.value.priority),
+        Group_Id: props.groupId
+      };
       if (isEditMode.value) {
-        // 编辑任务
-        const payload = {
-          id: editTaskId.value,
-          Title: taskForm.value.title,
-          Content: taskForm.value.content,
-          End_Time: formatDateTime(taskForm.value.deadline),
-          Priority: mapPriority(taskForm.value.priority),
-          Group_Id: props.groupId
-        }
-        await api({
-          url: '/information/task/add',
-          method: 'post',
-          data: payload
-        })
-        ElMessage.success('任务修改成功！')
-      } else {
-        // 新建任务
-        const payload = {
-          Title: taskForm.value.title,
-          Content: taskForm.value.content,
-          End_Time: formatDateTime(taskForm.value.deadline),
-          Priority: mapPriority(taskForm.value.priority),
-          Group_Id: props.groupId
-        }
-        await api({
-          url: '/information/task/add',
-          method: 'post',
-          data: payload
-        })
-        ElMessage.success('任务发布成功！')
+        payload.Id = editTaskId.value; // 编辑时带上任务id
       }
-      taskDialogVisible.value = false
-      taskForm.value = { title: '', content: '', deadline: '', priority: 'normal' }
-      fetchTasks()
+      await api({
+        url: '/information/task/add',
+        method: 'post',
+        data: payload
+      });
+      console.log('任务提交成功', payload);
+      ElMessage.success(isEditMode.value ? '任务修改成功！' : '任务发布成功！');
+      taskDialogVisible.value = false;
+      taskForm.value = { title: '', content: '', deadline: '', priority: 'normal' };
+      fetchTasks();
     } catch (e) {
       error.value = isEditMode.value ? '任务修改失败，请重试' : '任务发布失败，请重试';
-      ElMessage.error(error.value)
+      ElMessage.error(error.value);
     } finally {
       submitLoading.value = false;
     }
-  })
+  });
 }
 
 // 删除任务
@@ -301,9 +292,11 @@ function onEditTask(task) {
     deadline: task.end_time ? new Date(task.end_time) : '',
     priority: (() => {
       switch (task._priority) {
+        case '紧急': return 'urgent';
         case '高': return 'high';
         case '中': return 'normal';
         case '低': return 'low';
+        case '不重要': return 'unimportant';
         default: return 'normal';
       }
     })()
@@ -504,4 +497,20 @@ const groupedTasks = computed(() => {
   pointer-events: none;
   opacity: 0.7;
 }
+
+.priority-tag {
+  display: inline-block;
+  font-size: 13px;
+  font-weight: 500;
+  margin-right: 8px;
+  padding: 2px 10px;
+  border-radius: 10px;
+  color: #fff;
+  vertical-align: middle;
+}
+.priority-tag.priority-紧急 { background: #e74c3c; }
+.priority-tag.priority-高 { background: #f39c12; }
+.priority-tag.priority-中 { background: #3498db; }
+.priority-tag.priority-低 { background: #27ae60; }
+.priority-tag.priority-不重要 { background: #7f8c8d; }
 </style>
