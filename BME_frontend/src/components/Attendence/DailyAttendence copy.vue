@@ -1,3 +1,5 @@
+
+
 <template>
   <div v-if="!isloading" class="calendar-container" :style="{ height: checkLogin() ? 'auto' : '100px' }">
       <div class="calendar-header">
@@ -20,14 +22,8 @@
           <div v-if="checkLogin()" class="stats-container"> <!-- 统计容器 -->
               <div v-if="!isVisible">
                 <el-button class="check-button" @click="open" type="success" plain>
-                  <div v-if="isTodayCheckedComputed">今日已累计 {{ toayTotal }} 小时</div>
+                  <div v-if="isTodayChecked()">今日已累计 {{ toayTotal }} 小时</div>
                   <div v-else>签到</div>
-                </el-button>
-              </div>
-              <div v-else-if="isOvertime()">
-                <el-button class="check-button" @click="openCheckOut" type="danger">
-                  <i class="el-icon-warning"></i>
-                  <span>本次已超时作废 - 请签退</span>
                 </el-button>
               </div>
               <div v-else class="stat-item" @click="openCheckOut">
@@ -55,8 +51,8 @@
                 v-for="(day, index) in formeCheckStatus.slice(0, monthStartIndices[1])"
                 :key="index"
                 class="day-cell"
-                :class="{'checked': isChecked(day), 'today': isToday(day.date)}"
-                :title="getTooltipText(day)"
+                :class="{'checked': isChecked(day.status), 'today': isToday(day.date)}"
+                :title="day.date + ' ' + day.total_hours + 'h'"
             >
                 <div v-if="isToday(day.date, index)" class="today-marker"></div>
             </div>
@@ -76,8 +72,8 @@
                 v-for="(day, index) in formeCheckStatus.slice(monthStartIndices[1])"
                 :key="index + monthStartIndices[1]"
                 class="day-cell"
-                :class="{'checked': isChecked(day), 'today': isToday(day.date)}"
-                :title="getTooltipText(day)"
+                :class="{'checked': isChecked(day.status), 'today': isToday(day.date)}"
+                :title="day.date + ' ' + day.total_hours + 'h'"
             >
                 <div v-if="isToday(day.date, index + monthStartIndices[1])" class="today-marker"></div>
             </div>
@@ -91,34 +87,6 @@
 </template>
 
 <script setup>
-/*
- * 多端同步打卡时间功能说明：
- * 
- * 1. 双接口架构：
- *    - /latest_checktime: 获取今日实时打卡状态 {check_in_time, check_out_time, date, duration, has_record, user_id, username}
- *    - /records: 获取历史打卡记录 {date, status, total_duration, total_hours} (保持原有结构)
- * 
- * 2. 多端同步机制：
- *    - 完全基于服务器数据，不使用localStorage
- *    - 页面加载时调用 /latest_checktime 获取实时状态
- *    - 每30秒自动调用 /latest_checktime 检测其他设备操作
- *    - 签到/签退成功后立即获取最新状态
- * 
- * 3. 数据处理：
- *    - todayRecord: 来自 /latest_checktime，用于实时状态判断和时间计算
- *    - formeCheckStatus: 来自 /records，用于日历历史显示
- *    - 所有时间计算均基于服务器时间，确保多端一致性
- * 
- * 4. 状态同步：
- *    - 检测其他端签到/签退操作，实时更新本地状态
- *    - 提供用户友好的同步提示信息
- *    - 确保多端状态完全一致
- * 
- * 5. 超时处理：
- *    - 自动检测签到超过6小时的情况
- *    - 显示超时警告，提示用户签退
- */
-
 import { ref, computed } from 'vue';
 import { onMounted, onUnmounted, watch} from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -130,6 +98,7 @@ import { el, fa } from 'element-plus/es/locale/index.mjs';
 const router = useRouter();
 
 const isloading = ref(true); // 是否加载完成
+const isMasterBrowser = ref(true); // 本次加载是否为主浏览器，主浏览器的标志为存在checkTime
 
 const checkLogin = () => {
   const token = localStorage.getItem('token');
@@ -137,55 +106,31 @@ const checkLogin = () => {
 }
 
 async function isTodayChecked(){
-  // 基于最新接口数据判断（不依赖localStorage）
-  if(todayRecord && todayRecord.has_record && todayRecord.check_in_time){
+  const checkTime = localStorage.getItem('CheckTime');
+
+  if(todayRecord.status === "进行中" || todayRecord.status === "已完成"){
     return true; // 已签到
+  }
+
+  if (checkTime) {
+    const checkDate = new Date(checkTime);
+    const today = new Date();
+    return checkDate.getDay() === today.getDay();
   }
   return false;
 }
-
-// 改为响应式的计算属性，确保能实时更新
-const isTodayCheckedComputed = computed(() => {
-  // 基于最新接口数据判断（不依赖localStorage）
-  if(todayRecord.value && todayRecord.value.has_record && todayRecord.value.check_in_time){
-    return true; // 已签到
-  }
-  return false;
-});
-
 const toayTotal = computed(() => {
-  // 主要基于 /records 接口的历史数据计算今日累计时长
   const today = new Date();
-  const todayDateString = today.toISOString().split('T')[0];
-  const historyRecord = formeCheckStatus.value.find(record => record.date === todayDateString);
-  
-  if (historyRecord && historyRecord.total_hours) {
-    // 直接使用历史记录中的总时长
-    return historyRecord.total_hours;
-  }
-  
-  // 如果历史记录中没有今日数据，但有实时签到数据，则计算当前签到时长
-  if (todayRecord.value && todayRecord.value.check_in_time && !todayRecord.value.check_out_time) {
-    const checkInTime = new Date(todayRecord.value.check_in_time);
-    const currentDuration = nowTime.value - checkInTime;
-    const currentHours = currentDuration / (1000 * 60 * 60);
-    return Math.max(0, currentHours.toFixed(1));
-  }
-  
-  // 如果已签退，尝试从 /latest_checktime 接口获取 duration
-  if (todayRecord.value && todayRecord.value.duration) {
-    if (typeof todayRecord.value.duration === 'number') {
-      return todayRecord.value.duration;
-    } else if (typeof todayRecord.value.duration === 'string') {
-      const hourMatch = todayRecord.value.duration.match(/(\d+)小时/);
-      return hourMatch ? parseInt(hourMatch[1], 10) : 0;
-    }
-  }
-  
-  return 0; // 默认返回0
+  const todayDateString = today.toISOString().split('T')[0]; // 获取今天的日期字符串，例如 "2025-03-28"
+
+  // 在 formeCheckStatus 数组中查找今天的记录
+  todayRecord = formeCheckStatus.value.find(record => record.date === todayDateString);
+
+  // 如果找到今天的记录，则返回 total_hours，否则返回 0
+  return todayRecord ? todayRecord.total_hours : 0;
 });
 
-// 获取打卡状态（历史记录，用于日历显示）
+// 获取打卡状态
 const formeCheckStatus = ref([]);
 // 可见月份标签
 const visibleMonths = ref([]);
@@ -197,7 +142,7 @@ const fetchCheckStatus = async () => {
           url: '/records',
           method: 'get'
       });
-    // console.log("records data:",res.data);
+    // console.log("data:",res.data);
     formeCheckStatus.value = [
       ...res.data.previous_month.records,
       ...res.data.current_month.records,
@@ -218,72 +163,46 @@ const fetchCheckStatus = async () => {
   } catch (error) {
       console.error(error);
   }
-  // 移动到 onMounted 的 Promise.all 完成后再设置
+  isloading.value = false; // 设置加载状态为 false
 }
 
-// 获取今日最新打卡状态（用于多端同步和实时状态）
-const fetchLatestCheckTime = async () => {
-  try {
-    const res = await api({
-      url: '/lateset_checktime',
-      method: 'get'
-    });
-    console.log("latest_checktime data:", res.data);
-    return res.data;
-  } catch (error) {
-    console.error('获取今日最新打卡状态失败:', error);
-    return null;
-  }
-};
-
-const todayRecord = ref({}); // 记录今天的打卡状态（来自 /latest_checktime），改为响应式
+let todayRecord = {}; // 记录今天的打卡状态
 
 async function getLatesetCheckStatus() {
-  // 获取今日最新打卡状态（不依赖本地存储）
-  todayRecord.value = await fetchLatestCheckTime();
-  console.log('今日最新打卡状态:', todayRecord.value);
+  const today = new Date();
+  const todayDateString = today.toISOString().split('T')[0]; // 获取今天的日期字符串，例如 "2025-03-28"
+  todayRecord = formeCheckStatus.value.find(record => record.date === todayDateString);  // 在 formeCheckStatus 数组中查找今天的记录
+  console.log(todayRecord);
   
-  if (!todayRecord.value) {
-    // 获取失败，设置为初始状态
-    isVisible.value = false;
-    return;
-  }
-  
-  // 基于服务器数据判断状态（完全不依赖localStorage）
-  if(todayRecord.value.has_record && todayRecord.value.check_in_time){
-    if(!todayRecord.value.check_out_time) {
-      // 已签到但未签退，状态为"进行中"
-      const serverCheckTime = new Date(todayRecord.value.check_in_time);
-      
-      // 调试信息：打印时间解析结果
-      console.log('时间解析调试:', {
-        原始服务器时间: todayRecord.value.check_in_time,
-        解析后的时间: serverCheckTime.toISOString(),
-        当前本地时间: new Date().toISOString(),
-        时间差: new Date() - serverCheckTime,
-        是否有效时间: !isNaN(serverCheckTime.getTime())
-      });
-      
-      checkTime.value = serverCheckTime;
-      
-      // 检查是否超过6小时（这个逻辑可以保留或由服务器处理）
-      if(nowTime.value - serverCheckTime > 6 * 60 * 60 * 1000) {
-        console.log("签到已超过6小时");
-      }
-    } else {
-      // 已签到且已签退，状态为"已完成"
-      console.log("今日打卡已完成");
+  if(todayRecord.status === "进行中"){
+    const storedCheckTime = localStorage.getItem('CheckTime');
+    if (storedCheckTime) {
+      checkTime.value = new Date(storedCheckTime);
     }
-  } else {
-    // 没有打卡记录，初始状态
-    console.log("今日未打卡");
+    if(!storedCheckTime) {
+      isMasterBrowser.value = false;
+      console.log("没有签到时间");
+      localStorage.setItem('isChecked', true);
+      localStorage.setItem('lastingTime', new Date().toLocaleString());
+      lastingTime.value = new Date();
+      isVisible.value = true;
+      ElMessage({
+      message: '本次登录为不同浏览器，故本次已签到的时间不会累计显示，但实际签到时间正常',
+      type: 'warning', // 类型：success, warning, info, error
+      duration: 3000, // 显示时间（毫秒），默认 3000
+      showClose: true, // 是否显示关闭按钮});
+    })
+    }
+    else if(nowTime.value - checkTime.value > 6 * 60 * 60 * 1000) {
+      localStorage.setItem('isChecked', false);
+      isVisible.value = false;
+    }
   }
-  
-  // 根据服务器数据更新界面显示状态
-  checkIsVisible();
+  else if(todayRecord.status === "已完成"){
+    console.log("已完成");
+    isVisible.value = false;
+  }
 }
-
-// 获取今日打卡信息的独立函数，用于多端同步（已移至 fetchLatestCheckTime）
 
 // 提取月份的函数
 const extractMonth = (monthName) => {
@@ -341,18 +260,13 @@ const props = defineProps({
 // 打卡显示情况
 const isVisible = ref(false);
 
-// 基于服务器数据判断是否显示打卡界面（完全不依赖localStorage）
 const checkIsVisible = () => {
-  if (todayRecord.value && todayRecord.value.has_record && todayRecord.value.check_in_time) {
-    if (!todayRecord.value.check_out_time) {
-      // 已签到未签退，显示签退界面
-      isVisible.value = true;
-    } else {
-      // 已签退完成，隐藏签退界面，回到显示今日累计状态
-      isVisible.value = false;
-    }
+  // console.log(localStorage.getItem('isChecked'));
+  if (localStorage.getItem('isChecked') === "true" && nowTime.value - checkTime.value <= 4 * 60 * 60 * 1000) {
+    console.log();
+    isVisible.value = true;
+    getCheckTime();
   } else {
-    // 没有打卡记录，隐藏界面
     isVisible.value = false;
   }
 }
@@ -360,22 +274,9 @@ const checkIsVisible = () => {
 const checklnStatus = ref({}); // 记录打卡状态
 const continuousDays = ref(0); // 连续打卡天数
 
-// 检查是否超时未签退（超过6小时）
-const isOvertime = () => {
-  if (!todayRecord.value || !todayRecord.value.check_in_time || todayRecord.value.check_out_time) {
-    return false; // 未签到或已签退
-  }
-  
-  const checkInTime = new Date(todayRecord.value.check_in_time);
-  // 使用响应式的 nowTime.value 而不是 new Date()，确保Vue能检测到依赖变化
-  const diffHours = (nowTime.value - checkInTime) / (1000 * 60 * 60);
-  
-  return diffHours > 6; // 超过6小时
-};
-
-const isChecked = (record) => {
-  // 适配原有数据结构：根据 status 判断是否已打卡（用于日历显示）
-  if (record && (record.status === "已完成" || record.status === "进行中")) {
+const isChecked = (status) => {
+  // return checklnStatus.value[date.toLocaleDateString('en-CA')];
+  if (status === "进行中" || status === "已完成") {
       return true;
   } else {
       return false;
@@ -385,33 +286,27 @@ const isChecked = (record) => {
 const nowTime = ref(new Date());
 const checkTime = ref(null);
 const freshTime = ref(null);
+const lastingTime = ref(null);
 const timeDiff = ref(null);
 
+const getCheckTime = () => {
+  const storedCheckTime = localStorage.getItem('CheckTime');
+  if (storedCheckTime) {
+    checkTime.value = new Date(storedCheckTime);
+  }
+};
 const calculateThisTimeDuration = () => {
-  // 计算本次签到的持续时间，基于服务器数据
-  if (!todayRecord.value || !todayRecord.value.check_in_time || todayRecord.value.check_out_time) {
-    return "0h 0m 0s"; // 未签到或已签退
+  if (!checkTime.value && !lastingTime.value) return;
+
+  let duration = 0; // 初始化持续时间
+
+  if(isMasterBrowser.value)
+  {
+    duration = nowTime.value - checkTime.value;
   }
 
-  const checkInTime = new Date(todayRecord.value.check_in_time);
-  
-  // 检查时间是否有效
-  if (isNaN(checkInTime.getTime())) {
-    console.warn('无效的签到时间:', todayRecord.value.check_in_time);
-    return "0h 0m 0s";
-  }
-  
-  // 使用响应式的 nowTime.value 而不是 new Date()，确保Vue能检测到依赖变化
-  const duration = nowTime.value - checkInTime;
-  
-  // 如果时长为负数，说明时间有问题，返回0
-  if (duration < 0) {
-    console.warn('计算出负数时长，服务器时间可能有问题:', {
-      checkInTime: checkInTime.toISOString(),
-      nowTime: nowTime.value.toISOString(),
-      duration: duration
-    });
-    return "0h 0m 0s";
+  else{
+    duration = nowTime.value - lastingTime.value; // 计算时间差
   }
 
   const hours = Math.floor(duration / (1000 * 60 * 60));
@@ -432,56 +327,17 @@ function parseDurationToMilliseconds(duration) {
 }
 
 const calculateThisDayDuration = () => {
-  // 计算今日总签到时长，基于服务器数据
-  let totalDurationMilliseconds = 0;
-  
-  // 首先获取已完成的打卡时长（从服务器数据）
-  if (todayRecord.value && todayRecord.value.duration) {
-    if (typeof todayRecord.value.duration === 'number') {
-      // 如果是数字，假设是小时数，转换为毫秒
-      totalDurationMilliseconds = todayRecord.value.duration * 60 * 60 * 1000;
-    } else if (typeof todayRecord.value.duration === 'string') {
-      // 如果是字符串，使用原有的解析函数
-      totalDurationMilliseconds = parseDurationToMilliseconds(todayRecord.value.duration);
-    }
-  } else {
-    // 如果最新接口没有 duration，尝试从历史记录获取
-    const today = new Date();
-    const todayDateString = today.toISOString().split('T')[0];
-    const historyRecord = formeCheckStatus.value.find(record => record.date === todayDateString);
-    
-    if (historyRecord && historyRecord.total_duration) {
-      totalDurationMilliseconds = parseDurationToMilliseconds(historyRecord.total_duration);
-    }
-  }
+  if (!checkTime.value && !lastingTime.value) return;
 
-  // 如果当前正在签到中，加上本次签到的时长
-  if (todayRecord.value && todayRecord.value.check_in_time && !todayRecord.value.check_out_time) {
-    const checkInTime = new Date(todayRecord.value.check_in_time);
-    
-    // 检查时间是否有效
-    if (!isNaN(checkInTime.getTime())) {
-      // 使用响应式的 nowTime.value 而不是 new Date()，确保Vue能检测到依赖变化
-      const currentSessionDuration = nowTime.value - checkInTime;
-      
-      // 只有当前时长为正数时才加上
-      if (currentSessionDuration > 0) {
-        totalDurationMilliseconds += currentSessionDuration;
-      } else {
-        console.warn('当前签到时长为负数，跳过累加:', {
-          checkInTime: checkInTime.toISOString(),
-          nowTime: nowTime.value.toISOString(),
-          duration: currentSessionDuration
-        });
-      }
-    } else {
-      console.warn('无效的签到时间，跳过累加:', todayRecord.value.check_in_time);
-    }
-  }
+  const totalDurationMilliseconds = parseDurationToMilliseconds(todayRecord.total_duration);
 
-  const hours = Math.floor(totalDurationMilliseconds / (1000 * 60 * 60));
-  const minutes = Math.floor((totalDurationMilliseconds % (1000 * 60 * 60)) / (1000 * 60));
-  const seconds = Math.floor((totalDurationMilliseconds % (1000 * 60)) / 1000);
+  let duration = 0; // 初始化持续时间
+
+  duration = nowTime.value - freshTime.value + totalDurationMilliseconds;
+
+  const hours = Math.floor(duration / (1000 * 60 * 60));
+  const minutes = Math.floor((duration % (1000 * 60 * 60)) / (1000 * 60));
+  const seconds = Math.floor((duration % (1000 * 60)) / 1000);
 
   return `${hours}h ${minutes}m ${seconds}s`;
 };
@@ -501,22 +357,13 @@ const submitCheckCode = async (code) => {
           type: 'success',
           message: '签到成功！请在6小时内签退！',
         })
-        
-        // 重新获取打卡状态以获得服务器最新时间
-        await fetchCheckStatus();
-        
-        // 获取最新的今日打卡状态
-        todayRecord.value = await fetchLatestCheckTime();
-        
-        if (todayRecord.value && todayRecord.value.check_in_time) {
-          const serverCheckTime = new Date(todayRecord.value.check_in_time);
-          checkTime.value = serverCheckTime;
-        } else {
-          // 如果服务器没有返回时间，使用当前时间作为备用
-          checkTime.value = new Date();
-        }
-        
+        fetchCheckStatus();
+        localStorage.setItem('isChecked', true);
+        localStorage.setItem('CheckTime', new Date().toLocaleString());
+        // checkIsVisible();  签到后不会出现该函数中的超出6小时的情况，所以直接设置可见性
+        isMasterBrowser.value = true;
         isVisible.value = true;
+        getCheckTime();
       } else {
         ElMessage({
           type: 'error',
@@ -544,9 +391,9 @@ const submitCheckOutCode = async (code) => {
           type: 'success',
           message: '签退成功！',
         })
-        await fetchCheckStatus();
-        // 重新获取最新状态
-        todayRecord.value = await fetchLatestCheckTime();
+        fetchCheckStatus();
+        localStorage.setItem('isChecked', false);
+        // checkIsVisible();  签退使不会出现其它可能，故直接更改可见性
         isVisible.value = false;
       } else {
         ElMessage({
@@ -630,98 +477,32 @@ const isToday = (date, index) => {
 }
 
 const getTooltipText = (day) => {
-  if (!day) return '';
-  
-  let tooltipText = day.date;
-  
-  // 适配原有数据结构处理打卡信息
-  if (day.status && day.status !== "未签到") {
-    tooltipText += `\n状态: ${day.status}`;
-    if (day.total_duration && day.total_duration !== "0小时0分钟") {
-      tooltipText += `\n时长: ${day.total_duration}`;
-    }
-    if (day.total_hours && day.total_hours > 0) {
-      tooltipText += `\n总计: ${day.total_hours}小时`;
-    }
-  } else {
-    // 没有打卡记录
-    tooltipText += '\n状态: 未打卡';
-  }
-  
-  return tooltipText;
-};
+  // return  `${day.date.getFullYear()}-${day.date.getMonth() + 1}-${day.date.getDate()}`;
+}
 
-onMounted(async () => {
+onMounted(() => {
   // 未登录时不请求数据，直接展示登录按钮
   if (!checkLogin()) {
     isloading.value = false;
     return;
   }
-  
-  // 并行获取数据，避免等待时间过长
-  const fetchPromises = [
-    fetchCheckStatus(),
-    getLatesetCheckStatus() // 直接在这里调用，不等待 isloading 变化
-  ];
-  
-  try {
-    await Promise.all(fetchPromises);
-    console.log('所有数据获取完成，开始计时');
-  } catch (error) {
-    console.error('数据获取失败:', error);
-  } finally {
-    // 无论成功与否，都设置加载完成状态
-    isloading.value = false;
-  }
-  
-  // 实时更新当前时间
+  fetchCheckStatus();
+  getCheckTime(); // 获取上次签到时间
+  checkIsVisible(); // 检查是否显示打卡
   setInterval(() => {
     nowTime.value = new Date();
-  }, 1000);
-  
-  // 每30秒同步一次打卡状态，实现多端同步
-  setInterval(async () => {
-    if (checkLogin()) {
-      const currentTodayRecord = { ...todayRecord.value }; // 保存当前状态
-      
-      // 重新获取最新状态
-      todayRecord.value = await fetchLatestCheckTime();
-      
-      if (currentTodayRecord && todayRecord.value) {
-        // 检查状态变化（比如其他端签退了）
-        if (!currentTodayRecord.check_out_time && todayRecord.value.check_out_time) {
-          isVisible.value = false;
-          ElMessage({
-            message: '检测到其他设备已签退，状态已同步',
-            type: 'info',
-            duration: 3000
-          });
-        }
-        // 检查是否其他端签到了
-        else if (!currentTodayRecord.check_in_time && todayRecord.value.check_in_time) {
-          const serverCheckTime = new Date(todayRecord.value.check_in_time);
-          checkTime.value = serverCheckTime;
-          isVisible.value = true;
-          ElMessage({
-            message: '检测到其他设备已签到，状态已同步',
-            type: 'info',
-            duration: 3000
-          });
-        }
-      }
-      
-      // 更新界面显示
-      checkIsVisible();
-    }
-  }, 30000); // 30秒同步一次
-  
+  }, 1000)
   freshTime.value = new Date();
 });
 onUnmounted(() => {
   // saveDataToLocalStorage(); // 保存数据
 });
 
-// 移除原来的 watch(isloading) 逻辑，因为现在在 onMounted 中直接并行获取数据
+watch(isloading, (newValue) => {
+  if (!newValue) {
+    getLatesetCheckStatus(); // 获取最新打卡状态
+  }
+});
 
 </script>
 
@@ -990,29 +771,26 @@ onUnmounted(() => {
   }
 
   .months-container {
-    flex-direction: row;
-    gap: 16px;
+    flex-direction: column;
+    gap: 20px;
     align-items: center;
-    overflow-x: auto;
-    justify-content: center;
   }
 
   .month-divider {
-    width: 3px;
-    height: 100px;
-    margin-top: 24px;
-    background: linear-gradient(180deg, transparent, rgba(79, 195, 247, 0.3), transparent);
+    width: 80%;
+    height: 2px;
+    margin-top: 0;
+    background: linear-gradient(90deg, transparent, rgba(79, 195, 247, 0.3), transparent);
   }
 
   .month-divider::before {
-    top: 50%;
+    top: -4px;
     left: 50%;
-    transform: translate(-50%, -50%);
+    transform: translateX(-50%);
   }
 
   .month-grid {
-    transform: scale(0.85);
-    margin: 0 8px;
+    transform: scale(0.9);
   }
 
   .month-title {
@@ -1028,41 +806,6 @@ onUnmounted(() => {
   .day-card {
     padding: 4px 6px;
     margin: 0 1px;
-  }
-}
-
-/* 超时未签退警示样式 */
-.overtime-warning {
-  margin-top: 8px;
-  padding: 8px 12px;
-  background: linear-gradient(135deg, #ff4757, #ff6b7a);
-  color: white;
-  border-radius: 8px;
-  font-size: 13px;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  box-shadow: 0 2px 8px rgba(255, 71, 87, 0.4);
-  animation: overtime-pulse 2s infinite;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-}
-
-.overtime-warning i {
-  font-size: 14px;
-  color: #fff;
-}
-
-/* 超时警示脉冲动画 */
-@keyframes overtime-pulse {
-  0%, 100% {
-    transform: scale(1);
-    box-shadow: 0 2px 8px rgba(255, 71, 87, 0.4);
-  }
-  50% {
-    transform: scale(1.03);
-    box-shadow: 0 4px 16px rgba(255, 71, 87, 0.6);
   }
 }
 

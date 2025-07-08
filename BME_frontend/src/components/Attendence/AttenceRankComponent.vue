@@ -77,7 +77,6 @@ const fetchUsersRank = async () => {
         userRanks.value = response.data
         userIds.value = response.data.map(user => user.user_id)
         await fetchUserAvatars();
-        console.log(userIds.value)
     } catch (error) {
         console.log(error)
     }
@@ -104,7 +103,6 @@ const fetchUserAvatars = async (id) => {
             userAvatars.value.push('https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png'); // 出错时使用默认头像或 null
         }
     }
-    console.log("User Avatars:", userAvatars.value);
 }
 
 

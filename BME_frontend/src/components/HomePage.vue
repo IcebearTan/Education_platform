@@ -7,6 +7,7 @@ import updateAnnouncement from './updateAnnouncement.vue';
 import HeroSection from './HeroSection.vue';
 import MainContent from './MainContent.vue';
 import SidebarContent from './SidebarContent.vue';
+import DailyAttendence from './Attendence/DailyAttendence.vue';
 
 // 定义响应式数据
 const articles = ref([]);
@@ -22,7 +23,6 @@ const fetchArticles = async () => {
       method: 'get',
     });
     const articleList = response.data;
-    console.log('文章列表:', articleList);
     // 并发请求每篇文章的统计数据
     const statsPromises = articleList.map(article =>
       api({
@@ -35,7 +35,6 @@ const fetchArticles = async () => {
           viewCount: statRes.data?.view_count ?? 0,
           likeCount: statRes.data?.like_count ?? 0,
         };
-        console.log(`文章ID: ${article.Article_Id} 统计数据:`, statRes.data, '合并后:', merged);
         return merged;
       }).catch((err) => {
         console.warn(`获取文章ID: ${article.Article_Id} 统计数据失败`, err);
@@ -47,7 +46,6 @@ const fetchArticles = async () => {
       })
     );
     articles.value = await Promise.all(statsPromises);
-    console.log('最终合并后的 articles:', articles.value);
   } catch (error) {
     console.error('Failed to fetch articles:', error);
   }
@@ -89,6 +87,11 @@ onMounted(() => {
   />
   
   <div class="content-container">
+    <!-- 移动端专用签到模块 -->
+    <div class="mobile-attendance-section">
+      <DailyAttendence />
+    </div>
+    
     <div class="main-content">
       <MainContent 
         :articles="articles"
@@ -114,14 +117,39 @@ h1, h2 {
   padding: 20px 0;
   overflow-x: hidden;
 }
+
+/* 移动端专用签到模块 - 默认隐藏 */
+.mobile-attendance-section {
+  display: none;
+  width: 100%;
+  padding: 0 16px;
+  margin-bottom: 20px;
+  box-sizing: border-box;
+}
+
+/* 在移动端时，给签到模块添加一些视觉增强 */
+@media (max-width: 900px) {
+  .mobile-attendance-section {
+    display: block;
+    background: rgba(255, 255, 255, 0.95);
+    /* border-radius: 12px; */
+    /* padding: 16px; */
+    /* padding: 0; */
+    /* margin: 16px; */
+    /* box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); */
+    /* border: 1px solid rgba(0, 0, 0, 0.05); */
+    backdrop-filter: blur(10px);
+  }
+}
+
 .main-content {
   flex: 1;
   /* 取消flex布局，防止内容超出时出现滚动条 */
   display: block;
   min-width: 0;
-
   overflow-y: hidden;
 }
+
 .side-content {
   width: 20%;
   min-width: 240px;
@@ -137,12 +165,16 @@ h1, h2 {
     flex-direction: column; 
     padding: 10px 0;
   }
+  
   .side-content { 
     width: 100%; 
     margin: 0; 
   }
-  .main-content { 
-    width: 100%; 
+  
+  .main-content {
+    /* align-items: center; */
+    margin: auto;
+    width: 95%;
   }
 }
 </style>

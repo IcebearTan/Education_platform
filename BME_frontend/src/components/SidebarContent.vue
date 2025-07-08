@@ -344,4 +344,17 @@ const handleActionClick = (action) => {
     background: rgba(64, 158, 255, 0.2);
   }
 }
+
+/* 移动端隐藏侧边栏中的签到模块 */
+@media (max-width: 900px) {
+  .sidebar-content .sidebar-section:first-child {
+    display: none;
+  }
+  
+  /* 移动端隐藏出勤排行榜和快捷操作区 */
+  .sidebar-content .sidebar-section:nth-child(2),
+  .sidebar-content .sidebar-section:nth-child(3) {
+    display: none;
+  }
+}
 </style>

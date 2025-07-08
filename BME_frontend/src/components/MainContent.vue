@@ -347,7 +347,7 @@ const formatDate = (dateString) => {
 /* 响应式设计 */
 @media (max-width: 900px) {
   .main-content-wrapper {
-    padding: 0 12px;
+    padding: 0 0px;
   }
   
   .section-title {

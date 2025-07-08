@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>超时未签退警示功能演示</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .demo-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .demo-title {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 24px;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #faf8f8;
+            padding: 12px 20px;
+            border-radius: 10px;
+            border: #faf8f8 solid 1px;
+            transition: all 0.3s ease;
+            min-width: 240px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+        }
+
+        .stat-item:hover {
+            border: #4fc3f7 solid 1px;
+            cursor: pointer;
+        }
+
+        .document {
+            text-align: center;
+            font-size: 15px;
+            color: #6c757d;
+        }
+
+        .continuous-days {
+            display: inline;
+        }
+
+        /* 超时未签退警示样式 */
+        .overtime-warning {
+            margin-top: 8px;
+            padding: 6px 12px;
+            background: linear-gradient(135deg, #ff4757, #ff6b7a);
+            color: white;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 2px 8px rgba(255, 71, 87, 0.3);
+            animation: warning-pulse 2s infinite;
+        }
+
+        .overtime-warning i {
+            font-size: 14px;
+        }
+
+        /* 警示脉冲动画 */
+        @keyframes warning-pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+                box-shadow: 0 2px 8px rgba(255, 71, 87, 0.3);
+            }
+
+            50% {
+                transform: scale(1.02);
+                box-shadow: 0 4px 12px rgba(255, 71, 87, 0.5);
+            }
+        }
+
+        .demo-section {
+            margin-bottom: 30px;
+            padding: 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+        }
+
+        .demo-section h3 {
+            margin-top: 0;
+            color: #4fc3f7;
+        }
+
+        .icon-warning {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            background: #fff;
+            border-radius: 50%;
+            position: relative;
+        }
+
+        .icon-warning::after {
+            content: '!';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-weight: bold;
+            font-size: 10px;
+            color: #ff4757;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="demo-container">
+        <h1 class="demo-title">超时未签退警示功能演示</h1>
+
+        <div class="demo-section">
+            <h3>1. 正常签到状态（未超时）</h3>
+            <div class="stat-item">
+                <div class="document">
+                    <span class="continuous-days">本次已签到 2h 30m 45s</span>
+                    <span class="continuous-days" style="display: block;">今日总签到 2h 30m 45s</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h3>2. 超时未签退警示状态（超过6小时）</h3>
+            <div class="stat-item">
+                <div class="document">
+                    <span class="continuous-days">本次已签到 6h 32m 15s</span>
+                    <span class="continuous-days" style="display: block;">今日总签到 6h 32m 15s</span>
+                    <!-- 超时未签退警示 -->
+                    <div class="overtime-warning">
+                        <span class="icon-warning"></span>
+                        <span>本次已超时作废 - 请签退</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h3>功能说明</h3>
+            <ul>
+                <li><strong>触发条件：</strong>签到超过6小时且未签退</li>
+                <li><strong>显示位置：</strong>在打卡状态区域下方</li>
+                <li><strong>视觉效果：</strong>红色渐变背景，带脉冲动画</li>
+                <li><strong>实时更新：</strong>每秒钟检查一次，自动显示/隐藏</li>
+                <li><strong>多端同步：</strong>其他设备签退后，警示自动消失</li>
+            </ul>
+        </div>
+
+        <div class="demo-section">
+            <h3>技术实现</h3>
+            <ul>
+                <li>使用响应式数据 <code>todayRecord</code> 实时监控打卡状态</li>
+                <li><code>isOvertime()</code> 函数计算签到时长是否超过6小时</li>
+                <li>CSS动画提供视觉提醒效果</li>
+                <li>与现有多端同步机制集成，确保状态一致性</li>
+            </ul>
+        </div>
+    </div>
+</body>
+
+</html>
