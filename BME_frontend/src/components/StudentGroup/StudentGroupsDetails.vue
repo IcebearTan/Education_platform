@@ -39,7 +39,7 @@
       </div>
       <div class="card-content-scroll">
         <StudentGroupTask v-if="currentTab === 'task'" :userRole="userRole" :groupId="2" />
-        <StudentGroupRank v-else-if="currentTab === 'rank'" />
+        <StudentGroupRank v-else-if="currentTab === 'rank'" :groupId="'2'" />
         <StudentGroupLeave v-else-if="currentTab === 'leave'" :userRole="userRole" :groupId="2" />
       </div>
     </div>
@@ -323,7 +323,8 @@ onMounted(() => {
 .card-content-scroll {
   flex: 1 1 auto;
   min-height: 0;
-  max-height: 850px;
+  max-height: 950px;
+  border-radius: 10px;
   overflow-y: auto;
   /* padding-bottom: 20px; */
   padding: 10px;

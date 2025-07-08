@@ -172,15 +172,15 @@ const toayTotal = computed(() => {
     return Math.max(0, currentHours.toFixed(1));
   }
   
-  // 如果已签退，尝试从 /latest_checktime 接口获取 duration
-  if (todayRecord.value && todayRecord.value.duration) {
-    if (typeof todayRecord.value.duration === 'number') {
-      return todayRecord.value.duration;
-    } else if (typeof todayRecord.value.duration === 'string') {
-      const hourMatch = todayRecord.value.duration.match(/(\d+)小时/);
-      return hourMatch ? parseInt(hourMatch[1], 10) : 0;
-    }
-  }
+  // // 如果已签退，尝试从 /latest_checktime 接口获取 duration
+  // if (todayRecord.value && todayRecord.value.duration) {
+  //   if (typeof todayRecord.value.duration === 'number') {
+  //     return todayRecord.value.duration;
+  //   } else if (typeof todayRecord.value.duration === 'string') {
+  //     const hourMatch = todayRecord.value.duration.match(/(\d+)小时/);
+  //     return hourMatch ? parseInt(hourMatch[1], 10) : 0;
+  //   }
+  // }
   
   return 0; // 默认返回0
 });
