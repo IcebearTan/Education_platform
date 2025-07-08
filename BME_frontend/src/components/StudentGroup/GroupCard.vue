@@ -78,11 +78,12 @@ onBeforeMount(() => {
 // 跳转到小组详情页的方法
 const router = useRouter();
 const toGroupDetails = () => {
-  // 只传 group_id，避免 query 过长和兼容性问题
+  // 传递实际的 group_id 和 group_name
   router.push({
     path: '/user-center/student-group-details',
     query: {
-      group_id: props.group.title // 假设 group_id 字段存在
+      group_id: props.group.group_id, // 传递实际的小组ID
+      group_name: props.group.title // 传递小组名称用于标题显示
     }
   })
 }

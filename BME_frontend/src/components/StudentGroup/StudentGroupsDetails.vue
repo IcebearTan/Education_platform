@@ -38,9 +38,9 @@
         </div>
       </div>
       <div class="card-content-scroll">
-        <StudentGroupTask v-if="currentTab === 'task'" :userRole="userRole" :groupId="2" />
-        <StudentGroupRank v-else-if="currentTab === 'rank'" :groupId="'2'" />
-        <StudentGroupLeave v-else-if="currentTab === 'leave'" :userRole="userRole" :groupId="2" />
+        <StudentGroupTask v-if="currentTab === 'task'" :userRole="userRole" :groupId="groupId" />
+        <StudentGroupRank v-else-if="currentTab === 'rank'" :groupId="groupId" />
+        <StudentGroupLeave v-else-if="currentTab === 'leave'" :userRole="userRole" :groupId="groupId" />
       </div>
     </div>
 
@@ -167,7 +167,10 @@ const noticeForm = ref({
 })
 
 // 解析 group_id 并直接作为标题
-const groupTitle = computed(() => route.query.group_id || '小组详情')
+const groupTitle = computed(() => route.query.group_name || '小组详情')
+
+// 获取实际的 groupId
+const groupId = computed(() => route.query.group_id || route.params.groupId || '2')
 
 // 动态小组标题（可后续对接API或props）
 const defaultGroupTitle = ref('C语言程序设计')
@@ -253,7 +256,7 @@ const submitTask = async () => {
       Content: taskForm.value.content,
       End_Time: formatDateTime(taskForm.value.deadline),
       Priority: mapPriority(taskForm.value.priority),
-      Group_Id: 2 // 实际小组ID，建议动态传递
+      Group_Id: parseInt(groupId.value) || 2 // 使用实际的小组ID
     };
     await api({
       url: '/information/task/add',

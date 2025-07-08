@@ -30,7 +30,7 @@
             }"
           >
             <div class="rank-num" :class="['rank-' + (idx + 1)]">{{ idx + 1 }}</div>
-            <el-avatar :size="32" :src="user.avatar" />
+            <el-avatar :size="32" :src="userAvatars[user.id] || defaultAvatarUrl" />
             <div class="user-info">
               <div class="user-name">{{ user.name }}</div>
               <div class="progress-detail">
@@ -50,36 +50,7 @@
 
       <!-- 出勤情况统计 -->
       <div v-if="activeTab === 'attendance'" class="attendance-section">
-        <div class="attendance-summary">
-          <div class="summary-item">
-            <div class="summary-label">昨日出勤总时长</div>
-            <div class="summary-value">{{ totalYesterdayHours }} 小时</div>
-          </div>
-          <div class="summary-item">
-            <div class="summary-label">总出勤次数</div>
-            <div class="summary-value">{{ totalAttendanceDays }}</div>
-          </div>
-        </div>
-        <div class="attendance-list">
-          <div
-            v-for="(user, idx) in attendanceList"
-            :key="user.id"
-            class="attendance-item"
-            :class="{ 'attendance-full': user.yesterdayHours >= 3, 'attendance-unfull': user.yesterdayHours < 3 }"
-            :style="user.yesterdayHours >= 3
-              ? { background: 'linear-gradient(90deg, #67c23a 100%, #f7faff 0%)' }
-              : { background: `linear-gradient(90deg, #e6f7e6 ${attendanceFill[idx]}%, #f7faff ${attendanceFill[idx]}%)` }"
-          >
-            <el-avatar :size="28" :src="user.avatar" />
-            <div class="user-name">{{ user.name }}</div>
-            <div class="attendance-stats">
-              <span class="attendance-hours">昨日 {{ user.yesterdayHours }} 小时</span>
-              <span class="attendance-days">累计 {{ user.totalDays }} 次</span>
-              <span v-if="user.yesterdayHours >= 3" class="attendance-status full">达标</span>
-              <span v-else class="attendance-status unfull">未达标</span>
-            </div>
-          </div>
-        </div>
+        <AttendanceStatistics :groupId="groupId" />
       </div>
     </div>
   </div>
@@ -89,6 +60,7 @@
 import { ref, computed, onMounted, nextTick, watch } from 'vue'
 import { ElAvatar } from 'element-plus'
 import api from '../../api'
+import AttendanceStatistics from './AttendanceStatistics.vue'
 
 // 接收 Group_Id 参数
 const props = defineProps({
@@ -109,15 +81,30 @@ const attendanceFill = ref([])
 const progressList = ref([])
 const groupName = ref('')
 const isLoading = ref(false)
+const userAvatars = ref({}) // 存储用户头像 { [user_id]: avatarUrl }
+const defaultAvatarUrl = 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png' // 默认头像路径
 
-// 静态出勤数据，增加昨日时长和总出勤次数
-const attendanceList = ref([
-  { id: 1, name: '张三', avatar: '/src/assets/ice_bear_avatar.jpg', yesterdayHours: 2.5, totalDays: 18 },
-  { id: 2, name: '李四', avatar: '/src/assets/Jerry_Scintilla_avatar.jpg', yesterdayHours: 1.8, totalDays: 16 },
-  { id: 3, name: '王五', avatar: '/src/assets/ジエ_avatar.png', yesterdayHours: 2.0, totalDays: 15 },
-  { id: 4, name: '赵六', avatar: '/src/assets/LuMengXuan.jpg', yesterdayHours: 1.2, totalDays: 12 },
-  { id: 5, name: '陈老师', avatar: '/src/assets/ChenMinJie.jpg', yesterdayHours: 3.0, totalDays: 20 },
-])
+// 获取用户头像
+const getUserAvatar = async (userId) => {
+  try {
+    const res = await api({
+      url: `/user/user_avatars_id`,
+      method: 'get',
+      params: {
+        User_Id: userId
+      }
+    })
+
+    if (res.data.code === 200 && res.data.User_Avatar) {
+      userAvatars.value[userId] = 'data:image/jpeg;base64,' + res.data.User_Avatar
+    } else {
+      userAvatars.value[userId] = defaultAvatarUrl // 使用默认头像
+    }
+  } catch (err) {
+    console.error('获取用户头像失败:', err)
+    userAvatars.value[userId] = defaultAvatarUrl // 使用默认头像
+  }
+}
 
 // 获取学习进度数据
 const fetchLearningProgress = async () => {
@@ -167,7 +154,7 @@ const fetchLearningProgress = async () => {
         return {
           id: user.user_id,
           name: user.username,
-          avatar: `/src/assets/ice_bear_avatar.jpg`, // 默认头像，可以根据需要修改
+          avatar: defaultAvatarUrl, // 初始使用默认头像，后续会通过API获取
           progress: Math.round(totalProgress),
           chapter: currentChapter,
           section: currentSection,
@@ -179,6 +166,11 @@ const fetchLearningProgress = async () => {
       
       // 按进度排序
       progressList.value = processedData.sort((a, b) => b.progress - a.progress)
+      
+      // 获取所有学生的头像
+      progressList.value.forEach(student => {
+        getUserAvatar(student.id)
+      })
     }
   } catch (error) {
     console.error('获取学习进度失败:', error)
@@ -186,11 +178,6 @@ const fetchLearningProgress = async () => {
     isLoading.value = false
   }
 }
-
-// 总出勤次数
-const totalAttendanceDays = computed(() => attendanceList.value.reduce((sum, u) => sum + u.totalDays, 0))
-// 昨日总出勤时长
-const totalYesterdayHours = computed(() => attendanceList.value.reduce((sum, u) => sum + u.yesterdayHours, 0).toFixed(1))
 
 // 动画填充函数
 function animateFill(list, fillArr, getPercent) {
@@ -223,14 +210,11 @@ function animateFill(list, fillArr, getPercent) {
 onMounted(async () => {
   await fetchLearningProgress()
   animateFill(progressList, progressFill, u => u.progress)
-  animateFill(attendanceList, attendanceFill, u => Math.round(u.yesterdayHours / 3 * 100))
 })
 
 watch(activeTab, (tab) => {
   if (tab === 'progress') {
     animateFill(progressList, progressFill, u => u.progress)
-  } else {
-    animateFill(attendanceList, attendanceFill, u => Math.round(u.yesterdayHours / 3 * 100))
   }
 })
 
@@ -310,7 +294,7 @@ watch(() => props.groupId, async (newGroupId) => {
   letter-spacing: 1px;
   text-align: left;
 }
-.progress-section, .attendance-section {
+.progress-section {
   background: #fff;
   border-radius: 14px;
   padding: 20px;
@@ -391,99 +375,13 @@ watch(() => props.groupId, async (newGroupId) => {
   font-size: 14px;
 }
 .attendance-section {
-  margin-top: 0;
-}
-.attendance-summary {
-  display: flex;
-  gap: 32px;
-  margin-bottom: 18px;
-}
-.summary-item {
-  flex: 1;
-  background: #f7faff;
-  border-radius: 10px;
-  padding: 12px 0;
-  text-align: center;
-  border: 1px solid #e6ecf3;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.03);
-}
-.summary-label {
-  font-size: 15px;
-  color: #888;
-  margin-bottom: 4px;
-}
-.summary-value {
-  font-size: 22px;
-  font-weight: 800;
-  color: #409eff;
-  letter-spacing: 1px;
-}
-.attendance-list {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-.attendance-item {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  background: #f7faff;
-  border-radius: 10px;
-  padding: 10px 14px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.03);
-  border: 1px solid #e6ecf3;
-  transition: background 0.2s;
-}
-.attendance-item:hover {
-  background: #eaf6ff;
-}
-.attendance-stats {
-  display: flex;
-  gap: 18px;
-  font-size: 15px;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-  margin-left: auto;
-  align-items: center;
-}
-.attendance-hours {
-  color: #67c23a;
-}
-.attendance-days {
-  color: #409eff;
-}
-.attendance-status.full {
-  color: #fff;
-  background: #67c23a;
-  border-radius: 6px;
-  padding: 2px 10px;
-  font-size: 13px;
-  margin-left: 8px;
-  font-weight: 700;
-  box-shadow: 0 1px 4px rgba(103,194,58,0.08);
-}
-.attendance-status.unfull {
-  color: #67c23a;
-  background: #e6f7e6;
-  border-radius: 6px;
-  padding: 2px 10px;
-  font-size: 13px;
-  margin-left: 8px;
-  font-weight: 700;
-  border: 1px solid #67c23a;
-}
-.attendance-item.attendance-full {
-  background: linear-gradient(90deg, #67c23a 100%, #f7faff 0%) !important;
-  color: #fff;
-}
-.attendance-item.attendance-full .user-name,
-.attendance-item.attendance-full .attendance-hours,
-.attendance-item.attendance-full .attendance-days {
-  color: #fff;
-}
-.attendance-item.attendance-unfull {
-  /* 保持淡绿色填充效果，背景通过 :style 动态设置 */
-  border: 1px solid #e6f7e6;
+  background: none;
+  border-radius: 0;
+  padding: 0;
+  box-shadow: none;
+  border: none;
+  margin: 0;
+  min-height: auto;
 }
 @media (max-width: 600px) {
   .group-rank-container {
@@ -509,14 +407,14 @@ watch(() => props.groupId, async (newGroupId) => {
     padding: 8px 0;
   }
   
-  .progress-section, .attendance-section {
+  .progress-section {
     padding: 16px;
     border-radius: 8px;
     margin: 0 8px;
     min-height: 300px;
   }
   
-  .progress-item, .attendance-item {
+  .progress-item {
     padding: 8px 4px;
     gap: 8px;
     border-radius: 7px;
@@ -526,21 +424,13 @@ watch(() => props.groupId, async (newGroupId) => {
     font-size: 14px;
   }
   
-  .progress-value, .attendance-value {
+  .progress-value {
     font-size: 13px;
   }
   
   .section-title {
     font-size: 16px;
     margin-bottom: 10px;
-  }
-  
-  .summary-label {
-    font-size: 12px;
-  }
-  
-  .summary-value {
-    font-size: 16px;
   }
 }
 </style>
