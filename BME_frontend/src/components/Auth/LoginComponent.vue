@@ -83,10 +83,10 @@ async function fetchAvatar() {
       url: '/user/user_avatars',
       method: 'get',
     })
-      if (res.data.code === 200 && res.data.User_Avatar) {
-        store.commit('setAvatar', res.data.User_Avatar)
+    if (res.data.code === 200 && res.data.User_Avatar) {
+      store.commit('setAvatar', 'data:image/png;base64,' + res.data.User_Avatar)
     } else {
-        store.commit('setAvatar', 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png')
+      store.commit('setAvatar', 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png')
     }
   } catch (e) {
     store.commit('setAvatar', 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png')
