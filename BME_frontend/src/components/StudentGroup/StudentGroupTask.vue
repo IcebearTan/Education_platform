@@ -179,7 +179,7 @@ async function fetchTasks() {
     const res = await api({
       url: '/information/task/query',
       method: 'get',
-      // params: { group_id: props.groupId }
+      params: { group_id: props.groupId }
     });
     // 适配后端新结构，合并五类优先级任务
     let list = [];
