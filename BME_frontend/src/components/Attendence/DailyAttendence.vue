@@ -548,17 +548,29 @@ const submitCheckOutCode = async (code) => {
         // 重新获取最新状态
         todayRecord.value = await fetchLatestCheckTime();
         isVisible.value = false;
+      } else if (res.status === 409) {
+        ElMessage({
+          type: 'error',
+          message: '签退码已被使用',
+        })
       } else {
         ElMessage({
           type: 'error',
-          message: res
+          message: res.data?.message || res,
         })
       }
   } catch (error) {
-    ElMessage({
-      type: 'error',
-      message: error
-    })
+    if (error?.response?.status === 409) {
+      ElMessage({
+        type: 'error',
+        message: '签退码已被使用',
+      })
+    } else {
+      ElMessage({
+        type: 'error',
+        message: error?.response?.data?.message || error,
+      })
+    }
   }
 }
 
