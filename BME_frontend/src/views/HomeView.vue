@@ -5,8 +5,7 @@ import { useStore } from 'vuex';
 import { ElMessage } from 'element-plus';
 import api from "../api";
 import PageFooterComponent from "../components/PageFooterComponent.vue";
-
-
+import FeedbackBubble from "../components/FeedbackBubble.vue";
 
 import MobileMenuComponent from "../components/MobileMenuComponent.vue";//添加这个竖屏版本的菜单
 import { Menu as Expand } from '@element-plus/icons-vue'; // 确保导入了 Rank
@@ -42,21 +41,6 @@ const toggleMobileMenu = () => {
 };
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-const AItext = ref('AI助手');
-
-
-
-const handleMouseOver = () => {
-  // 鼠标悬停时的处理逻辑
-  AItext.value = '(^_^)';
-};
-
-const handleMouseLeave = () => {
-  // 鼠标移出时的处理逻辑
-  AItext.value = 'AI助手';
-};
-
-
 </script>
 
 <template>
@@ -91,7 +75,8 @@ const handleMouseLeave = () => {
     </el-container>
   </div>
 
-  <div class="AI-assistant-avatar" @mouseover="handleMouseOver" @mouseleave="handleMouseLeave">{{ AItext }}</div>
+  <!-- 反馈气泡组件 -->
+  <FeedbackBubble />
 </template>
 
 <style scoped>
@@ -165,93 +150,6 @@ const handleMouseLeave = () => {
     /* 移动端两端对齐 */
     padding: 0 15px;
     /* 移动端内边距 */
-  }
-}
-
-
-.AI-assistant-avatar {
-  position: fixed;
-  bottom: 60px;
-  right: 60px;
-  width: 75px;
-  height: 75px;
-  border-radius: 50%;
-  /* 使用更明亮的渐变色 */
-  background: linear-gradient(135deg, #734AE2, #D66BFF, #FFD86B);
-  background-size: 400% 400%;
-  /* 增加背景尺寸以实现流动效果 */
-  box-shadow: 0 0 20px rgba(115, 74, 226, 0.6), 0 0 40px rgba(214, 107, 255, 0.4);
-  animation: gradient-move 6s infinite, pulse 3s infinite;
-  /* 调整动画速度 */
-  cursor: pointer;
-  transition: box-shadow 0.3s ease, background-size 0.3s ease, transform 0.2s ease;
-  /* 添加过渡效果 */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 18px;
-  font-weight: bold;
-  color: white;
-}
-
-
-
-.AI-assistant-avatar:hover {
-  transform: scale(1.1);
-  /* 悬停时放大 */
-  box-shadow: 0 0 30px rgba(115, 74, 226, 0.8), 0 0 60px rgba(214, 107, 255, 0.6);
-  /* 悬停时阴影增强 */
-  animation: gradient-move-faster 3s infinite, pulse 1.5s infinite;
-  /* 悬停时动画加速 */
-}
-
-@keyframes gradient-move {
-  0% {
-    background-position: 0% 50%;
-  }
-
-  50% {
-    background-position: 100% 50%;
-  }
-
-  100% {
-    background-position: 0% 50%;
-  }
-}
-
-@keyframes gradient-move-faster {
-  0% {
-    background-position: 0% 50%;
-  }
-
-  25% {
-    background-position: 100% 50%;
-  }
-
-  50% {
-    background-position: 0% 50%;
-  }
-
-  75% {
-    background-position: 100% 50%;
-  }
-
-  100% {
-    background-position: 0% 50%;
-  }
-}
-
-@keyframes pulse {
-  0% {
-    box-shadow: 0 0 20px rgba(115, 74, 226, 0.6), 0 0 40px rgba(214, 107, 255, 0.4);
-  }
-
-  50% {
-    box-shadow: 0 0 30px rgba(115, 74, 226, 0.8), 0 0 60px rgba(214, 107, 255, 0.6);
-  }
-
-  100% {
-    box-shadow: 0 0 20px rgba(115, 74, 226, 0.6), 0 0 40px rgba(214, 107, 255, 0.4);
   }
 }
 

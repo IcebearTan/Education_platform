@@ -27,6 +27,7 @@ import StudentGroupsComponent from './components/StudentGroup/StudentGroupsCompo
 import StudentGroupsDetails from './components/StudentGroup/StudentGroupsDetails.vue';
 import StudentGroupRank from './components/StudentGroup/StudentGroupRank.vue';
 import StudentGroupTask from './components/StudentGroup/StudentGroupTask.vue';
+import MyFeedbacksComponent from './components/User/MyFeedbacksComponent.vue';
 
 const router = createRouter({
     history: createWebHistory(),
@@ -85,6 +86,11 @@ const router = createRouter({
                     path: '/user-center/my-groups',
                     name: 'my-groups',
                     component: StudentGroupsComponent,
+                },
+                {
+                    path: '/user-center/my-feedbacks',
+                    name: 'my-feedbacks',
+                    component: MyFeedbacksComponent,
                 },
                 {
                     path: '/user-center/student-group-details',

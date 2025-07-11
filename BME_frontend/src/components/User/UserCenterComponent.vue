@@ -6,7 +6,7 @@ import { ElMessage } from 'element-plus'
 import { useRouter } from 'vue-router'
 import { useStore } from 'vuex';
 import { el } from 'element-plus/es/locales.mjs';
-import { DataLine, Platform } from '@element-plus/icons-vue';
+import { DataLine, Message } from '@element-plus/icons-vue';
 
 const User_Info = ref({})
 const User_Avatar = ref('');
@@ -115,10 +115,20 @@ onMounted(() => {
               <el-icon><DataLine /></el-icon>
               <span>我的小组</span>
             </el-menu-item>
-            <el-menu-item index="3">
+            <!-- <el-menu-item index="3">
               <el-icon><document /></el-icon>
               <span>学过什么</span>
+            </el-menu-item> -->
+          </div>
+          <div class="functionSection">
+            <el-menu-item index="/user-center/my-feedbacks" @click="router.push('/user-center/my-feedbacks')">
+              <el-icon><Message /></el-icon>
+              <span>反馈记录</span>
             </el-menu-item>
+            <!-- <el-menu-item index="3">
+              <el-icon><document /></el-icon>
+              <span>学过什么</span>
+            </el-menu-item> -->
           </div>
         </el-menu>
       </div>
