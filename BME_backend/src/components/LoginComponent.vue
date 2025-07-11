@@ -55,7 +55,8 @@ export default {
                     User_Email: this.loginForm.email,
                     User_Password: User_Password
                 },
-            }).then((res) => {
+            })
+            .then((res) => {
                 if (res.data.code == 200) {
                     console.log(res)
                     // 将数据存入浏览器
@@ -73,6 +74,10 @@ export default {
                     this.$message.error('密码错误或邮箱不存在');
                 }
             })
+            .catch((error) => {
+                console.error('请求出错:', error);
+                this.$message.error('登录请求失败，请稍后重试');
+            });
 
             // alert('登录成功');
         }
