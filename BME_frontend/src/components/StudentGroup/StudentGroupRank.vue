@@ -124,37 +124,36 @@ const fetchLearningProgress = async () => {
       
       // 处理学习进度数据
       const processedData = response.data.data.result.map(user => {
-        // 计算用户的总体进度
         let totalProgress = 0
-        let totalChapters = 0
         let currentChapter = 0
         let currentSection = 0
         let latestCourse = null
-        
         if (user.records && user.records.length > 0) {
-          // 找到进度最高的课程记录
+          // 找到进度最高的课程记录（已学章节最多）
           const maxProgressRecord = user.records.reduce((prev, current) => 
-            (prev.progress > current.progress) ? prev : current
+            (prev.chapter_num > current.chapter_num) ? prev : current
           )
-          
           latestCourse = maxProgressRecord
           currentChapter = maxProgressRecord.chapter_num || 0
           currentSection = maxProgressRecord.section_num || 0
-          
-          // 计算总体进度（所有课程的平均进度）
-          const validRecords = user.records.filter(record => record.progress > 0)
+          // 计算进度（已学章节/总章节）
+          const validRecords = user.records.filter(record => record.course_chapters > 0)
           if (validRecords.length > 0) {
             totalProgress = validRecords.reduce((sum, record) => {
-              const courseProgress = (record.progress / record.course_chapters) * 100
-              return sum + courseProgress
+              let percent = 0
+              if (record.course_chapters > 0) {
+                percent = (record.chapter_num / record.course_chapters) * 100
+                percent = Math.min(100, Math.max(0, percent))
+              }
+              return sum + percent
             }, 0) / validRecords.length
+            totalProgress = Math.min(100, Math.max(0, totalProgress))
           }
         }
-        
         return {
           id: user.user_id,
           name: user.username,
-          avatar: defaultAvatarUrl, // 初始使用默认头像，后续会通过API获取
+          avatar: defaultAvatarUrl,
           progress: Math.round(totalProgress),
           chapter: currentChapter,
           section: currentSection,
