@@ -55,7 +55,8 @@ export default {
                     User_Email: this.loginForm.email,
                     User_Password: User_Password
                 },
-            }).then((res) => {
+            })
+            .then((res) => {
                 if (res.data.code == 200) {
                     console.log(res)
                     // 将数据存入浏览器
@@ -73,6 +74,10 @@ export default {
                     this.$message.error('密码错误或邮箱不存在');
                 }
             })
+            .catch((error) => {
+                console.error('请求出错:', error);
+                this.$message.error('登录请求失败，请稍后重试');
+            });
 
             // alert('登录成功');
         }
@@ -81,32 +86,97 @@ export default {
 </script>
 
 <template>
-    <div>
-        <el-container>
-            <el-header>
-                <h1>登录</h1>
-            </el-header>
-            <el-main>
-                <el-form ref="loginForm" style="max-width: 600px" :model="loginForm" status-icon :rules="rules"
-                    label-width="auto" class="demo-ruleForm">
+    <div class="login-bg-center">
+        <div class="login-container">
+            <el-container>
+                <el-header>
+                    <img style="width: 50px; position: relative; top: 15px;" src="../assets/Logo_NewYear.png" />
+                    <span style="font-size: 25px; margin-bottom: 20px; font-weight: bold;">管理员登录</span>
+                </el-header>
+                <el-main>
+                    <el-form ref="loginForm" style="max-width: 600px;" :model="loginForm" status-icon :rules="rules"
+                        label-width="auto" class="demo-ruleForm" @keyup.enter.native="submitForm(loginForm)">
 
-                    <el-form-item label="邮箱" prop="email">
-                        <el-input v-model="loginForm.email" type="email" autocomplete="off" />
-                    </el-form-item>
-                    <el-form-item label="密码" prop="password">
-                        <el-input v-model="loginForm.password" type="password" autocomplete="off" show-password />
-                    </el-form-item>
-                    <el-form-item>
-                        <el-button type="primary" @click="submitForm(loginForm)">
-                            登录
-                        </el-button>
-                    </el-form-item>
-                </el-form>
+                        <el-form-item prop="email" style="margin-top: 40px;">
+                            <el-input v-model="loginForm.email" type="email" autocomplete="off" placeholder="输入邮箱"
+                                class="input" />
+                        </el-form-item>
+                        <el-form-item prop="password" style="margin-top: 20px;">
+                            <el-input v-model="loginForm.password" type="password" autocomplete="off" show-password
+                                placeholder="输入密码" class="input" />
+                        </el-form-item>
+                        
+                        <el-form-item>
+                            <el-button type="primary" @click="submitForm(loginForm)" class="submit-button">
+                                登录
+                            </el-button>
+                        </el-form-item>
+                    </el-form>
 
-                <!-- <el-link href="/register" type="primary">没有账户，前去注册</el-link> -->
-            </el-main>
-        </el-container>
+                    <!-- <div style="display: flex; justify-content: space-between;">
+                        <el-link href="/register" type="primary">没有账户，前去注册</el-link>
+                        <el-link href="/find_password" type="primary">忘记密码</el-link>
+                    </div> -->
+                
+                </el-main>
+                <el-footer class="footer gray-footer">
+                    登录代表着您是大佬，拥有更多的权限
+                </el-footer>
+            </el-container>
+        </div>
     </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+
+.login-bg-center {
+    min-height: 100vh;
+    width: 100vw;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f5f6fa;
+}
+
+.login-container {
+    width: 350px;
+    height: 400px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    border-radius: 20px;
+    box-shadow: 0 6px 15px 0px rgb(209, 209, 209);
+    background: #fff;
+}
+
+.submit-button {
+    width: 100%;
+    height: 40px;
+    border-radius: 10px;
+}
+
+.input {
+    width: 100%;
+    height: 40px;
+    border-radius: 20px;
+}
+
+
+.footer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 12px;
+    color: #8e8a8a;
+    margin-top: 10px;
+}
+
+.gray-footer {
+    background: #f0f0f0;
+    width: 100%;
+    min-height: 50px;
+    box-sizing: border-box;
+    border-bottom-left-radius: 20px;
+    border-bottom-right-radius: 20px;
+}
+</style>
