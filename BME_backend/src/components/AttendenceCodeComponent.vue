@@ -5,9 +5,14 @@
         <div class="code-box">
             <div v-if="!isCodeInvalid" class="title">你还没有码</div>
             <div v-else class="code">
-                <el-progress type="circle" :percentage=updatePercentage :status=updateStatus class="progress">
-                    {{ code }}
-                </el-progress>
+                <template v-if="cnt >= validTime">
+                    <div class="expired">已过期，请刷新</div>
+                </template>
+                <template v-else>
+                    <el-progress type="circle" :percentage=updatePercentage :status=updateStatus class="progress">
+                        {{ code }}
+                    </el-progress>
+                </template>
             </div>
         </div>
         <div class="button-box">
@@ -133,6 +138,11 @@ onMounted(() => {
     color: #333333;
 }
 .code{
+    font-weight: 600;
+}
+.expired {
+    font-size: 20px;
+    color: #f56c6c;
     font-weight: 600;
 }
 </style>

@@ -8,11 +8,53 @@ const formInline = reactive({
 });
 const dialogFormVisible = ref(false);
 const users = ref([]);
-
+const allUsers = ref([]);
+const filteredUsers = ref([]); // 新增：用于存储当前筛选后的用户列表
+const currentPage = ref(1);//当前页面
+const pageSize = ref(10);//每页显示的条数
 const action = ref('edit');
+const totalItems = ref(0);//总条数
 
-const handleSearch = () => {
-  
+// const handleSearch = async () => {//搜索框逻辑，后端搜索
+//   try {
+//     const response = await api({
+//       url: '未写入',
+//       method: 'get',
+//       params: {
+//         key: formInline.key
+//       }
+//     })
+//     console.log(已搜索到的用户);
+//     users.value = response.data;
+//     if (!response.data || response.data.length === 0) {
+//       ElMessage({
+//         message: '未找到相关用户',
+//         type: 'warning'
+//       });
+//     }
+//   } catch (error) {
+//     ElMessage({
+//       message: '搜索失败',
+//       type: 'error'
+//     });
+//   }
+// };
+
+const handleSearch = () => {//搜索框逻辑，前端搜索
+  const keyword = formInline.key.trim();
+  currentPage.value = 1;
+  if (!keyword) {
+    filteredUsers.value = allUsers.value;
+  } else {
+    filteredUsers.value = allUsers.value.filter(user => {
+      const name = user.User_Name ? String(user.User_Name) : '';
+      const mode = user.User_Mode ? String(user.User_Mode) : '';
+      const id = user.User_Id ? String(user.User_Id) : '';
+      return name.includes(keyword) || mode.includes(keyword) || id.includes(keyword);
+    });
+  }
+  totalItems.value = filteredUsers.value.length;
+  updatePagedUsers();
 };
 
 const tableLabel = ref([
@@ -49,8 +91,10 @@ const fetchUsers = async () => {
       url: '/user/user_list',
       method: 'get',
     })
-    users.value = response.data;
-    //我觉得需要一个状态判断，如果获取失败，则显示一个提示信息
+    allUsers.value = response.data;
+    filteredUsers.value = allUsers.value;
+    totalItems.value = allUsers.value.length;
+    updatePagedUsers();
   } catch (error) {
     ElMessage({
         message: 'Unpredicted error',
@@ -59,8 +103,20 @@ const fetchUsers = async () => {
   }
 }
 
+const updatePagedUsers = () => {
+  const start = (currentPage.value - 1) * pageSize.value;
+  const end = start + pageSize.value;
+  users.value = filteredUsers.value.slice(start, end);
+};
+
+const handlePageChange = (page) => {
+  currentPage.value = page;
+  updatePagedUsers();
+};
+
 onMounted(() => {
   fetchUsers();
+  
 })
 </script>
 
@@ -69,10 +125,18 @@ onMounted(() => {
     <div class="header-container">
       <div class="l-container">用户列表</div>
       <div class="r-container">
-        <el-form :inline="true" class="form-inline" :model="formInline">
+        
+        <el-form :inline="true" class="form-inline" :model="formInline" @submit.prevent>
+          
           <el-form-item label="用户查询" style="margin: 0; align-items: center;">
-            <el-input placeholder=" 输入用户名" v-model="formInline.key"></el-input>
+            <el-input 
+              placeholder=" 输入用户名&权限&id" 
+              v-model="formInline.key" 
+              @keyup.enter="handleSearch"
+              clearable
+            ></el-input>
           </el-form-item>
+          
           <el-form-item style="margin: 0; align-items: center; margin-right: 20px; margin-left: 10px;">
             <el-button type="primary" @click="handleSearch">
               <el-icon>
@@ -80,27 +144,33 @@ onMounted(() => {
               </el-icon>
             </el-button>
           </el-form-item>
+        
         </el-form>
+      
       </div>
     </div>
 
     <div style="margin: 20px;">
       <div class="table">
-        <el-table :data="users" style="width: 100%; max-height: 700px; overflow-y: auto;">
-          <el-table-column v-for="item in tableLabel" :key="item.prop" :prop="item.prop" :label="item.label"
-            :width="item.width ? item.width : 125" />
+         <el-table :data="users" style="width: 100%; max-height: 800px; overflow-y: auto;">
+          
+          <el-table-column v-for="item in tableLabel" :key="item.prop" :prop="item.prop" :label="item.label" 
+            :width="item.width ? item.width : 125" />   
+           <!-- <el-table :data="users" style="width: 100%; max-height: 700px;"> -->
           <el-table-column fixed="right" label="Operations" min-width="120">
+            
             <template #="scoped">
               <el-button type="primary" size="small" @click="handleEdit(scoped.row)">编辑</el-button>
               <el-button type="danger" size="small" @click="handleDelete(scoped.row)">删除</el-button>
             </template>
+          
           </el-table-column>
         </el-table>
       </div>
 
       <!-- <el-pagination @current-change="handlePageChange" :current-page="currentPage" :page-size="pageSize"
         :total="totalItems" layout="prev, pager, next" style="position:absolute; bottom: 0; margin-bottom: 20px;">
-      </el-pagination> -->
+      </el-pagination>  -->
     </div>
 
     <el-dialog v-model="dialogFormVisible" :title="action == 'add' ? '新增课程' : '编辑用户'" width="500">
@@ -120,9 +190,35 @@ onMounted(() => {
       </template>
     </el-dialog>
   </div>
+
+  <div class="pagination-wrapper">
+    <el-pagination
+    @current-change="handlePageChange"
+    :page-size="pageSize"
+    :pager-count="11"
+    layout="prev, pager, next"
+    :total="totalItems"
+   
+    :current-page="currentPage"
+    
+   />
+  </div>
+   
 </template>
 
 <style scoped>
+.pagination-wrapper {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding-bottom: 100px;
+    
+}
+
 .header-container {
   display: flex;
   justify-content: space-between;

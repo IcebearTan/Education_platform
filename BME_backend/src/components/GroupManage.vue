@@ -553,7 +553,9 @@ async function deleteGroup(group)
 }
 
 function filterObjectsByMatchingValues(array1, array2, key1, key2) {
-  return array1.filter(obj1 =>
+  return array1.filter
+  (
+    obj1 =>
     array2.some(obj2 => {
       // 获取 key1 的值
       const key1Value = obj1[key1];

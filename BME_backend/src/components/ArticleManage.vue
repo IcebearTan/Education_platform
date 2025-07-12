@@ -11,23 +11,9 @@ export default {
         key: ''
       },
       dialogFormVisible: false,
-      articles: [
-        {
-          id: 1,
-          username: 'admin',
-          is_admin: '是',
-        },
-        {
-          id: 2,
-          username: 'user1',
-          is_admin: '否',
-        },
-        {
-          id: 3,
-          username: 'user2',
-          is_admin: 1,
-        },
-      ],
+      articles: [], // 当前页显示的文章
+      allArticles: [], // 保存所有文章
+      filteredArticles: [], // 保存搜索过滤后的文章
       tableLabel: [
         {
           prop: 'Article_Id',
@@ -75,18 +61,21 @@ export default {
       console.log('Fetching articles...');
       try {
         const res = await api.get(`/article/list`);
-        this.articles = res.data;
-        this.Article_Id = res.data.Article_Id;
-        console.log(this.articles);
-        
-        // if (res.data.code === 200) {
-        //   this.articles = res.data;
-        //   console.log(this.articles);
-        // }
+        this.allArticles = res.data;
+        this.filteredArticles = res.data;
+        this.totalItems = res.data.length;
+        this.updatePagedArticles();
       } catch (error) {
         console.error("Error fetching data:", error);
       }
     },
+
+    updatePagedArticles() {
+      const start = (this.currentPage - 1) * this.pageSize;
+      const end = start + this.pageSize;
+      this.articles = this.filteredArticles.slice(start, end);
+    },
+
     async deleteArticle(val) {
       try {
         await api.post(`/article/delete`, { Article_Id: val.Article_Id });
@@ -150,13 +139,25 @@ export default {
     },
     handlePageChange(page) {
       this.currentPage = page;
-      this.fetchData(page);
+      this.updatePagedArticles();
     },
     handleSearch() {
-      if (this.formInline.key) {
-        this.username = this.formInline.key;
+      const keyword = this.formInline.key.trim();
+      this.currentPage = 1; // 搜索时重置到第一页
+      
+      if (!keyword) {
+        this.filteredArticles = this.allArticles;
+      } else {
+        this.filteredArticles = this.allArticles.filter(article => {
+          const title = article.Article_Title ? String(article.Article_Title) : '';
+          const intro = article.Article_Introduction ? String(article.Article_Introduction) : '';
+          const id = article.Article_Id ? String(article.Article_Id) : '';
+          return title.includes(keyword) || intro.includes(keyword) || id.includes(keyword);
+        });
       }
-      this.fetchData();
+      
+      this.totalItems = this.filteredArticles.length;
+      this.updatePagedArticles();
     },
     handleDelete(val) {
       ElMessageBox.confirm('你确定要删除吗？', '提示', {
@@ -219,9 +220,14 @@ export default {
         <el-button type="warning" @click="handleAdd" size="large" style="margin-left: 10px;">添加文章</el-button>
       </div>
       <div class="r-container">
-        <el-form :inline="true" class="form-inline" :model="formInline">
+        <el-form :inline="true" class="form-inline" :model="formInline" @submit.prevent>
           <el-form-item label="文章查询" style="margin: 0; align-items: center;">
-            <el-input placeholder=" 输入文章标题" v-model="formInline.key"></el-input>
+            <el-input 
+              placeholder=" 输入文章标题" 
+              v-model="formInline.key"
+              @keyup.enter="handleSearch"
+              clearable
+            ></el-input>
           </el-form-item>
           <el-form-item style="margin: 0; align-items: center; margin-right: 20px; margin-left: 10px;">
             <el-button type="primary" @click="handleSearch">
@@ -247,11 +253,9 @@ export default {
           </el-table-column>
         </el-table>
       </div>
-
-      <el-pagination class="selectable" @current-change="handlePageChange" :current-page="currentPage" :page-size="pageSize"
-        :total="totalItems" layout="prev, pager, next" style="position:absolute; bottom: 0; margin-bottom: 20px;">
-      </el-pagination>
     </div>
+
+    
 
     <!-- <el-dialog v-model="dialogFormVisible" :title="action == 'add' ? '新增课程' : '编辑用户'" width="500">
       <el-form :model="form" :rules="rules" ref="formRef">
@@ -269,6 +273,17 @@ export default {
         </div>
       </template>
     </el-dialog> -->
+  </div>
+
+  <div class="pagination-wrapper">
+    <el-pagination class="selectable" 
+    @current-change="handlePageChange" 
+    :current-page="currentPage" 
+    :page-size="pageSize"
+    :total="totalItems" 
+    layout="prev, pager, next"
+    >
+    </el-pagination>
   </div>
 </template>
 
@@ -348,8 +363,20 @@ export default {
 
   margin-left: 10px;
 }
+
 .selectable {
     user-select: text;
+}
+
+.pagination-wrapper {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding-bottom: 20px;
 }
 
 </style>
