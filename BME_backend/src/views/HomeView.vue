@@ -75,7 +75,7 @@ const handleClose = (key, keyPath) => {
   <div>
     <div class="common-layout">
       <el-container>
-        <el-aside width="200px" position="relative">
+        <el-aside width="200px" class="fixed-aside">
           <!-- <h5 class="title">训练营<br>后台管理系统</h5> -->
           <el-menu active-text-color="#ffd04b" background-color="#545c64" class="el-menu-vertical-demo"
             :default-active=activeIndex text-color="#fff" @open="handleOpen" @close="handleClose">
@@ -160,8 +160,25 @@ const handleClose = (key, keyPath) => {
   /* background-color: #f5f5f5; */
 }
 
+
 .el-menu-vertical-demo {
   min-height: 100vh;
+}
+
+.fixed-aside {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  z-index: 100;
+  background: #545c64;
+  box-shadow: 2px 0 8px rgba(0,0,0,0.08);
+}
+
+.common-layout {
+  width: calc(100vw - 200px);
+  min-height: 100%;
+  margin-left: 200px;
 }
 
 .title {

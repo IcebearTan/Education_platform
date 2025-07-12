@@ -31,7 +31,7 @@
       </el-button>
     </div>
     <div class="table">
-        <el-table :data="attendenceInfo" style="width: 100%; max-height: 700px; overflow-y: auto;">
+        <el-table :data="Array.isArray(filteredData) && filteredData.length > 0 ? filteredData : attendenceInfo" style="width: 100%; max-height: 700px; overflow-y: auto;">
             <el-table-column v-for="item in tableLabel" :key="item.prop" :prop="item.prop" :label="item.label"
             :width="item.width ? item.width : 125" />
             <el-table-column fixed="right" label="" min-width="120">
@@ -46,11 +46,18 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, computed } from 'vue'
 import { ElMessage } from 'element-plus'
 import api from '../api';
 import * as XLSX from 'xlsx'
 import { saveAs } from 'file-saver'
+
+defineProps({// 接收UserAttendence.vue组件传递的属性
+  filteredData: {
+    type: Array,
+    default: null
+  }
+});
 
 const attendenceInfo = ref([])
 const tableLabel = ref([
@@ -291,7 +298,8 @@ async function filterInfo() {
         await fetchWeekAttendenceInfo(formattedWeekDate.value);
     }
 }
-
+// 暴露数据给UserAttendence.vue
+defineExpose({ attendenceInfo });
 </script>
 
 <style scoped>
