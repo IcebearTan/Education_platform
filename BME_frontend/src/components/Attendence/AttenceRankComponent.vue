@@ -113,8 +113,14 @@ onMounted(() => {
 
 <style scoped>
 .rank-container{
-    /* margin-left: auto; */
-    /* width: 275px; */
+    background-color: #ffffff;
+    /*order-radius: 12px;*/
+    padding: 32px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 800px;
+    margin: 0;
+    margin-right: 60px;
 }
 .title{
   font-size: 20px;
@@ -132,7 +138,7 @@ onMounted(() => {
     /* justify-content: space-between; */
 
     width: 100%;
-
+    margin-right: 60px;
     margin-top: 20px;
 }
 .block{
@@ -203,7 +209,7 @@ onMounted(() => {
 }
 .progress{
     margin-left: auto;
-
+    width : 100px;
     display: flex;
     align-items: center;
 }
