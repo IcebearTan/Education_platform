@@ -38,7 +38,22 @@
         </div>
       </div>
       <div class="card-content-scroll">
-        <StudentGroupTask v-if="currentTab === 'task'" :userRole="userRole" :groupId="groupId" />
+        <StudentGroupTask 
+          ref="studentGroupTaskRef"
+          v-if="currentTab === 'task' && !showTaskDetail" 
+          :userRole="userRole" 
+          :groupId="groupId" 
+          @goToTaskDetail="handleGoToTaskDetail"
+        />
+        <TaskDetailComponent
+          v-if="currentTab === 'task' && showTaskDetail"
+          :taskId="currentTaskId"
+          :userRole="userRole"
+          :groupId="groupId"
+          :taskDetail="currentTaskDetail"
+          @back="handleBackToTaskList"
+          @taskUpdated="handleTaskUpdated"
+        />
         <StudentGroupRank v-else-if="currentTab === 'rank'" :groupId="groupId" />
         <StudentGroupLeave v-else-if="currentTab === 'leave'" :userRole="userRole" :groupId="groupId" />
       </div>
@@ -92,11 +107,20 @@ import StudentGroupRank from './StudentGroupRank.vue'
 import StudentGroupLeave from './StudentGroupLeave.vue'
 
 import api from '../../api'
+import TaskDetailComponent from './TaskDetailComponent.vue'
 
 const router = useRouter()
 const route = useRoute()
 const store = useStore()
 const currentTab = ref('task')
+
+// 任务详情相关状态
+const showTaskDetail = ref(false)
+const currentTaskId = ref(null)
+const currentTaskDetail = ref({})
+
+// 添加对 StudentGroupTask 组件的引用
+const studentGroupTaskRef = ref(null)
 
 // 用户角色管理（生产环境：根据账号自动判断）
 const userRole = ref('student')
@@ -217,12 +241,35 @@ const toRank = () => {
 const toTasks = () => {
   if (currentTab.value !== 'task') {
     currentTab.value = 'task'
+    showTaskDetail.value = false // 确保返回任务列表
   } else {
     ElMessage({
       message: '当前页面已经是任务页面',
       type: 'warning',
       duration: 2000
     })
+  }
+}
+
+// 处理跳转到任务详情
+const handleGoToTaskDetail = (taskInfo) => {
+  currentTaskId.value = taskInfo.taskId
+  currentTaskDetail.value = taskInfo.taskDetail || {}
+  showTaskDetail.value = true
+}
+
+// 处理返回任务列表
+const handleBackToTaskList = () => {
+  showTaskDetail.value = false
+  currentTaskId.value = null
+  currentTaskDetail.value = {}
+}
+
+// 处理任务更新事件
+const handleTaskUpdated = () => {
+  // 刷新任务列表数据
+  if (studentGroupTaskRef.value && studentGroupTaskRef.value.fetchTasks) {
+    studentGroupTaskRef.value.fetchTasks()
   }
 }
 

@@ -233,7 +233,7 @@ const submitFeedback = async () => {
 .feedback-bubble {
   position: fixed;
   bottom: 60px;
-  left: 60px;
+  right: 60px;
   width: 110px;
   height: 48px;
   border-radius: 24px;

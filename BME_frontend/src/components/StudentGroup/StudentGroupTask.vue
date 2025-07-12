@@ -21,15 +21,32 @@
     <template v-else>
       <div v-for="([date, dayTasks]) in groupedTasks" :key="date" class="date-task">
         <div class="date">{{ formatDate(date) }}</div>
-        <div v-for="task in dayTasks" :key="task.id" class="task-box">
+        <div v-for="task in dayTasks" :key="task.id" class="task-box" @click="goToTaskDetail(task)">
           <div class="title">
             <span v-if="task._priority" class="priority-tag" :class="'priority-' + task._priority">{{ task._priority }}</span>
             {{ task.title }}
           </div>
           <div class="content">{{ task.content }}</div>
+          
+          <!-- 新增：提交统计信息 -->
+          <div class="submission-stats">
+            <div class="stats-item">
+              <span class="stats-label">已提交：</span>
+              <span class="stats-value submitted">{{ task.submitted_students?.length || 0 }}人</span>
+            </div>
+            <div class="stats-item">
+              <span class="stats-label">未提交：</span>
+              <span class="stats-value not-submitted">{{ task.not_submitted_students?.length || 0 }}人</span>
+            </div>
+            <div class="stats-item">
+              <span class="stats-label">所属小组：</span>
+              <span class="stats-value group">{{ task.group_name || '未知' }}</span>
+            </div>
+          </div>
+          
           <div class="box-footer">
             <div class="deadline">截止时间：{{ task.end_time }}</div>
-            <div v-if="userRole === 'teacher'" class="task-actions">
+            <div v-if="userRole === 'teacher'" class="task-actions" @click.stop>
               <el-button 
                 type="primary" 
                 size="small" 
@@ -125,6 +142,8 @@ const props = defineProps({
   }
 })
 
+const emit = defineEmits(['goToTaskDetail'])
+
 const tasks = ref([]);
 const loading = ref(true);
 const error = ref('');
@@ -147,6 +166,11 @@ const deleteLoading = ref(false)
 
 const isEditMode = ref(false)
 const editTaskId = ref(null)
+
+// 截止时间不能早于当前时间（包括具体时间）
+const disabledDate = (date) => {
+  return date.getTime() < Date.now() // 禁止早于当前时间
+}
 
 function formatDate(dateStr) {
   if (!dateStr) return '';
@@ -304,6 +328,28 @@ function onEditTask(task) {
   taskDialogVisible.value = true;
 }
 
+// 跳转到任务详情
+function goToTaskDetail(task) {
+  emit('goToTaskDetail', {
+    taskId: task.id,
+    groupId: props.groupId,
+    userRole: props.userRole,
+    taskDetail: {
+      id: task.id,
+      title: task.title,
+      content: task.content,
+      create_time: task.create_time,
+      end_time: task.end_time,
+      priority: task.priority,
+      _priority: task._priority,
+      group_id: task.group_id,
+      group_name: task.group_name,
+      submitted_students: task.submitted_students || [],
+      not_submitted_students: task.not_submitted_students || []
+    }
+  })
+}
+
 watch(taskDialogVisible, (val) => {
   if (!val) {
     taskForm.value = { title: '', content: '', deadline: '', priority: 'normal' }
@@ -313,6 +359,11 @@ watch(taskDialogVisible, (val) => {
 
 onMounted(() => {
   fetchTasks();
+})
+
+// 暴露方法给父组件调用
+defineExpose({
+  fetchTasks
 })
 
 // 分组：{ '2025-07-07': [task, ...], ... }
@@ -394,7 +445,8 @@ const groupedTasks = computed(() => {
 
 .task-box{
   width: 100%;
-  height: 120px;
+  height: auto;
+  min-height: 140px;
   padding-top: 10px;
   padding-bottom: 10px;
   margin-bottom: 18px;
@@ -513,4 +565,53 @@ const groupedTasks = computed(() => {
 .priority-tag.priority-中 { background: #3498db; }
 .priority-tag.priority-低 { background: #27ae60; }
 .priority-tag.priority-不重要 { background: #7f8c8d; }
+
+/* 提交统计信息样式 */
+.submission-stats {
+  display: flex;
+  gap: 16px;
+  margin: 12px 20px;
+  padding: 8px 0;
+  /* border-top: 1px solid #f0f0f0; */
+  /* border-bottom: 1px solid #f0f0f0; */
+}
+
+.stats-item {
+  display: flex;
+  align-items: center;
+  font-size: 13px;
+}
+
+.stats-label {
+  color: #666;
+  margin-right: 4px;
+}
+
+.stats-value {
+  font-weight: 500;
+}
+
+.stats-value.submitted {
+  color: #67c23a;
+}
+
+.stats-value.not-submitted {
+  color: #f56c6c;
+}
+
+.stats-value.group {
+  color: #409eff;
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+  .submission-stats {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .stats-item {
+    font-size: 12px;
+  }
+}
 </style>
