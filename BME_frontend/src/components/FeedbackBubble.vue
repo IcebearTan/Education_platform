@@ -233,7 +233,7 @@ const submitFeedback = async () => {
 .feedback-bubble {
   position: fixed;
   bottom: 60px;
-  right: 60px;
+  left: 60px;
   width: 110px;
   height: 48px;
   border-radius: 24px;
@@ -252,7 +252,7 @@ const submitFeedback = async () => {
   z-index: 1000;
   text-align: center;
   letter-spacing: 1px;
-  padding: 5px 12px;
+  padding: 2px 10px;
 }
 
 .feedback-bubble:hover {
