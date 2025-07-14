@@ -480,8 +480,26 @@ async function submitEditTask() {
       taskEditDialogVisible.value = false
       // 通知父组件任务已更新，让父组件重新获取数据
       emit('taskUpdated')
-      // 重新获取提交记录
-      fetchSubmissions()
+      
+      // 立即更新本地显示的任务详情，避免不必要的服务器请求
+      taskDetail.value = {
+        ...taskDetail.value,
+        title: taskEditForm.value.title,
+        content: taskEditForm.value.content,
+        end_time: formatDateTimeForAPI(taskEditForm.value.deadline),
+        _priority: (() => {
+          switch (taskEditForm.value.priority) {
+            case 'urgent': return '紧急';
+            case 'high': return '高';
+            case 'normal': return '中';
+            case 'low': return '低';
+            case 'unimportant': return '不重要';
+            default: return '中';
+          }
+        })()
+      }
+      
+      // 提交记录通常不会因为任务修改而改变，所以不需要重新获取
     } catch (e) {
       ElMessage.error('任务修改失败，请重试')
     } finally {
@@ -491,40 +509,53 @@ async function submitEditTask() {
 }
 
 // 获取任务详情
-const fetchTaskDetail = async () => {
+const fetchTaskDetail = async (forceFromServer = false) => {
   try {
-    // 优先使用传递的任务详情
-    if (props.taskDetail && Object.keys(props.taskDetail).length > 0) {
-      taskDetail.value = {
-        id: props.taskDetail.id || props.taskId,
-        title: props.taskDetail.title || '任务标题',
-        content: props.taskDetail.content || '暂无任务描述',
-        create_time: props.taskDetail.create_time || '',
-        end_time: props.taskDetail.end_time || '',
-        _priority: props.taskDetail._priority || '中',
-        group_id: props.taskDetail.group_id || props.groupId,
-        group_name: props.taskDetail.group_name || '',
-        submitted_students: props.taskDetail.submitted_students || [],
-        not_submitted_students: props.taskDetail.not_submitted_students || []
+    // 如果强制从服务器获取，或者没有传递任务详情，则调用接口获取
+    if (forceFromServer || !props.taskDetail || Object.keys(props.taskDetail).length === 0) {
+      // 调用真实的任务详情接口
+      const response = await api.get('/information/task/query', {
+        params: {
+          task_id: parseInt(props.taskId)
+        }
+      })
+      
+      if (response.data.code === 200) {
+        const taskData = response.data.data
+        // 假设接口返回的数据结构，根据实际情况调整
+        taskDetail.value = {
+          id: taskData.id || props.taskId,
+          title: taskData.title || '任务标题',
+          content: taskData.content || '暂无任务描述',
+          create_time: taskData.create_time || '',
+          end_time: taskData.end_time || '',
+          _priority: taskData._priority || taskData.priority_text || '中',
+          group_id: taskData.group_id || props.groupId,
+          group_name: taskData.group_name || '',
+          submitted_students: taskData.submitted_students || [],
+          not_submitted_students: taskData.not_submitted_students || []
+        }
+      } else {
+        ElMessage.error(response.data.message || '获取任务详情失败')
       }
       return
     }
     
-    // 如果没有传递任务详情，则调用接口获取
-    // TODO: 调用获取任务详情的接口
-    // const response = await api.get(`/task/${props.taskId}`)
-    // taskDetail.value = response.data
-    
-    // 模拟数据，稍后替换为真实接口
-    // taskDetail.value = {
-    //   id: props.taskId,
-    //   title: '示例任务标题',
-    //   content: '这是一个示例任务的详细描述内容...',
-    //   create_time: '2025-07-12 10:00:00',
-    //   end_time: '2025-07-20 23:59:59',
-    //   _priority: '高'
-    // }
+    // 否则使用传递的任务详情（首次加载时）
+    taskDetail.value = {
+      id: props.taskDetail.id || props.taskId,
+      title: props.taskDetail.title || '任务标题',
+      content: props.taskDetail.content || '暂无任务描述',
+      create_time: props.taskDetail.create_time || '',
+      end_time: props.taskDetail.end_time || '',
+      _priority: props.taskDetail._priority || '中',
+      group_id: props.taskDetail.group_id || props.groupId,
+      group_name: props.taskDetail.group_name || '',
+      submitted_students: props.taskDetail.submitted_students || [],
+      not_submitted_students: props.taskDetail.not_submitted_students || []
+    }
   } catch (error) {
+    console.error('获取任务详情失败:', error)
     ElMessage.error('获取任务详情失败')
   }
 }
