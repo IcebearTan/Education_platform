@@ -412,7 +412,8 @@ const reviewForm = ref({
   comment: ''
 })
 const reviewRules = {
-  score: [{ required: true, message: '请输入分数', trigger: 'blur' }]
+  score: [{ required: true, message: '请输入分数', trigger: 'blur' }],
+  comment: [{ required: true, message: '请输入批改意见', trigger: 'blur' }]
 }
 
 // 学生提交相关
@@ -647,10 +648,12 @@ const saveReview = async () => {
     
     saveLoading.value = true
     try {
-      // 临时使用简化的批改接口，只传id和status
+      // 使用完整的批改接口，传递id、status、comment和score
       const response = await api.post('/information/homework/grade', {
         id: currentReviewSubmission.value.id,
-        status: true  // 布尔型，批改设置为true
+        status: true,  // 布尔型，批改设置为true
+        comment: reviewForm.value.comment || '',  // 批改意见
+        score: reviewForm.value.score?.toString() || '0'  // 分数转为字符串
       })
       
       if (response.data.code === 200) {
@@ -660,13 +663,6 @@ const saveReview = async () => {
       } else {
         ElMessage.error(response.data.message || '批改失败')
       }
-      
-      // TODO: 后续完善接口时恢复分数和评语功能
-      // await api.post('/submissions/review', {
-      //   submission_id: currentReviewSubmission.value.id,
-      //   score: reviewForm.value.score,
-      //   comment: reviewForm.value.comment
-      // })
     } catch (error) {
       console.error('批改失败:', error)
       ElMessage.error('批改失败')
