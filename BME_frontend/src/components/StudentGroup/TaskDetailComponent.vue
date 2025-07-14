@@ -698,7 +698,9 @@ const saveReview = async () => {
 // 删除提交记录
 const deleteSubmission = (submission) => {
   ElMessageBox.confirm(`确定要删除 ${submission.student_name} 的提交记录吗？`, '确认删除', {
-    type: 'warning'
+    type: 'warning',
+    lockScroll: false,
+    appendTo: 'body'
   }).then(async () => {
     try {
       const response = await api.post('/information/homework/delete', {
@@ -888,7 +890,9 @@ const deleteTask = () => {
       type: 'warning',
       confirmButtonText: '确认删除',
       cancelButtonText: '取消',
-      dangerouslyUseHTMLString: true
+      dangerouslyUseHTMLString: true,
+      lockScroll: false,
+      appendTo: 'body'
     }
   ).then(async () => {
     try {
@@ -920,6 +924,15 @@ onMounted(async () => {
   max-width: 1000px;
   margin: 0 auto;
   padding: 20px;
+}
+
+/* 全局修复 MessageBox 滚动条问题 */
+:global(.el-message-box__wrapper) {
+  overflow: hidden !important;
+}
+
+:global(.el-overlay) {
+  overflow: hidden !important;
 }
 
 .header-actions {

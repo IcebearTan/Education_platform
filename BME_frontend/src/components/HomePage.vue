@@ -3,7 +3,7 @@ import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import api from '../api';
 
-import updateAnnouncement from './updateAnnouncement.vue';
+import UpdateAnnouncement from './UpdateAnnouncement.vue';
 import HeroSection from './HeroSection.vue';
 import MainContent from './MainContent.vue';
 import SidebarContent from './SidebarContent.vue';
@@ -78,7 +78,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <updateAnnouncement />
+  <UpdateAnnouncement />
   
   <!-- Hero 区域使用独立组件 -->
   <HeroSection 

@@ -65,6 +65,7 @@
         <div style="margin-right: 10px;">没有版权和免责声明</div>
         <div style="margin-right: 10px;">服务冷线：4008-123-123</div>
         <div style="margin-right: 10px;">客服邮箱：thisIsAfakeEmail@mail2.sysu.edu.cn</div>
+        <div style="margin-right: 10px;">版本：v{{ appVersion }}</div>
     </div>
   </div>
 </template>
@@ -73,13 +74,20 @@
 import { defineComponent, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 
+// 声明全局变量类型
+declare const __APP_VERSION__: string;
+
 export default defineComponent({
 
     setup(props, context) {
         const isVisible = ref(false);
         
+        // 获取应用版本号
+        const appVersion = ref(__APP_VERSION__);
+        
         return {
             isVisible,
+            appVersion,
         }
     },
 })
