@@ -122,8 +122,60 @@ const currentTaskDetail = ref({})
 // 添加对 StudentGroupTask 组件的引用
 const studentGroupTaskRef = ref(null)
 
-// 用户角色管理（生产环境：根据账号自动判断）
+// 用户角色管理（根据当前小组中的身份动态判断）
 const userRole = ref('student')
+const currentGroupData = ref(null)
+
+// 根据用户在当前小组中的身份确定角色
+const determineUserRoleInGroup = async () => {
+  try {
+    // 获取当前用户的所有小组信息
+    const response = await api.get('/user/group')
+    
+    if (response.data.code === 200) {
+      const currentUserId = store.state.user?.User_Id
+      if (!currentUserId) return
+      
+      const currentGroupId = parseInt(groupId.value)
+      
+      // 在所有小组中查找当前小组
+      const allGroups = [
+        ...(response.data.project_group || []),
+        ...(response.data.study_group || [])
+      ]
+      
+      // 确保每个小组都有group_name字段
+      allGroups.forEach(group => {
+        if (!group.group_name && group.title) {
+          group.group_name = group.title;
+        }
+      });
+      
+      const currentGroup = allGroups.find(group => group.group_id === currentGroupId)
+      
+      if (currentGroup) {
+        currentGroupData.value = currentGroup
+        
+        // 判断当前用户在这个小组中的身份
+        if (currentGroup.teacher_id === parseInt(currentUserId)) {
+          userRole.value = 'teacher'
+        } else if (currentGroup.students && currentGroup.students.some(student => student.Student_Id === parseInt(currentUserId))) {
+          userRole.value = 'student'
+        } else {
+          // 用户不在这个小组中，可能是管理员查看
+          userRole.value = store.state.user?.User_Mode === 'admin' ? 'teacher' : 'student'
+        }
+      } else {
+        // 如果找不到小组，使用默认角色判断
+        userRole.value = store.state.user?.User_Mode === 'admin' ? 'teacher' : 'student'
+      }
+    }
+  } catch (error) {
+    console.error('获取小组信息失败:', error)
+    // 出错时使用默认角色判断
+    userRole.value = store.state.user?.User_Mode === 'admin' ? 'teacher' : 'student'
+  }
+}
 
 // 监听用户信息变化，未登录自动跳转到登录页
 watch(
@@ -132,7 +184,8 @@ watch(
     if (!user || !user.User_Mode) {
       router.push('/login')
     } else {
-      userRole.value = user.User_Mode === 'admin' ? 'teacher' : 'student'
+      // 获取小组数据并判断用户在当前小组中的身份
+      determineUserRoleInGroup()
     }
   },
   { immediate: true }
@@ -190,8 +243,21 @@ const noticeForm = ref({
   recipients: 'all'
 })
 
-// 解析 group_id 并直接作为标题
-const groupTitle = computed(() => route.query.group_name || '小组详情')
+// 解析 group_id 并动态获取标题
+const groupTitle = computed(() => {
+  // 优先使用路由参数中的group_name
+  if (route.query.group_name) {
+    return route.query.group_name
+  }
+  
+  // 如果路由参数中没有，尝试从当前小组数据中获取group_name
+  if (currentGroupData.value) {
+    return currentGroupData.value.group_name || currentGroupData.value.title || '小组详情'
+  }
+  
+  // 最后的备选方案
+  return '小组详情'
+})
 
 // 获取实际的 groupId
 const groupId = computed(() => route.query.group_id || route.params.groupId || '2')
@@ -349,10 +415,17 @@ function mapPriority(val) {
 // }
 
 onMounted(() => {
-  // 可以在这里从 API 获取用户角色和权限
-  // const userData = await getUserInfo()
-  // userRole.value = userData.role
+  // 组件挂载时确定用户在当前小组中的身份
+  determineUserRoleInGroup()
 })
+
+// 监听groupId变化，重新判断用户身份
+watch(
+  () => groupId.value,
+  () => {
+    determineUserRoleInGroup()
+  }
+)
 </script>
 
 <style scoped>

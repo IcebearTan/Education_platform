@@ -369,6 +369,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { ArrowLeft, Calendar, Clock, Document } from '@element-plus/icons-vue'
+import { useStore } from 'vuex'
 import api from '../../api'
 
 const props = defineProps({
@@ -391,6 +392,8 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['back', 'taskUpdated'])
+
+const store = useStore()
 
 // 任务详情数据
 const taskDetail = ref({})
@@ -622,11 +625,29 @@ const fetchSubmissions = async () => {
   }
 }
 
-// 获取当前用户ID（这里需要根据您的用户系统实现）
+// 获取当前用户ID（从store或localStorage获取）
 const getCurrentUserId = () => {
-  // TODO: 实现获取当前用户ID的逻辑
-  // 可能从store、localStorage或其他地方获取
-  return 11 // 临时返回示例用户ID
+  // 首先尝试从store获取
+  const storeUser = store?.state?.user
+  if (storeUser && storeUser.User_Id) {
+    return parseInt(storeUser.User_Id)
+  }
+  
+  // 如果store没有，从localStorage获取
+  try {
+    const myAppDataString = localStorage.getItem('my-app')
+    if (myAppDataString) {
+      const myAppData = JSON.parse(myAppDataString)
+      if (myAppData.user && myAppData.user.User_Id) {
+        return parseInt(myAppData.user.User_Id)
+      }
+    }
+  } catch (error) {
+    console.error('获取用户ID失败:', error)
+  }
+  
+  // 如果都获取不到，返回null
+  return null
 }
 
 // 批改作业
