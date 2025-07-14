@@ -587,15 +587,16 @@ const fetchSubmissions = async () => {
       if (props.userRole === 'teacher') {
         // 老师视图：显示所有学生的提交记录，分数显示逻辑根据 graded/ungraded
         submissions.value = homeworkData.all.map(item => {
-          const isGraded = homeworkData.graded.some(g => g.id === item.id)
+          const gradedItem = homeworkData.graded.find(g => g.id === item.id)
+          const isGraded = !!gradedItem
           return {
             id: item.id,
             student_name: item.student_name,
             student_id: item.student_id,
             content: item.content,
             submit_time: item.create_time,
-            score: isGraded ? item.score : null,
-            teacher_comment: item.teacher_comment || null,
+            score: isGraded ? (gradedItem.score || item.score) : null,
+            teacher_comment: isGraded ? (gradedItem.comment || gradedItem.teacher_comment || item.teacher_comment) : null,
             files: item.files || []
           }
         })
@@ -603,13 +604,14 @@ const fetchSubmissions = async () => {
         // 学生视图：只显示自己的提交，分数显示逻辑根据 graded/ungraded
         const myHomework = homeworkData.all.find(item => item.student_id === getCurrentUserId())
         if (myHomework) {
-          const isGraded = homeworkData.graded.some(g => g.id === myHomework.id)
+          const gradedItem = homeworkData.graded.find(g => g.id === myHomework.id)
+          const isGraded = !!gradedItem
           mySubmission.value = {
             id: myHomework.id,
             content: myHomework.content,
             submit_time: myHomework.create_time,
-            score: isGraded ? myHomework.score : null,
-            teacher_comment: myHomework.teacher_comment || null,
+            score: isGraded ? (gradedItem.score || myHomework.score) : null,
+            teacher_comment: isGraded ? (gradedItem.comment || gradedItem.teacher_comment || myHomework.teacher_comment) : null,
             files: myHomework.files || []
           }
         } else {
