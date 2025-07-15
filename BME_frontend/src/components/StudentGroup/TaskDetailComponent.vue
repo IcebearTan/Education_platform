@@ -141,14 +141,24 @@
               </div>
               
               <div v-if="submission.files && submission.files.length > 0" class="submission-files">
-                <h5>附件文件：</h5>
-                <div class="file-list">
-                  <div v-for="(file, index) in submission.files" :key="index" class="file-item">
-                    <el-icon><Document /></el-icon>
-                    <span class="file-name">{{ file.name }}</span>
-                    <span class="file-size">({{ file.size_readable }})</span>
-                    <el-button type="text" size="small" @click="downloadFile(file, submission)">下载</el-button>
+                <h5>附件文件 ({{ submission.files.length }}个)：</h5>
+                <div class="file-download-area">
+                  <div class="file-summary">
+                    <div v-for="(file, index) in submission.files" :key="index" class="file-item-preview">
+                      <el-icon><Document /></el-icon>
+                      <span class="file-name">{{ file.name }}</span>
+                      <span class="file-size">({{ file.size_readable }})</span>
+                    </div>
                   </div>
+                  <el-button 
+                    type="primary" 
+                    size="small" 
+                    @click="downloadFile(null, submission)"
+                    :icon="Download"
+                    style="margin-top: 8px;"
+                  >
+                    下载全部文件 (压缩包)
+                  </el-button>
                 </div>
               </div>
             </div>
@@ -186,14 +196,24 @@
             <div class="submission-content">
               <p>{{ mySubmission.content || '未填写文字内容' }}</p>
               <div v-if="mySubmission.files && mySubmission.files.length > 0" class="submission-files">
-                <h5>已提交文件：</h5>
-                <div class="file-list">
-                  <div v-for="(file, index) in mySubmission.files" :key="index" class="file-item">
-                    <el-icon><Document /></el-icon>
-                    <span class="file-name">{{ file.name }}</span>
-                    <span class="file-size">({{ file.size_readable }})</span>
-                    <el-button type="text" size="small" @click="downloadFile(file, mySubmission)">下载</el-button>
+                <h5>已提交文件 ({{ mySubmission.files.length }}个)：</h5>
+                <div class="file-download-area">
+                  <div class="file-summary">
+                    <div v-for="(file, index) in mySubmission.files" :key="index" class="file-item-preview">
+                      <el-icon><Document /></el-icon>
+                      <span class="file-name">{{ file.name }}</span>
+                      <span class="file-size">({{ file.size_readable }})</span>
+                    </div>
                   </div>
+                  <el-button 
+                    type="primary" 
+                    size="small" 
+                    @click="downloadFile(null, mySubmission)"
+                    :icon="Download"
+                    style="margin-top: 8px;"
+                  >
+                    下载我的文件 (压缩包)
+                  </el-button>
                 </div>
               </div>
             </div>
@@ -244,14 +264,24 @@
         <div class="submission-detail">
           <h5>提交内容：</h5>
           <p>{{ currentReviewSubmission.content || '学生未填写文字内容' }}</p>            <div v-if="currentReviewSubmission.files && currentReviewSubmission.files.length > 0">
-              <h5>提交文件：</h5>
-              <div class="file-list">
-                <div v-for="(file, index) in currentReviewSubmission.files" :key="index" class="file-item">
-                  <el-icon><Document /></el-icon>
-                  <span class="file-name">{{ file.name }}</span>
-                  <span class="file-size">({{ file.size_readable }})</span>
-                  <el-button type="text" size="small" @click="downloadFile(file, currentReviewSubmission)">下载</el-button>
+              <h5>提交文件 ({{ currentReviewSubmission.files.length }}个)：</h5>
+              <div class="file-download-area">
+                <div class="file-summary">
+                  <div v-for="(file, index) in currentReviewSubmission.files" :key="index" class="file-item-preview">
+                    <el-icon><Document /></el-icon>
+                    <span class="file-name">{{ file.name }}</span>
+                    <span class="file-size">({{ file.size_readable }})</span>
+                  </div>
                 </div>
+                <el-button 
+                  type="primary" 
+                  size="small" 
+                  @click="downloadFile(null, currentReviewSubmission)"
+                  :icon="Download"
+                  style="margin-top: 8px;"
+                >
+                  下载学生文件 (压缩包)
+                </el-button>
               </div>
             </div>
         </div>
@@ -305,14 +335,16 @@
           <el-upload
             v-model:file-list="submissionForm.files"
             :auto-upload="false"
-            :limit="1"
+            :limit="3"
             :on-exceed="handleExceed"
             :before-upload="beforeUpload"
+            :on-remove="handleRemove"
+            multiple
           >
             <el-button type="primary">选择文件</el-button>
             <template #tip>
               <div class="el-upload__tip">
-                只能上传1个文件，大小不超过20MB，支持doc、pdf、zip等格式
+                最多上传3个文件，每个文件大小不超过20MB，支持doc、pdf、zip等格式
               </div>
             </template>
           </el-upload>
@@ -368,7 +400,7 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { ArrowLeft, Calendar, Clock, Document } from '@element-plus/icons-vue'
+import { ArrowLeft, Calendar, Clock, Document, Download } from '@element-plus/icons-vue'
 import { useStore } from 'vuex'
 import api from '../../api'
 
@@ -718,8 +750,8 @@ const deleteSubmission = (submission) => {
   }).catch(() => {})
 }
 
-// 下载文件，直接用父级提交记录 id（submission.id 或 mySubmission.id）
-const downloadFile = (file, parentSubmission) => {
+// 下载文件，处理二进制文件流
+const downloadFile = async (file, parentSubmission) => {
   // parentSubmission 为当前文件所属的提交记录对象
   // id 就是作业提交记录的 int 型 id
   const homeworkId = parentSubmission?.id
@@ -727,14 +759,69 @@ const downloadFile = (file, parentSubmission) => {
     ElMessage.error('无法获取提交记录ID，无法下载')
     return
   }
-  const url = `/information/homework/download?id=${homeworkId}`
-  const link = document.createElement('a')
-  link.href = url
-  link.download = file.name
-  document.body.appendChild(link)
-  link.click()
-  document.body.removeChild(link)
-  ElMessage.success('文件下载已开始')
+  
+  try {
+    // 请求二进制文件流
+    const response = await api.get('/information/homework/download', {
+      params: {
+        id: homeworkId
+      },
+      responseType: 'blob' // 指定响应类型为blob以处理二进制数据
+    })
+    
+    // 检查响应是否成功
+    if (response.status === 200) {
+      console.log('下载响应:', response)
+      
+      // 从响应头获取文件名（如果有的话）
+      const contentDisposition = response.headers['content-disposition']
+      let fileName = `作业文件_${homeworkId}.zip`
+      
+      if (contentDisposition) {
+        const fileNameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/)
+        if (fileNameMatch && fileNameMatch[1]) {
+          fileName = fileNameMatch[1].replace(/['"]/g, '')
+        }
+      }
+      
+      // 创建Blob对象
+      const blob = new Blob([response.data], { 
+        type: response.headers['content-type'] || 'application/zip' 
+      })
+      
+      // 创建下载链接
+      const downloadUrl = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = downloadUrl
+      link.download = fileName
+      
+      // 触发下载
+      document.body.appendChild(link)
+      link.click()
+      
+      // 清理
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(downloadUrl)
+      
+      ElMessage.success('文件下载成功！')
+    } else {
+      ElMessage.error('下载失败，请重试')
+    }
+  } catch (error) {
+    console.error('下载失败:', error)
+    
+    // 如果是网络错误或其他错误
+    if (error.response) {
+      // 服务器返回了错误状态码
+      ElMessage.error(`下载失败: ${error.response.status} ${error.response.statusText}`)
+    } else if (error.request) {
+      // 请求发出但没有收到响应
+      ElMessage.error('网络错误，请检查网络连接')
+    } else {
+      // 其他错误
+      ElMessage.error('下载文件失败，请重试')
+    }
+  }
 }
 
 // 显示提交弹窗
@@ -753,12 +840,12 @@ const saveSubmission = async () => {
   await submissionFormRef.value.validate(async (valid) => {
     if (!valid) return
     
-    // 检查文件大小（20MB限制）
+    // 检查文件总大小（所有文件合计不超过60MB，平均每个文件20MB）
     const totalSize = submissionForm.value.files.reduce((sum, file) => sum + (file.raw?.size || 0), 0)
-    const maxSize = 20 * 1024 * 1024 // 20MB
+    const maxTotalSize = 60 * 1024 * 1024 // 60MB总限制
     
-    if (totalSize > maxSize) {
-      ElMessage.error('文件大小不能超过20MB')
+    if (totalSize > maxTotalSize) {
+      ElMessage.error('所有文件总大小不能超过60MB')
       return
     }
     
@@ -812,7 +899,12 @@ const saveSubmission = async () => {
 
 // 文件上传限制处理
 const handleExceed = () => {
-  ElMessage.warning('只能上传1个文件')
+  ElMessage.warning('最多只能上传3个文件')
+}
+
+// 文件移除处理
+const handleRemove = (file, fileList) => {
+  submissionForm.value.files = fileList
 }
 
 // 文件上传前检查
@@ -820,7 +912,7 @@ const beforeUpload = (file) => {
   // 检查文件大小（20MB限制）
   const maxFileSize = 20 * 1024 * 1024 // 20MB
   if (file.size > maxFileSize) {
-    ElMessage.error('文件大小不能超过20MB')
+    ElMessage.error(`文件"${file.name}"大小不能超过20MB`)
     return false
   }
   
@@ -1131,6 +1223,42 @@ onMounted(async () => {
   font-size: 14px;
   color: #303133;
   margin: 0 0 8px 0;
+}
+
+/* 文件下载区域样式 */
+.file-download-area {
+  background: #f8f9fa;
+  border-radius: 6px;
+  padding: 12px;
+  border: 1px solid #e9ecef;
+}
+
+.file-summary {
+  margin-bottom: 8px;
+}
+
+.file-item-preview {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  font-size: 14px;
+  color: #606266;
+}
+
+.file-item-preview .el-icon {
+  color: #409eff;
+  font-size: 16px;
+}
+
+.file-item-preview .file-name {
+  flex: 1;
+  font-weight: 500;
+}
+
+.file-item-preview .file-size {
+  font-size: 12px;
+  color: #909399;
 }
 
 .file-list {
