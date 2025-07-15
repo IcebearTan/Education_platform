@@ -28,6 +28,61 @@ import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { ElMessage } from 'element-plus'
 import api from '../api';
 
+// 定义Code结构体
+const CodeInfo = {
+    code: null,
+    generationTime: null,
+    type: null // 'check_in' 或 'check_out'
+}
+
+// 分配本地内存存储Code信息
+const codeMemory = ref({
+    currentCode: null,
+    generationTime: null,
+    type: null
+})
+
+// // 本地持久化存储Key
+const LOCAL_STORAGE_KEY = 'attendence_code_info'
+
+// 更新内存和localStorage中的Code信息
+const updateCodeMemory = (newCode, codeType) => {
+    const info = {
+        currentCode: newCode,
+        generationTime: new Date().toISOString(),
+        type: codeType
+    }
+    codeMemory.value = info
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(info))
+    console.log('Code内存已更新:', codeMemory.value)
+}
+
+// 页面加载时从localStorage恢复Code信息
+const restoreCodeFromLocal = () => {
+    const data = localStorage.getItem(LOCAL_STORAGE_KEY)
+    if (data) {
+        const info = JSON.parse(data)
+        if (info.currentCode && info.generationTime) {
+            // 判断是否过期
+            const now = new Date()
+            const genTime = new Date(info.generationTime)
+            const diffSeconds = Math.floor((now - genTime) / 1000)
+            if (diffSeconds < validTime) {
+                code.value = info.currentCode
+                isCodeInvalid.value = true
+                cnt.value = diffSeconds
+                codeMemory.value = info
+            } else {
+                // 已过期
+                code.value = null
+                isCodeInvalid.value = true
+                cnt.value = validTime
+                codeMemory.value = { currentCode: null, generationTime: null, type: null }
+            }
+        }
+    }
+}
+
 const code = ref(null)
 const isCodeInvalid = ref(false)
 const validTime = 300
@@ -67,6 +122,8 @@ const handleCheckIn = async () => {
             code.value = response.data.check_code
             isCodeInvalid.value = true
             cnt.value = 0
+            // 更新内存中的Code信息
+            updateCodeMemory(response.data.check_code, 'check_in')
             ElMessage.success('生成成功!请在5分钟内签到')
         } else {
             ElMessage.error('生成失败')
@@ -92,6 +149,8 @@ const handleCheckOut = async () => {
             code.value = response.data.check_code
             isCodeInvalid.value = true
             cnt.value = 0
+            // 更新内存中的Code信息
+            updateCodeMemory(response.data.check_code, 'check_out')
             ElMessage.success('生成成功!请在5分钟内签退')
         } else {
             ElMessage.error('生成失败')
@@ -106,6 +165,7 @@ const handleCheckOut = async () => {
 }
 
 onMounted(() => {
+    restoreCodeFromLocal()
     setInterval(() => {
         countTime()
     }, 1000)

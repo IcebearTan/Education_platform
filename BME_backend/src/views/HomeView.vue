@@ -2,7 +2,7 @@
 import { RouterView } from "vue-router";
 import { useStore } from 'vuex'
 import { useRouter } from 'vue-router'
-import { Document, User, ChatLineRound} from '@element-plus/icons-vue';
+import { Document, User, ChatLineRound, Trophy, Setting, Location, Grid} from '@element-plus/icons-vue';
 
 export default {
   name: "HomeView",
@@ -112,7 +112,7 @@ const handleClose = (key, keyPath) => {
             <el-sub-menu index="3" disabled>
               <template #title>
                 <el-icon>
-                  <location />
+                  <Location />
                 </el-icon>
                 <span>课程管理</span>
               </template>
@@ -137,9 +137,19 @@ const handleClose = (key, keyPath) => {
               </template>
               <el-menu-item index="/homepage/manage" @click="router.push('/homepage/cover')">编辑首页封面</el-menu-item>
             </el-sub-menu>
-            <el-menu-item index="7" style="position: absolute; bottom: 0;">
+            <el-sub-menu index="7">
+              <template #title>
+                <el-icon>
+                  <Trophy />
+                </el-icon>
+                <span>勋章管理</span>
+              </template>
+              <el-menu-item index="/medal/manage" @click="router.push('/medal/manage')">管理勋章</el-menu-item>
+              <el-menu-item index="/medal/grant" @click="router.push('/medal/grant')" disabled>勋章查询</el-menu-item>
+            </el-sub-menu>
+            <el-menu-item index="8" style="position: absolute; bottom: 0;">
               <el-icon>
-                <setting />
+                <Setting />
               </el-icon>
               <span>系统设置</span>
             </el-menu-item>

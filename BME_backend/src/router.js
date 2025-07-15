@@ -16,6 +16,8 @@ import EditorCreateComponent from './components/EditorCreateComponent.vue';
 import GroupManage from './components/GroupManage.vue';
 import LearningProgress from './components/LearningProgress.vue';
 import HomeCoverManage from './components/HomeCoverManage.vue';
+import MedalManage from './components/MedalManage.vue';
+import MedalGrant from './components/MedalGrant.vue';
 
 const router = createRouter({
     history: createWebHistory("/admin/"),
@@ -64,6 +66,16 @@ const router = createRouter({
                     path: '/homepage/cover',
                     name: 'homepage_cover',
                     component: HomeCoverManage
+                },
+                {
+                    path: '/medal/manage',
+                    name: 'medal_manage',
+                    component: MedalManage
+                },
+                {
+                    path: '/medal/grant',
+                    name: 'medal_grant',
+                    component: MedalGrant
                 }
             ]
         },
