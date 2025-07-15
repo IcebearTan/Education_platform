@@ -249,6 +249,64 @@ const handleGrant = async () => {
   }
 };
 
+// 1. 新增批量授予相关变量
+const batchGrantDialogVisible = ref(false);
+const batchGrantMedal = ref(null);
+const users = ref([]);
+const selectedUsers = ref([]);
+
+const openBatchGrantDialog = () => {
+  batchGrantMedal.value = grantMedal.value;
+  batchGrantDialogVisible.value = true;
+  fetchUsers();
+};
+
+const fetchUsers = async () => {
+  try {
+    const response = await api({
+      url: '/user/user_list',
+      method: 'get',
+    });
+    users.value = response.data;
+  } catch (error) {
+    ElMessage.error('获取用户列表失败');
+  }
+};
+
+const handleSelectionChange = (val) => {
+  selectedUsers.value = val;
+};
+
+const handleBatchGrant = async () => {
+  if (selectedUsers.value.length === 0) {
+    ElMessage.warning('请至少选择一个用户');
+    return;
+  }
+  let success = 0, fail = 0;
+  for (const user of selectedUsers.value) {
+    try {
+      const response = await api({
+        url: '/medal/user_medal_add',
+        method: 'post',
+        data: {
+          Medal_Description: batchGrantMedal.value.Medal_Description,
+          Medal_Name: batchGrantMedal.value.Medal_Name,
+          Student_Id: user.User_Id
+        }
+      });
+      if (response.data && response.data.code === 200) {
+        success++;
+      } else {
+        fail++;
+      }
+    } catch {
+      fail++;
+    }
+  }
+  ElMessage.success(`批量授予完成，成功${success}人，失败${fail}人`);
+  batchGrantDialogVisible.value = false;
+};
+
 onMounted(() => {
   fetchMedals();
 });
@@ -373,6 +431,30 @@ onMounted(() => {
       <template #footer>
         <el-button @click="grantDialogVisible = false">取消</el-button>
         <el-button type="primary" @click="handleGrant">确认授予</el-button>
+        <el-button type="warning" @click="openBatchGrantDialog">批量添加</el-button>
+      </template>
+    </el-dialog>
+    <el-dialog v-model="batchGrantDialogVisible" title="批量授予勋章" width="750" class="batch-grant-dialog">
+      <div style="margin-bottom: 12px; font-size: 16px; color: #409EFF; font-weight: bold;">请选择要授予该勋章的用户：</div>
+      <el-table
+        :data="users"
+        style="width: 100%; border-radius: 8px; box-shadow: 0 2px 8px rgba(64,158,255,0.08);"
+        @selection-change="handleSelectionChange"
+        row-key="User_Id"
+        height="350"
+        border
+        size="medium"
+        :header-cell-style="{background:'#f5f7fa', color:'#333', fontWeight:'bold'}"
+      >
+        <el-table-column type="selection" width="55" />
+        <el-table-column prop="User_Id" label="用户ID" width="100" />
+        <el-table-column prop="User_Name" label="用户名" width="180" />
+        <el-table-column prop="User_Mode" label="用户权限" width="120" />
+        <el-table-column prop="User_Email" label="邮箱" width="200" />
+      </el-table>
+      <template #footer>
+        <el-button @click="batchGrantDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="handleBatchGrant">确认批量授予</el-button>
       </template>
     </el-dialog>
   </div>
@@ -611,5 +693,13 @@ body, html, #app {
   100% {
     background-color: #f898e5;
   }
+}
+.batch-grant-dialog >>> .el-dialog__body {
+  padding-top: 10px;
+  background: #fafdff;
+}
+.batch-grant-dialog >>> .el-table {
+  border-radius: 8px;
+  overflow: hidden;
 }
 </style> 
