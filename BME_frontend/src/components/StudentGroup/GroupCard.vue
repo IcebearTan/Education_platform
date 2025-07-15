@@ -83,7 +83,7 @@ const toGroupDetails = () => {
     path: '/user-center/student-group-details',
     query: {
       group_id: props.group.group_id, // 传递实际的小组ID
-      group_name: props.group.title // 传递小组名称用于标题显示
+      group_name: props.group.group_name // 优先使用group_name，备选title
     }
   })
 }

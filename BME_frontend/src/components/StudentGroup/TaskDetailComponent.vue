@@ -369,6 +369,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { ArrowLeft, Calendar, Clock, Document } from '@element-plus/icons-vue'
+import { useStore } from 'vuex'
 import api from '../../api'
 
 const props = defineProps({
@@ -392,6 +393,8 @@ const props = defineProps({
 
 const emit = defineEmits(['back', 'taskUpdated'])
 
+const store = useStore()
+
 // 任务详情数据
 const taskDetail = ref({})
 const submissions = ref([])
@@ -412,7 +415,8 @@ const reviewForm = ref({
   comment: ''
 })
 const reviewRules = {
-  score: [{ required: true, message: '请输入分数', trigger: 'blur' }]
+  score: [{ required: true, message: '请输入分数', trigger: 'blur' }],
+  comment: [{ required: true, message: '请输入批改意见', trigger: 'blur' }]
 }
 
 // 学生提交相关
@@ -480,8 +484,26 @@ async function submitEditTask() {
       taskEditDialogVisible.value = false
       // 通知父组件任务已更新，让父组件重新获取数据
       emit('taskUpdated')
-      // 重新获取提交记录
-      fetchSubmissions()
+      
+      // 立即更新本地显示的任务详情，避免不必要的服务器请求
+      taskDetail.value = {
+        ...taskDetail.value,
+        title: taskEditForm.value.title,
+        content: taskEditForm.value.content,
+        end_time: formatDateTimeForAPI(taskEditForm.value.deadline),
+        _priority: (() => {
+          switch (taskEditForm.value.priority) {
+            case 'urgent': return '紧急';
+            case 'high': return '高';
+            case 'normal': return '中';
+            case 'low': return '低';
+            case 'unimportant': return '不重要';
+            default: return '中';
+          }
+        })()
+      }
+      
+      // 提交记录通常不会因为任务修改而改变，所以不需要重新获取
     } catch (e) {
       ElMessage.error('任务修改失败，请重试')
     } finally {
@@ -491,40 +513,53 @@ async function submitEditTask() {
 }
 
 // 获取任务详情
-const fetchTaskDetail = async () => {
+const fetchTaskDetail = async (forceFromServer = false) => {
   try {
-    // 优先使用传递的任务详情
-    if (props.taskDetail && Object.keys(props.taskDetail).length > 0) {
-      taskDetail.value = {
-        id: props.taskDetail.id || props.taskId,
-        title: props.taskDetail.title || '任务标题',
-        content: props.taskDetail.content || '暂无任务描述',
-        create_time: props.taskDetail.create_time || '',
-        end_time: props.taskDetail.end_time || '',
-        _priority: props.taskDetail._priority || '中',
-        group_id: props.taskDetail.group_id || props.groupId,
-        group_name: props.taskDetail.group_name || '',
-        submitted_students: props.taskDetail.submitted_students || [],
-        not_submitted_students: props.taskDetail.not_submitted_students || []
+    // 如果强制从服务器获取，或者没有传递任务详情，则调用接口获取
+    if (forceFromServer || !props.taskDetail || Object.keys(props.taskDetail).length === 0) {
+      // 调用真实的任务详情接口
+      const response = await api.get('/information/task/query', {
+        params: {
+          task_id: parseInt(props.taskId)
+        }
+      })
+      
+      if (response.data.code === 200) {
+        const taskData = response.data.data
+        // 假设接口返回的数据结构，根据实际情况调整
+        taskDetail.value = {
+          id: taskData.id || props.taskId,
+          title: taskData.title || '任务标题',
+          content: taskData.content || '暂无任务描述',
+          create_time: taskData.create_time || '',
+          end_time: taskData.end_time || '',
+          _priority: taskData._priority || taskData.priority_text || '中',
+          group_id: taskData.group_id || props.groupId,
+          group_name: taskData.group_name || '',
+          submitted_students: taskData.submitted_students || [],
+          not_submitted_students: taskData.not_submitted_students || []
+        }
+      } else {
+        ElMessage.error(response.data.message || '获取任务详情失败')
       }
       return
     }
     
-    // 如果没有传递任务详情，则调用接口获取
-    // TODO: 调用获取任务详情的接口
-    // const response = await api.get(`/task/${props.taskId}`)
-    // taskDetail.value = response.data
-    
-    // 模拟数据，稍后替换为真实接口
-    // taskDetail.value = {
-    //   id: props.taskId,
-    //   title: '示例任务标题',
-    //   content: '这是一个示例任务的详细描述内容...',
-    //   create_time: '2025-07-12 10:00:00',
-    //   end_time: '2025-07-20 23:59:59',
-    //   _priority: '高'
-    // }
+    // 否则使用传递的任务详情（首次加载时）
+    taskDetail.value = {
+      id: props.taskDetail.id || props.taskId,
+      title: props.taskDetail.title || '任务标题',
+      content: props.taskDetail.content || '暂无任务描述',
+      create_time: props.taskDetail.create_time || '',
+      end_time: props.taskDetail.end_time || '',
+      _priority: props.taskDetail._priority || '中',
+      group_id: props.taskDetail.group_id || props.groupId,
+      group_name: props.taskDetail.group_name || '',
+      submitted_students: props.taskDetail.submitted_students || [],
+      not_submitted_students: props.taskDetail.not_submitted_students || []
+    }
   } catch (error) {
+    console.error('获取任务详情失败:', error)
     ElMessage.error('获取任务详情失败')
   }
 }
@@ -552,15 +587,16 @@ const fetchSubmissions = async () => {
       if (props.userRole === 'teacher') {
         // 老师视图：显示所有学生的提交记录，分数显示逻辑根据 graded/ungraded
         submissions.value = homeworkData.all.map(item => {
-          const isGraded = homeworkData.graded.some(g => g.id === item.id)
+          const gradedItem = homeworkData.graded.find(g => g.id === item.id)
+          const isGraded = !!gradedItem
           return {
             id: item.id,
             student_name: item.student_name,
             student_id: item.student_id,
             content: item.content,
             submit_time: item.create_time,
-            score: isGraded ? item.score : null,
-            teacher_comment: item.teacher_comment || null,
+            score: isGraded ? (gradedItem.score || item.score) : null,
+            teacher_comment: isGraded ? (gradedItem.comment || gradedItem.teacher_comment || item.teacher_comment) : null,
             files: item.files || []
           }
         })
@@ -568,13 +604,14 @@ const fetchSubmissions = async () => {
         // 学生视图：只显示自己的提交，分数显示逻辑根据 graded/ungraded
         const myHomework = homeworkData.all.find(item => item.student_id === getCurrentUserId())
         if (myHomework) {
-          const isGraded = homeworkData.graded.some(g => g.id === myHomework.id)
+          const gradedItem = homeworkData.graded.find(g => g.id === myHomework.id)
+          const isGraded = !!gradedItem
           mySubmission.value = {
             id: myHomework.id,
             content: myHomework.content,
             submit_time: myHomework.create_time,
-            score: isGraded ? myHomework.score : null,
-            teacher_comment: myHomework.teacher_comment || null,
+            score: isGraded ? (gradedItem.score || myHomework.score) : null,
+            teacher_comment: isGraded ? (gradedItem.comment || gradedItem.teacher_comment || myHomework.teacher_comment) : null,
             files: myHomework.files || []
           }
         } else {
@@ -590,11 +627,29 @@ const fetchSubmissions = async () => {
   }
 }
 
-// 获取当前用户ID（这里需要根据您的用户系统实现）
+// 获取当前用户ID（从store或localStorage获取）
 const getCurrentUserId = () => {
-  // TODO: 实现获取当前用户ID的逻辑
-  // 可能从store、localStorage或其他地方获取
-  return 11 // 临时返回示例用户ID
+  // 首先尝试从store获取
+  const storeUser = store?.state?.user
+  if (storeUser && storeUser.User_Id) {
+    return parseInt(storeUser.User_Id)
+  }
+  
+  // 如果store没有，从localStorage获取
+  try {
+    const myAppDataString = localStorage.getItem('my-app')
+    if (myAppDataString) {
+      const myAppData = JSON.parse(myAppDataString)
+      if (myAppData.user && myAppData.user.User_Id) {
+        return parseInt(myAppData.user.User_Id)
+      }
+    }
+  } catch (error) {
+    console.error('获取用户ID失败:', error)
+  }
+  
+  // 如果都获取不到，返回null
+  return null
 }
 
 // 批改作业
@@ -616,10 +671,12 @@ const saveReview = async () => {
     
     saveLoading.value = true
     try {
-      // 临时使用简化的批改接口，只传id和status
+      // 使用完整的批改接口，传递id、status、comment和score
       const response = await api.post('/information/homework/grade', {
         id: currentReviewSubmission.value.id,
-        status: true  // 布尔型，批改设置为true
+        status: true,  // 布尔型，批改设置为true
+        comment: reviewForm.value.comment || '',  // 批改意见
+        score: reviewForm.value.score?.toString() || '0'  // 分数转为字符串
       })
       
       if (response.data.code === 200) {
@@ -629,13 +686,6 @@ const saveReview = async () => {
       } else {
         ElMessage.error(response.data.message || '批改失败')
       }
-      
-      // TODO: 后续完善接口时恢复分数和评语功能
-      // await api.post('/submissions/review', {
-      //   submission_id: currentReviewSubmission.value.id,
-      //   score: reviewForm.value.score,
-      //   comment: reviewForm.value.comment
-      // })
     } catch (error) {
       console.error('批改失败:', error)
       ElMessage.error('批改失败')
@@ -648,7 +698,9 @@ const saveReview = async () => {
 // 删除提交记录
 const deleteSubmission = (submission) => {
   ElMessageBox.confirm(`确定要删除 ${submission.student_name} 的提交记录吗？`, '确认删除', {
-    type: 'warning'
+    type: 'warning',
+    lockScroll: false,
+    appendTo: 'body'
   }).then(async () => {
     try {
       const response = await api.post('/information/homework/delete', {
@@ -838,7 +890,9 @@ const deleteTask = () => {
       type: 'warning',
       confirmButtonText: '确认删除',
       cancelButtonText: '取消',
-      dangerouslyUseHTMLString: true
+      dangerouslyUseHTMLString: true,
+      lockScroll: false,
+      appendTo: 'body'
     }
   ).then(async () => {
     try {
@@ -870,6 +924,15 @@ onMounted(async () => {
   max-width: 1000px;
   margin: 0 auto;
   padding: 20px;
+}
+
+/* 全局修复 MessageBox 滚动条问题 */
+:global(.el-message-box__wrapper) {
+  overflow: hidden !important;
+}
+
+:global(.el-overlay) {
+  overflow: hidden !important;
 }
 
 .header-actions {

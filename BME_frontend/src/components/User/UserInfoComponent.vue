@@ -26,9 +26,19 @@ const fetchAvatar = async () => {
       method: "get",
   }).then((res) => {
       if (res.data.code == 200) {
-          store.commit('setAvatar', res.data.User_Avatar)
-          console.log(this.store.state.avatar)
+          // 检查头像数据是否存在
+          if (res.data.User_Avatar && res.data.User_Avatar !== null) {
+              store.commit('setAvatar', res.data.User_Avatar)
+          } else {
+              // 头像为 null，清除 store 中的头像数据
+              store.commit('setAvatar', null)
+          }
+          console.log(store.state.avatar)
       }
+  }).catch((error) => {
+      console.error('获取头像失败:', error)
+      // 如果请求失败，也清除 store 中的头像数据
+      store.commit('setAvatar', null)
   })
 }
 

@@ -80,6 +80,10 @@ const getGroupList = async () => {
     if (Array.isArray(res.data.project_group)) {
       res.data.project_group.forEach(group => {
         group.group_type = 'project'; // 给 group 加上类型标签
+        // 确保group_name字段存在，如果API没有提供则使用title作为备选
+        if (!group.group_name) {
+          group.group_name = group.title;
+        }
         if (group.students.length > 0) {
           group.student = ''; // 初始化组员字符串
           for (let i = 0; i < group.students.length; i++) {
@@ -99,6 +103,10 @@ const getGroupList = async () => {
     if (Array.isArray(res.data.study_group)) {
       res.data.study_group.forEach(group => {
         group.group_type = 'study'; // 给 group 加上类型标签
+        // 确保group_name字段存在，如果API没有提供则使用title作为备选
+        if (!group.group_name) {
+          group.group_name = group.title;
+        }
         if (group.students.length > 0) {
           group.student = ''; // 初始化组员字符串
           for (let i = 0; i < group.students.length; i++) {

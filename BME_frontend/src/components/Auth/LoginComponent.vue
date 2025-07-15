@@ -6,7 +6,7 @@
                 <span style="font-size: 25px; margin-bottom: 20px; font-weight: bold;">登录</span>
             </el-header>
             <el-main>
-                <el-form ref="loginFormRef" style="max-width: 600px;" :model="loginForm.value" status-icon :rules="rules"
+                <el-form ref="loginFormRef" style="max-width: 600px;" :model="loginForm" status-icon :rules="rules"
                     label-width="auto" class="demo-ruleForm" @keyup.enter.native="submitForm()">
 
                     <el-form-item prop="email">

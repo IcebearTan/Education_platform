@@ -46,20 +46,25 @@ const fetchUserAvatar = async () => {
       method: "get",
     });
     if (response.data.code === 200) {
-      if (store.state.avatar) {
+      // 检查服务器返回的头像数据是否存在
+      if (response.data.User_Avatar && response.data.User_Avatar !== null) {
         User_Avatar.value = `data:image/png;base64,${response.data.User_Avatar}`;
       } else {
+        // 用户尚未设置头像，使用默认头像
         User_Avatar.value = 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png';
       }
     } else {
+      // 接口请求失败，使用默认头像
+      User_Avatar.value = 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png';
       ElMessage.error('获取头像失败');
     }
   } catch (error) {
+    // 请求异常，使用默认头像
+    User_Avatar.value = 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png';
     // 只做本地跳转，异常提示交给全局拦截器
     if (error.response && error.response.status === 401) {
       router.push('/login');
     } else {
-      User_Avatar.value = 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png'; 
       ElMessage.error('UserCenterComponent:用户尚未上传头像或未知的错误');
     }
   }

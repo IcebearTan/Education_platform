@@ -63,7 +63,7 @@ const checkLogin = () => {
         method: "get",
     }).then((res) => {
         isLogin.value = true
-        setUserAvatar()
+        fetchUserAvatar() // 改为调用 fetchUserAvatar 从服务器获取最新头像
     }).catch((error) => {
         isLogin.value = false
         store.dispatch('logout')
@@ -79,7 +79,13 @@ const fetchUserAvatar = async () => {
     })
     .then((avatarRes) => {
         if (avatarRes.data.code === 200) {
-            User_Avatar.value = `data:image/png;base64,${avatarRes.data.User_Avatar}`;  // 头像URL存储在res.data.avatarUrl中
+            // 检查服务器返回的头像数据是否存在
+            if (avatarRes.data.User_Avatar && avatarRes.data.User_Avatar !== null) {
+                User_Avatar.value = `data:image/png;base64,${avatarRes.data.User_Avatar}`;
+            } else {
+                // 用户尚未设置头像，使用默认头像
+                User_Avatar.value = 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png';
+            }
         } else {
             User_Avatar.value = 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png';
             // ElMessage.error('用户尚未上传头像'); // 不再弹窗
