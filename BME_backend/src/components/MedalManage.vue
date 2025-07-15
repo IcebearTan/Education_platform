@@ -15,6 +15,9 @@ const allMedals = ref([]);
 const filteredMedals = ref([]);
 const action = ref('edit');// 当前操作类型（新增/编辑）
 //const formLabelWidth = '120px';
+const grantDialogVisible = ref(false);
+const grantStudentId = ref('');
+const grantMedal = ref(null);
 
 // 表单数据（用于新增/编辑勋章）
 const form = reactive({
@@ -103,7 +106,8 @@ const handleAdd = () => {
     medal_name: '',
     medal_description: '',
     medal_image: '',
-    medal_type: ''
+    medal_type: '',
+    medal_name_cn: ''
   });
   dialogFormVisible.value = true;
 };
@@ -145,9 +149,13 @@ const handleSubmit = async () => {
   try {
     if (action.value === 'add') {
       const response = await api({
-        url: '/medal/create',
+        url: '/medal/medal_create',
         method: 'post',
-        data: form
+        data: {
+          Medal_Name: form.medal_name,
+          Medal_Name_CN: form.medal_name_cn,
+          Medal_Tag: form.medal_type
+        }
       });
       if (response.data) {
         ElMessage.success('添加成功');
@@ -328,7 +336,15 @@ onMounted(() => {
           <el-input v-model="form.medal_name" placeholder="请输入勋章名字" autocomplete="off" />
         </el-form-item>
         <el-form-item label="勋章描述" prop="medal_description">
-          <el-input v-model="form.medal_description" type="textarea" :rows="3" autocomplete="off" placeholder="描述"/>
+          <el-input 
+            v-model="form.medal_description" 
+            type="textarea" 
+            :rows="3" 
+            autocomplete="off" 
+            placeholder="中文名"
+            @input="val => { form.medal_description = val; form.medal_name_cn = val }"
+            
+          />
         </el-form-item>
         <el-form-item label="勋章分类" prop="medal_type">
           <el-select v-model="form.medal_type" placeholder="请选择勋章分类" clearable>
