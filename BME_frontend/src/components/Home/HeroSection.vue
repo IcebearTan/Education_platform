@@ -12,7 +12,7 @@
       <div class="logo-title-container">
         <div class="logo-img-wrapper">
           <img 
-            src="../assets/Logo_NewYear.png" 
+            src="../../assets/Logo_NewYear.png" 
             :alt="logoAlt" 
             class="hero-logo" 
             @click="onLogoClick"
@@ -40,7 +40,7 @@ const props = defineProps({
   },
   logoSrc: {
     type: String,
-    default: '../assets/Logo_NewYear.png'
+    default: '../../assets/Logo_NewYear.png'
   },
   logoAlt: {
     type: String,

@@ -47,8 +47,8 @@
 
 <script setup>
 import { ref, defineEmits } from 'vue';
-import DailyAttendence from './Attendence/DailyAttendence.vue';
-import AttenceRankComponent from './Attendence/AttenceRankComponent.vue';
+import DailyAttendence from '../Attendence/DailyAttendence.vue';
+import AttenceRankComponent from '../Attendence/AttenceRankComponent.vue';
 
 // 定义事件
 const emit = defineEmits(['action-click']);

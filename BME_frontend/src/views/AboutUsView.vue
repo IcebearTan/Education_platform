@@ -1,6 +1,6 @@
 <script>
 import AboutUsComponent from "../components/AboutUsComponent.vue"
-import SeatLayoutComponent from "../components/SeatLayoutComponent.vue";
+// import SeatLayoutComponent from "../components/SeatLayoutComponent.vue";
 import MenuComponent from "../components/MenuComponent.vue";
 import PageFooterComponent from "../components/PageFooterComponent.vue";
 import api from '../api';
@@ -44,7 +44,7 @@ const User_Avatar = ref('');
                 <MenuComponent />
             </el-header>
             <el-main style="width: 1300px;">
-                <SeatLayoutComponent />
+                <!-- <SeatLayoutComponent /> -->
             </el-main>
             <el-footer class="page-footer">
                 <PageFooterComponent />

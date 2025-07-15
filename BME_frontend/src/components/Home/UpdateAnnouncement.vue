@@ -2,15 +2,18 @@
     <el-dialog
       v-model="dialogVisible"
       title="✨ 更新公告 ✨"
-      width="50%"
+      :width="dialogWidth"
       :close-on-click-modal="false"
       :show-close="false"
       :lock-scroll="false"
       :modal="true"
       :append-to-body="true"
+      :center="isMobile"
       class="announcement-dialog"
+      :class="{ 'mobile-dialog': isMobile }"
+      style="max-height: 80vh;"
     >
-      <div class="announcement-content">
+      <div class="announcement-content" style="max-height: 50vh; overflow-y: auto; padding: 20px;">
         <h3>亲爱的同学们：</h3>
         <p>此网站于{{ updateDate }}完成重大更新，以下是本次更新内容：</p>
         <ul>
@@ -41,11 +44,25 @@
   </template>
   
   <script setup>
-  import { ref, onMounted, computed } from 'vue';
-  import { getVersionInfo } from '../config/version.js';
+  import { ref, onMounted, computed, onUnmounted } from 'vue';
+  import { getVersionInfo } from '../../config/version.js';
   
   const dialogVisible = ref(false);
   const dontShowAgain = ref(false);
+  
+  // 响应式设计相关
+  const windowWidth = ref(window.innerWidth);
+  const isMobile = computed(() => windowWidth.value <= 768);
+  const dialogWidth = computed(() => {
+    if (windowWidth.value <= 480) return '90%';
+    if (windowWidth.value <= 768) return '80%';
+    return '50%';
+  });
+  
+  // 监听窗口大小变化
+  const handleResize = () => {
+    windowWidth.value = window.innerWidth;
+  };
   
   // 获取版本信息
   const versionInfo = getVersionInfo();
@@ -95,11 +112,17 @@
   // 在组件挂载时检查公告
   onMounted(() => {
     checkAndShowAnnouncement();
+    window.addEventListener('resize', handleResize);
+  });
+  
+  // 组件卸载时清理事件监听
+  onUnmounted(() => {
+    window.removeEventListener('resize', handleResize);
   });
   </script>
   
   <style>
-  /* 全局样式 - 隐藏遮罩层滚动条 */
+  /* 全局样式 - 隐藏遮罩层滚动条但保留滚动功能 */
   .el-overlay {
     overflow: hidden !important;
   }
@@ -111,6 +134,16 @@
   /* 防止背景滚动 */
   body.el-popup-parent--hidden {
     overflow: hidden !important;
+  }
+  
+  /* 隐藏滚动条但保留滚动功能 */
+  .announcement-content {
+    scrollbar-width: none !important; /* Firefox */
+    -ms-overflow-style: none !important; /* IE 和 Edge */
+  }
+  
+  .announcement-content::-webkit-scrollbar {
+    display: none !important; /* Chrome, Safari, Opera */
   }
   </style>
   
@@ -126,20 +159,9 @@
     position: relative;
   }
   
-  /* 确保对话框本身没有滚动条 */
-  .announcement-dialog :deep(.el-dialog) {
-    overflow: hidden;
-  }
-  
-  .announcement-dialog :deep(.el-dialog__body) {
-    overflow: visible;
-    padding: 0;
-  }
-  
   .announcement-content {
     text-align: left;
     color: #333;
-    padding: 20px;
     border-radius: 10px;
     background-color: #ffff;
   }
@@ -225,5 +247,158 @@
   
   .confirm-button:hover {
     background-color: #ff856e;
+  }
+  
+  /* 移动端适配样式 */
+  @media (max-width: 768px) {
+    .announcement-dialog :deep(.el-dialog) {
+      max-height: 75vh;
+      margin: 5vh auto;
+    }
+    
+    .announcement-content {
+      max-height: 45vh !important;
+      padding: 12px !important;
+      font-size: 14px;
+    }
+    
+    .announcement-content h3 {
+      font-size: 16px;
+      margin-bottom: 8px;
+      text-align: center;
+    }
+    
+    .announcement-content p {
+      font-size: 13px;
+      line-height: 1.4;
+      margin: 6px 0;
+    }
+    
+    .announcement-content ul {
+      padding-left: 12px;
+      margin: 8px 0;
+    }
+    
+    .announcement-content ul li {
+      font-size: 13px;
+      margin-bottom: 6px;
+      line-height: 1.3;
+    }
+    
+    .important-notice {
+      padding: 8px;
+      margin: 12px 0;
+      font-size: 12px;
+    }
+    
+    .important-notice p {
+      font-size: 12px;
+      margin: 2px 0;
+    }
+    
+    .footer-content {
+      flex-direction: column;
+      gap: 10px;
+      align-items: stretch;
+      padding: 8px 0;
+    }
+    
+    .checkbox-container {
+      text-align: center;
+    }
+    
+    .checkbox-container :deep(.el-checkbox__label) {
+      font-size: 12px;
+    }
+    
+    .button-container {
+      justify-content: center;
+      gap: 12px;
+    }
+    
+    .cancel-button,
+    .confirm-button {
+      flex: 1;
+      max-width: 100px;
+      padding: 8px 16px;
+      font-size: 13px;
+    }
+  }
+  
+  /* 小屏手机适配 */
+  @media (max-width: 480px) {
+    .announcement-dialog :deep(.el-dialog) {
+      max-height: 70vh;
+      margin: 5vh auto;
+    }
+    
+    .announcement-content {
+      max-height: 40vh !important;
+      padding: 10px !important;
+      font-size: 13px;
+    }
+    
+    .announcement-content h3 {
+      font-size: 15px;
+      margin-bottom: 6px;
+    }
+    
+    .announcement-content p,
+    .announcement-content ul li {
+      font-size: 12px;
+      line-height: 1.3;
+    }
+    
+    .important-notice {
+      padding: 6px;
+      margin: 8px 0;
+    }
+    
+    .important-notice p {
+      font-size: 11px;
+    }
+    
+    .footer-content {
+      gap: 8px;
+    }
+    
+    .button-container {
+      gap: 8px;
+    }
+    
+    .cancel-button,
+    .confirm-button {
+      padding: 6px 12px;
+      font-size: 12px;
+      min-height: 32px;
+      max-width: 85px;
+    }
+    
+    .checkbox-container :deep(.el-checkbox__label) {
+      font-size: 11px;
+    }
+  }
+  
+  /* 横屏适配 */
+  @media (max-width: 768px) and (orientation: landscape) {
+    .announcement-dialog :deep(.el-dialog) {
+      max-height: 80vh; /* 横屏时降低高度，确保能滚动 */
+    }
+    
+    .announcement-dialog :deep(.el-dialog__header) {
+      padding: 10px 20px 5px;
+    }
+    
+    .announcement-dialog :deep(.el-dialog__body) {
+      padding: 0 20px;
+    }
+    
+    .announcement-dialog :deep(.el-dialog__footer) {
+      padding: 10px 20px;
+    }
+    
+    .announcement-content {
+      padding: 10px 0; /* 横屏内边距调整 */
+    }
   }
   </style>

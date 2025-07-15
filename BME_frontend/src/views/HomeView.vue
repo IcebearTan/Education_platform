@@ -5,7 +5,7 @@ import { useStore } from 'vuex';
 import { ElMessage } from 'element-plus';
 import api from "../api";
 import PageFooterComponent from "../components/PageFooterComponent.vue";
-import FeedbackBubble from "../components/FeedbackBubble.vue";
+import FeedbackBubble from "../components/Home/FeedbackBubble.vue";
 
 import MobileMenuComponent from "../components/MobileMenuComponent.vue";//添加这个竖屏版本的菜单
 import { Menu as Expand } from '@element-plus/icons-vue'; // 确保导入了 Rank

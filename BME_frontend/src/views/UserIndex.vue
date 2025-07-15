@@ -1,6 +1,5 @@
 <script>
 import UserIndexComponent from "../components/User/UserIndexComponent.vue";
-import AdminindexComponent from "../components/AdminindexComponent.vue";
 import PageFooterComponent from "../components/PageFooterComponent.vue";
 import MenuComponent from "../components/MenuComponent.vue";
 import api from '../api';
