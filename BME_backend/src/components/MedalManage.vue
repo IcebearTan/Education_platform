@@ -144,7 +144,6 @@ const handleDelete = async (row) => {
 const handleSubmit = async () => {
   try {
     if (action.value === 'add') {
-      // 新增勋章
       const response = await api({
         url: '/medal/create',
         method: 'post',
@@ -205,10 +204,6 @@ const filteredWallMedals = computed(() => {
     : medals.value.filter(medal => medal.Medal_Tag === currentCategory.value);
   return filtered;
 });
-
-const grantDialogVisible = ref(false);
-const grantStudentId = ref('');
-const grantMedal = ref(null);
 
 const openGrantDialog = (medal) => {
   grantMedal.value = medal;
