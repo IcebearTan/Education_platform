@@ -1,13 +1,13 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import api from '../api';
+import api from '../../api';
 
 import UpdateAnnouncement from './UpdateAnnouncement.vue';
 import HeroSection from './HeroSection.vue';
 import MainContent from './MainContent.vue';
 import SidebarContent from './SidebarContent.vue';
-import DailyAttendence from './Attendence/DailyAttendence.vue';
+import DailyAttendence from '../Attendence/DailyAttendence.vue';
 
 // 定义响应式数据
 const articles = ref([]);

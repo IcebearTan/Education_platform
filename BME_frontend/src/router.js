@@ -1,9 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router';
 
-// import UserIndexComponent from './components/User/UserIndexComponent.vue';
-import AdminindexComponent from "./components/AdminindexComponent.vue";
-
-import HomePage from './components/HomePage.vue';
+import HomePage from './components/Home/HomePage.vue';
 import StudyDetailsComponent from './components/Course/StudyDetailsComponent.vue'
 import StudyComponent from './components/Course/StudyComponent.vue'
 import ExamListComponent from './components/ExamListComponent.vue'

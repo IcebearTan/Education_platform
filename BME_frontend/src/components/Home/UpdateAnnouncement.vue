@@ -45,7 +45,7 @@
   
   <script setup>
   import { ref, onMounted, computed, onUnmounted } from 'vue';
-  import { getVersionInfo } from '../config/version.js';
+  import { getVersionInfo } from '../../config/version.js';
   
   const dialogVisible = ref(false);
   const dontShowAgain = ref(false);

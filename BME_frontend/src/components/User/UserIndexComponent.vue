@@ -9,7 +9,7 @@ import api from '../../api'
 import CalendarComponent from './CalendarComponent.vue'
 import UserActivityComponent from './UserActivityComponent.vue'
 import UserIndexGroupComponent from './UserIndexGroupComponent.vue'
-import SeatLayoutComponent from '../SeatLayoutComponent.vue'
+// import SeatLayoutComponent from '../SeatLayoutComponent.vue'
 
 const User_Info = ref({})
 const router = useRouter()

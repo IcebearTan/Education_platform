@@ -84,7 +84,7 @@
 import { ref, reactive } from 'vue'
 import { ElDialog, ElForm, ElFormItem, ElInput, ElButton, ElUpload, ElIcon, ElMessage, ElMessageBox } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
-import api from '../api'
+import api from '../../api'
 
 // 响应式数据
 const bubbleText = ref('报个Bug')
