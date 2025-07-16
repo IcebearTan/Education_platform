@@ -44,6 +44,53 @@ const User_Avatar = ref('');
 
 const token = localStorage.getItem('token')
 const isLogin = ref(false)
+
+// 用户角色状态
+const hasTeachingRole = ref(false)
+const hasStudentRole = ref(false)
+
+// 检查用户角色，决定显示哪些菜单项
+const checkUserRoles = async () => {
+    try {
+        const response = await api.get('/user/group')
+        
+        if (response.data.code === 200) {
+            const currentUserId = store.state.user?.User_Id
+            if (!currentUserId) return
+            
+            const userId = parseInt(currentUserId)
+            
+            const allGroups = [
+                ...(response.data.project_group || []),
+                ...(response.data.study_group || [])
+            ]
+            
+            const managedGroups = allGroups.filter(group => group.teacher_id === userId)
+            const participatedGroups = allGroups.filter(group => 
+                group.students && group.students.some(student => student.Student_Id === userId)
+            )
+            
+            // 设置用户具有的角色
+            hasTeachingRole.value = managedGroups.length > 0
+            hasStudentRole.value = participatedGroups.length > 0 || managedGroups.length > 0 // 导师也能看到自己的小组
+        }
+    } catch (error) {
+        console.error('检查用户角色失败:', error)
+        hasTeachingRole.value = false
+        hasStudentRole.value = true // 默认显示学习模式
+    }
+}
+
+// 跳转到我的小组（学习视角）
+const handleMyGroups = () => {
+    router.push('/user-center/study-groups')
+}
+
+// 跳转到教学管理
+const handleTeachingGroups = () => {
+    router.push('/user-center/teaching-management')
+}
+
 const fetchUserInfo = async () => {
   try {
     const response = await api({
@@ -61,6 +108,7 @@ const fetchUserInfo = async () => {
     localStorage.removeItem('token')
   }
 }
+
 const publicRoutes = ['/', '/home', '/article', '/register', '/login'];
 const checkLogin = () => {
     api({
@@ -142,11 +190,20 @@ const handleNotificationClick = () => {
 onMounted(() => {
     if (token) {
         checkLogin()
+        // 检查用户角色，决定显示哪些菜单项
+        checkUserRoles()
     } else {
         isLogin.value = false
         // 未登录时直接展示登录/注册
         User_Avatar.value = 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png'
     }
+    
+    // 监听路由变化，更新角色状态
+    router.afterEach(() => {
+        if (token) {
+            checkUserRoles()
+        }
+    })
 })
 
 const onClickOutside = () => {
@@ -171,14 +228,8 @@ const handleUserInfo = () => {
 }
 
 const handleUserGroup = () => {
-    if (router.currentRoute.value.path != '/user-center/my-groups') {
-        setTimeout(() => {
-            window.location.reload()
-        }, 200)
-        router.push('/user-center/my-groups')
-    }else {
-        window.location.reload()
-    }
+    // 默认跳转到我的小组（学习视角）
+    handleMyGroups()
 }
 </script>
 
@@ -258,12 +309,20 @@ const handleUserGroup = () => {
                                 <span style="margin-left: 10px;" >账户设置</span>
                                 
                             </li>
-                            <li class="popli" role="none" @click="handleUserGroup()">
+                            <!-- 学习小组：显示所有参与的学习小组 -->
+                            <li class="popli" role="none" @click="handleMyGroups()" v-if="hasStudentRole">
                                 <el-icon>
                                     <DataLine />
                                 </el-icon>
-                                <span style="margin-left: 10px;" >我的小组</span>
+                                <span style="margin-left: 10px;" >学习小组</span>
                                 
+                            </li>
+                            <!-- 教学管理：只显示管理的小组 -->
+                            <li class="popli" role="none" @click="handleTeachingGroups()" v-if="hasTeachingRole">
+                                <el-icon>
+                                    <DataLine />
+                                </el-icon>
+                                <span style="margin-left: 10px;" >教学管理</span>
                             </li>
                             <li class="popli-exit" role="none" @click="logOut()">
                                 <el-icon>

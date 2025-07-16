@@ -97,7 +97,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { Back, MoreFilled } from '@element-plus/icons-vue'
@@ -112,7 +112,40 @@ import TaskDetailComponent from './TaskDetailComponent.vue'
 const router = useRouter()
 const route = useRoute()
 const store = useStore()
-const currentTab = ref('task')
+
+// 定义组件props
+const props = defineProps({
+  groupId: {
+    type: [String, Number],
+    default: null
+  },
+  groupName: {
+    type: String,
+    default: ''
+  },
+  taskId: {
+    type: [String, Number],
+    default: null
+  },
+  homeworkId: {
+    type: [String, Number],
+    default: null
+  },
+  tab: {
+    type: String,
+    default: 'task'
+  },
+  viewMode: {
+    type: String,
+    default: 'student',
+    validator: (value) => ['student', 'teacher'].includes(value)
+  }
+})
+
+const currentTab = ref(props.tab)
+
+// 根据 viewMode 确定用户角色，优先级：viewMode > 动态判断
+const userRole = ref(props.viewMode || 'student')
 
 // 任务详情相关状态
 const showTaskDetail = ref(false)
@@ -123,11 +156,16 @@ const currentTaskDetail = ref({})
 const studentGroupTaskRef = ref(null)
 
 // 用户角色管理（根据当前小组中的身份动态判断）
-const userRole = ref('student')
 const currentGroupData = ref(null)
 
 // 根据用户在当前小组中的身份确定角色
 const determineUserRoleInGroup = async () => {
+  // 如果有明确的 viewMode，优先使用
+  if (props.viewMode) {
+    userRole.value = props.viewMode
+    return
+  }
+  
   try {
     // 获取当前用户的所有小组信息
     const response = await api.get('/user/group')
@@ -245,7 +283,12 @@ const noticeForm = ref({
 
 // 解析 group_id 并动态获取标题
 const groupTitle = computed(() => {
-  // 优先使用路由参数中的group_name
+  // 优先使用props中的groupName
+  if (props.groupName) {
+    return props.groupName
+  }
+  
+  // 其次使用路由参数中的group_name（向后兼容）
   if (route.query.group_name) {
     return route.query.group_name
   }
@@ -260,7 +303,15 @@ const groupTitle = computed(() => {
 })
 
 // 获取实际的 groupId
-const groupId = computed(() => route.query.group_id || route.params.groupId || '2')
+const groupId = computed(() => {
+  // 优先使用props中的groupId
+  if (props.groupId) {
+    return props.groupId
+  }
+  
+  // 其次使用路由参数（向后兼容）
+  return route.query.group_id || route.params.groupId || '2'
+})
 
 // 动态小组标题（可后续对接API或props）
 const defaultGroupTitle = ref('C语言程序设计')
@@ -414,10 +465,46 @@ function mapPriority(val) {
 //   }
 // }
 
-onMounted(() => {
+onMounted(async () => {
   // 组件挂载时确定用户在当前小组中的身份
-  determineUserRoleInGroup()
+  await determineUserRoleInGroup()
+  
+  // 处理从消息跳转过来的参数
+  await handleNavigationParams()
 })
+
+// 处理导航参数的函数
+const handleNavigationParams = async () => {
+  // 如果有taskId参数，自动跳转到任务详情
+  if (props.taskId || route.query.taskId) {
+    const targetTaskId = props.taskId || route.query.taskId
+    
+    // 确保当前tab是task
+    currentTab.value = 'task'
+    
+    // 等待StudentGroupTask组件加载完成
+    await nextTick()
+    
+    // 如果有homeworkId，说明需要定位到具体的作业
+    if (props.homeworkId || route.query.homeworkId) {
+      const targetHomeworkId = props.homeworkId || route.query.homeworkId
+      
+      // 模拟点击任务卡片，跳转到任务详情页面
+      handleGoToTaskDetail({
+        taskId: targetTaskId,
+        taskDetail: { id: targetTaskId }
+      })
+      
+      // 可以在这里添加高亮指定作业的逻辑
+      console.log(`定位到任务 ${targetTaskId} 的作业 ${targetHomeworkId}`)
+    } else {
+      // 只定位到任务列表中的指定任务
+      if (studentGroupTaskRef.value && studentGroupTaskRef.value.highlightTask) {
+        studentGroupTaskRef.value.highlightTask(targetTaskId)
+      }
+    }
+  }
+}
 
 // 监听groupId变化，重新判断用户身份
 watch(

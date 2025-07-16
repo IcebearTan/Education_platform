@@ -20,6 +20,6 @@ export default defineConfig({
   },
   server: {
     host: '0.0.0.0',
-    port: 8080, // 你想要的端口号
+    port: 8081, // 你想要的端口号
   },
 })

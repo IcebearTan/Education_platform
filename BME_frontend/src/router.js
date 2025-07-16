@@ -22,7 +22,7 @@ import MedalWallComponent from './components/User/MedalWallComponent.vue';
 import MedalView from './views/MedalView.vue';
 import NotificationView from './views/NotificationView.vue';
 import StudentGroupsComponent from './components/StudentGroup/StudentGroupsComponent.vue';
-import StudentGroupsDetails from './components/StudentGroup/StudentGroupsDetails.vue';
+import StudyGroupDetails from './components/StudentGroup/StudyGroupDetails.vue';
 import StudentGroupRank from './components/StudentGroup/StudentGroupRank.vue';
 import StudentGroupTask from './components/StudentGroup/StudentGroupTask.vue';
 import MyFeedbacksComponent from './components/User/MyFeedbacksComponent.vue';
@@ -80,20 +80,81 @@ const router = createRouter({
                     name: 'user-info',
                     component: UserInfoComponent,
                 },
+                // 学习小组：学生视角查看参与的小组
                 {
-                    path: '/user-center/my-groups',
-                    name: 'my-groups',
+                    path: '/user-center/study-groups',
+                    name: 'study-groups',
                     component: StudentGroupsComponent,
+                    meta: { role: 'student', title: '学习小组' }
+                },
+                // 教学管理：导师视角管理小组
+                {
+                    path: '/user-center/teaching-management',
+                    name: 'teaching-management',
+                    component: () => import('./components/Teacher/TeachingManagementComponent.vue'),
+                    meta: { role: 'teacher', title: '教学管理' }
                 },
                 {
                     path: '/user-center/my-feedbacks',
                     name: 'my-feedbacks',
                     component: MyFeedbacksComponent,
                 },
+                // 学习小组详情页面
+                {
+                    path: '/user-center/study-group/:groupId',
+                    name: 'study-group-details',
+                    component: StudyGroupDetails,
+                    props: route => ({
+                        groupId: route.params.groupId,
+                        groupName: route.query.group_name,
+                        taskId: route.query.taskId,
+                        homeworkId: route.query.homeworkId,
+                        tab: route.query.tab || 'tasks',  // 默认显示任务页面
+                        viewMode: 'student'
+                    }),
+                    meta: { role: 'student' }
+                },
+                // 教学管理详情页面
+                {
+                    path: '/user-center/teaching/:groupId',
+                    name: 'teaching-group-management',
+                    component: () => import('./components/Teacher/TeachingGroupDetails.vue'),
+                    props: route => ({
+                        groupId: route.params.groupId,
+                        groupName: route.query.group_name,
+                        taskId: route.query.taskId,
+                        homeworkId: route.query.homeworkId,
+                        tab: route.query.tab || 'task',
+                        viewMode: 'teacher'
+                    }),
+                    meta: { role: 'teacher' }
+                },
+                // 向后兼容的重定向
+                {
+                    path: '/user-center/my-groups',
+                    name: 'my-groups-redirect',
+                    redirect: '/user-center/study-groups'
+                },
+                {
+                    path: '/user-center/teaching-groups',
+                    name: 'teaching-groups-redirect',
+                    redirect: '/user-center/teaching-management'
+                },
+                // 保持向后兼容的旧路由
                 {
                     path: '/user-center/student-group-details',
-                    name: 'student-group-details',
-                    component: StudentGroupsDetails,
+                    name: 'student-group-details-legacy',
+                    redirect: to => {
+                        return {
+                            name: 'study-group-details',
+                            params: { groupId: to.query.group_id },
+                            query: {
+                                group_name: to.query.group_name,
+                                taskId: to.query.taskId,
+                                homeworkId: to.query.homeworkId
+                            }
+                        }
+                    }
                 }
             ]
         },

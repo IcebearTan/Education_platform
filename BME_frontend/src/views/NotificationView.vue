@@ -179,6 +179,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { useStore } from 'vuex'
 import { ElMessage } from 'element-plus'
 import { 
   Bell, Document, User, Warning, InfoFilled, Notification, 
@@ -188,6 +189,7 @@ import api from '../api'
 import MenuComponent from '../components/MenuComponent.vue'
 
 const router = useRouter()
+const store = useStore()
 
 // 响应式数据
 const activeTab = ref('all')
@@ -365,7 +367,10 @@ const getMessageTypeLabel = (type) => {
 }
 
 const handleMessageClick = async (message) => {
+  // 先标记为已读
   await markAsRead(message.id)
+  // 然后进行跳转
+  handleMessageNavigation(message)
 }
 
 const markAsRead = async (messageId) => {
@@ -401,14 +406,135 @@ const markAllAsRead = async () => {
   }
 }
 
-const handleMessageNavigation = (message) => {
+const handleMessageNavigation = async (message) => {
   const { source_type, related_info_id } = message
   
   if (source_type === '2') { // 任务相关
-    router.push(`/user-center/my-groups?taskId=${related_info_id}`)
+    try {
+      // 通过任务ID获取对应的小组ID
+      const taskResponse = await api.get(`/task/detail?id=${related_info_id}`)
+      if (taskResponse.data.code === 200) {
+        const groupId = taskResponse.data.data.group_id
+        const groupName = taskResponse.data.data.group_name || '未知小组'
+        
+        // 判断用户在该小组中的身份，决定跳转到哪个视角
+        const userRole = await determineUserRoleInGroup(groupId)
+        
+        if (userRole === 'teacher') {
+          // 跳转到教学管理详情页面
+          router.push({
+            name: 'TeachingGroupDetails',
+            params: { id: groupId },
+            query: { 
+              group_name: groupName,
+              taskId: related_info_id,
+              tab: 'tasks'
+            }
+          })
+        } else {
+          // 跳转到学习小组详情页面
+          router.push({
+            name: 'StudyGroupDetails',
+            params: { id: groupId },
+            query: { 
+              group_name: groupName,
+              taskId: related_info_id,
+              tab: 'tasks'
+            }
+          })
+        }
+      } else {
+        ElMessage.error('无法获取任务详情')
+        // 默认跳转到我的小组
+        router.push('/user-center/study-groups')
+      }
+    } catch (error) {
+      console.error('获取任务详情失败:', error)
+      router.push('/user-center/study-groups')
+    }
   } else if (source_type === '1') { // 作业相关
-    router.push(`/user-center/my-groups?homeworkId=${related_info_id}`)
+    try {
+      // 通过作业ID获取对应的任务和小组信息
+      const homeworkResponse = await api.get(`/homework/detail?id=${related_info_id}`)
+      if (homeworkResponse.data.code === 200) {
+        const taskId = homeworkResponse.data.data.task_id
+        const groupId = homeworkResponse.data.data.group_id
+        const groupName = homeworkResponse.data.data.group_name || '未知小组'
+        
+        // 判断用户在该小组中的身份
+        const userRole = await determineUserRoleInGroup(groupId)
+        
+        if (userRole === 'teacher') {
+          // 跳转到教学管理详情页面
+          router.push({
+            name: 'TeachingGroupDetails',
+            params: { id: groupId },
+            query: { 
+              group_name: groupName,
+              taskId: taskId,
+              homeworkId: related_info_id,
+              tab: 'tasks'
+            }
+          })
+        } else {
+          // 跳转到学习小组详情页面
+          router.push({
+            name: 'StudyGroupDetails',
+            params: { id: groupId },
+            query: { 
+              group_name: groupName,
+              taskId: taskId,
+              homeworkId: related_info_id,
+              tab: 'tasks'
+            }
+          })
+        }
+      } else {
+        ElMessage.error('无法获取作业详情')
+        router.push('/user-center/study-groups')
+      }
+    } catch (error) {
+      console.error('获取作业详情失败:', error)
+      router.push('/user-center/study-groups')
+    }
+  } else if (source_type === '3') { // 通知相关
+    // 跳转到通知分类
+    router.push(`/notifications?type=notice&id=${related_info_id}`)
+  } else {
+    // 其他类型默认跳转到用户中心
+    router.push('/user-center')
   }
+}
+
+// 判断用户在指定小组中的身份
+const determineUserRoleInGroup = async (groupId) => {
+  try {
+    const response = await api.get('/user/group')
+    if (response.data.code === 200) {
+      const currentUserId = store.state.user?.User_Id
+      if (!currentUserId) return 'student'
+      
+      const targetGroupId = parseInt(groupId)
+      
+      // 在所有小组中查找目标小组
+      const allGroups = [
+        ...(response.data.project_group || []),
+        ...(response.data.study_group || [])
+      ]
+      
+      const targetGroup = allGroups.find(group => group.group_id === targetGroupId)
+      
+      if (targetGroup && targetGroup.teacher_id === parseInt(currentUserId)) {
+        return 'teacher'
+      }
+      
+      return 'student'
+    }
+  } catch (error) {
+    console.error('判断用户角色失败:', error)
+  }
+  
+  return 'student' // 默认返回学生身份
 }
 
 const formatTime = (timeStr) => {

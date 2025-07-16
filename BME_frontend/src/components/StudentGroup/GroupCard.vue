@@ -40,6 +40,11 @@ const props = defineProps({
     type: Object,
     required: true,
     default: () => ({})
+  },
+  viewMode: {
+    type: String,
+    default: 'student',
+    validator: (value) => ['student', 'teacher'].includes(value)
   }
 });
 
@@ -78,13 +83,13 @@ onBeforeMount(() => {
 // 跳转到小组详情页的方法
 const router = useRouter();
 const toGroupDetails = () => {
-  // 传递实际的 group_id 和 group_name
+  // 根据视角模式选择不同的路由
+  const routeName = props.viewMode === 'teacher' ? 'teaching-group-details' : 'group-details'
+  
   router.push({
-    path: '/user-center/student-group-details',
-    query: {
-      group_id: props.group.group_id, // 传递实际的小组ID
-      group_name: props.group.group_name // 优先使用group_name，备选title
-    }
+    name: routeName,
+    params: { groupId: props.group.group_id },
+    query: { group_name: props.group.group_name }
   })
 }
 
