@@ -20,7 +20,7 @@
         </div>
       </div>
       
-      <div class="personal-cards">
+      <!-- <div class="personal-cards">
         <div class="personal-card">
           <div class="card-icon">📚</div>
           <div class="card-content">
@@ -42,13 +42,68 @@
             <div class="card-label">学习时长</div>
           </div>
         </div>
-        <div class="personal-card performance-card">
-          <div class="card-icon">🎯</div>
+        <div class="personal-card">
+          <div class="card-icon">�</div>
           <div class="card-content">
-            <div class="card-value performance-level" :class="getPerformanceClass(currentUserStats.progress || 0)">
-              {{ getPerformanceLevel(currentUserStats.progress || 0) }}
+            <div class="card-value">{{ currentUserStats.streak || 0 }}天</div>
+            <div class="card-label">连续学习</div>
+          </div>
+        </div>
+      </div> -->
+      
+      <!-- 学习进度仪表盘 -->
+      <div class="progress-dashboard">
+        <div class="dashboard-header">
+          <!-- <h5>学习进度仪表盘</h5> -->
+          <span class="progress-percentage">{{ currentUserStats.progress || 0 }}%</span>
+        </div>
+        <div class="circular-progress">
+          <svg class="progress-ring" width="120" height="120">
+            <circle
+              class="progress-ring-background"
+              stroke="#e6f7ff"
+              stroke-width="8"
+              fill="transparent"
+              r="52"
+              cx="60"
+              cy="60"
+            />
+            <circle
+              class="progress-ring-circle"
+              stroke="#1890ff"
+              stroke-width="8"
+              stroke-linecap="round"
+              fill="transparent"
+              r="52"
+              cx="60"
+              cy="60"
+              :stroke-dasharray="326.73"
+              :stroke-dashoffset="326.73 - (326.73 * (currentUserStats.progress || 0)) / 100"
+            />
+          </svg>
+          <div class="progress-center">
+            <div class="progress-value">{{ currentUserStats.progress || 0 }}%</div>
+            <div class="progress-label">总进度</div>
+          </div>
+        </div>
+        <div class="progress-details">
+          <div class="detail-item">
+            <span class="detail-label">本周目标</span>
+            <div class="detail-progress">
+              <div class="mini-progress-bar">
+                <div class="mini-progress-fill" :style="{ width: `${Math.min(100, ((currentUserStats.studyHours || 0) / 20) * 100)}%` }"></div>
+              </div>
+              <span class="detail-value">{{ currentUserStats.studyHours || 0 }}/20h</span>
             </div>
-            <div class="card-label">学习评级</div>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">本月任务</span>
+            <div class="detail-progress">
+              <div class="mini-progress-bar">
+                <div class="mini-progress-fill" :style="{ width: `${Math.min(100, ((currentUserStats.completedTasks || 0) / 30) * 100)}%` }"></div>
+              </div>
+              <span class="detail-value">{{ currentUserStats.completedTasks || 0 }}/30</span>
+            </div>
           </div>
         </div>
       </div>
@@ -96,52 +151,8 @@
             </div>
           </div>
           
-          <div class="performance-indicator">
-            <div class="performance-score" :class="getPerformanceClass(user.progress)">
-              {{ getPerformanceLevel(user.progress) }}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 我的每日学习进度 -->
-    <div class="daily-progress">
-      <h4>我的每日学习进度</h4>
-      <div class="progress-chart">
-        <div class="chart-placeholder">
-          <div class="progress-bars">
-            <div 
-              v-for="(day, index) in personalDailyProgress" 
-              :key="index"
-              class="progress-bar"
-              :style="{ height: `${day.percentage}%` }"
-              :title="`${day.date}: ${day.status === 'active' ? '活跃学习 ' + day.hours + '小时' : day.status === 'normal' ? '正常学习 ' + day.hours + '小时' : '未学习'}`"
-              :class="day.status"
-            >
-              <span class="bar-value" v-if="day.hours > 0">{{ day.hours }}h</span>
-            </div>
-          </div>
-          <div class="chart-labels">
-            <span v-for="(day, index) in personalDailyProgress" :key="index" class="label">
-              {{ day.dayName }}
-            </span>
-          </div>
-        </div>
-        
-        <!-- 学习状态说明 -->
-        <div class="progress-legend">
-          <div class="legend-item">
-            <div class="legend-color active"></div>
-            <span>活跃学习</span>
-          </div>
-          <div class="legend-item">
-            <div class="legend-color normal"></div>
-            <span>正常学习</span>
-          </div>
-          <div class="legend-item">
-            <div class="legend-color inactive"></div>
-            <span>未学习</span>
+          <div class="progress-indicator">
+            <div class="progress-percentage">{{ user.progress }}%</div>
           </div>
         </div>
       </div>
@@ -151,7 +162,7 @@
 
 <script setup>
 import { ref, onMounted, watch, computed } from 'vue'
-import { ElAvatar, ElProgress, ElSkeleton } from 'element-plus'
+import { ElAvatar, ElSkeleton } from 'element-plus'
 import api from '../../api'
 import { mockApiRequest } from '../../mock/config'
 
@@ -172,7 +183,6 @@ const isLoading = ref(false)
 const userAvatars = ref({})
 const defaultAvatarUrl = 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png'
 const currentUserStats = ref(null)
-const personalDailyProgress = ref([])
 
 // 获取用户头像
 const getUserAvatar = async (userId) => {
@@ -293,51 +303,10 @@ const getMockProgressData = () => {
     }
   }
 
-  // 生成个人每日学习进度数据
-  const personalProgressData = []
-  const today = new Date()
-  const dayNames = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
-  
-  for (let i = 6; i >= 0; i--) {
-    const date = new Date(today)
-    date.setDate(date.getDate() - i)
-    
-    const statusRandom = Math.random()
-    let status, hours, percentage
-    
-    if (statusRandom > 0.7) {
-      // 30% 概率未学习
-      status = 'inactive'
-      hours = 0
-      percentage = 0
-    } else if (statusRandom > 0.4) {
-      // 30% 概率活跃学习
-      status = 'active'
-      hours = Math.floor(Math.random() * 4) + 4 // 4-7小时
-      percentage = (hours / 8) * 100
-    } else {
-      // 40% 概率正常学习
-      status = 'normal'
-      hours = Math.floor(Math.random() * 3) + 1 // 1-3小时
-      percentage = (hours / 8) * 100
-    }
-    
-    personalProgressData.push({
-      date: date.toISOString().split('T')[0],
-      dayName: dayNames[date.getDay()],
-      status: status,
-      hours: hours,
-      percentage: percentage
-    })
-  }
-
   return Promise.resolve({
     data: {
       code: 200,
-      data: {
-        ...mockData,
-        personalDailyProgress: personalProgressData
-      }
+      data: mockData
     }
   })
 }
@@ -366,8 +335,8 @@ const fetchLearningProgress = async () => {
         let currentChapter = 0
         let currentSection = 0
         let latestCourse = null
-        let completedTasks = 0
-        let studyHours = 0
+        // let completedTasks = 0
+        // let studyHours = 0
         
         if (user.records && user.records.length > 0) {
           const maxProgressRecord = user.records.reduce((prev, current) => 
@@ -392,9 +361,12 @@ const fetchLearningProgress = async () => {
           }
           
           // 模拟其他统计数据
-          completedTasks = currentChapter * currentSection + Math.floor(Math.random() * 5)
-          studyHours = Math.floor(totalProgress * 0.8) + Math.floor(Math.random() * 20)
+          // completedTasks = currentChapter * currentSection + Math.floor(Math.random() * 5)
+          // studyHours = Math.floor(totalProgress * 0.8) + Math.floor(Math.random() * 20)
         }
+        
+        // 模拟连续学习天数
+        // const streak = Math.floor(Math.random() * 30) + 1
         
         return {
           id: user.user_id,
@@ -405,8 +377,9 @@ const fetchLearningProgress = async () => {
           courseName: latestCourse?.course_name || '未开始学习',
           chapterName: latestCourse?.chapter_name || '',
           sectionName: latestCourse?.section_name || '',
-          completedTasks: completedTasks,
-          studyHours: studyHours
+          // completedTasks: completedTasks,
+          // studyHours: studyHours,
+          // streak: streak
         }
       })
       
@@ -420,9 +393,6 @@ const fetchLearningProgress = async () => {
           currentUserStats.value = currentUserData
         }
       }
-      
-      // 设置个人每日学习进度
-      personalDailyProgress.value = response.data.data.personalDailyProgress || []
       
       // 获取所有学生的头像
       progressList.value.forEach(student => {
@@ -456,28 +426,28 @@ const getRankIcon = (index) => {
 }
 
 // 获取进度条颜色
-const getProgressColor = (progress) => {
-  if (progress >= 80) return '#67c23a'
-  if (progress >= 60) return '#e6a23c'
-  if (progress >= 40) return '#f56c6c'
-  return '#909399'
-}
+// const getProgressColor = (progress) => {
+//   if (progress >= 80) return '#67c23a'
+//   if (progress >= 60) return '#e6a23c'
+//   if (progress >= 40) return '#f56c6c'
+//   return '#909399'
+// }
 
 // 获取表现等级
-const getPerformanceLevel = (progress) => {
-  if (progress >= 90) return '优秀'
-  if (progress >= 75) return '良好'
-  if (progress >= 60) return '一般'
-  return '需努力'
-}
+// const getPerformanceLevel = (progress) => {
+//   if (progress >= 90) return '优秀'
+//   if (progress >= 75) return '良好'
+//   if (progress >= 60) return '一般'
+//   return '需努力'
+// }
 
 // 获取表现样式类
-const getPerformanceClass = (progress) => {
-  if (progress >= 90) return 'excellent'
-  if (progress >= 75) return 'good'
-  if (progress >= 60) return 'average'
-  return 'poor'
-}
+// const getPerformanceClass = (progress) => {
+//   if (progress >= 90) return 'excellent'
+//   if (progress >= 75) return 'good'
+//   if (progress >= 60) return 'average'
+//   return 'poor'
+// }
 
 onMounted(() => {
   fetchLearningProgress()
@@ -568,11 +538,6 @@ watch(() => props.groupId, (newGroupId) => {
   box-shadow: 0 2px 4px rgba(64, 158, 255, 0.1);
 }
 
-.personal-card.performance-card {
-  background: linear-gradient(135deg, #fff9e6 0%, #fff 100%);
-  border-color: #ffeaa7;
-}
-
 .card-icon {
   font-size: 20px;
   margin-right: 10px;
@@ -589,13 +554,119 @@ watch(() => props.groupId, (newGroupId) => {
   margin-bottom: 2px;
 }
 
-.card-value.performance-level {
-  font-size: 14px;
-}
-
 .card-label {
   font-size: 11px;
   color: #666;
+}
+
+.progress-dashboard {
+  margin-top: 20px;
+  padding: 20px;
+  background: linear-gradient(135deg, #fff 0%, #f8fafe 100%);
+  border-radius: 12px;
+  border: 1px solid #e1f0ff;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.dashboard-header h5 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+}
+
+.progress-percentage {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1890ff;
+}
+
+.circular-progress {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.progress-ring {
+  transform: rotate(-90deg);
+}
+
+.progress-ring-circle {
+  transition: stroke-dashoffset 0.35s;
+}
+
+.progress-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+
+.progress-value {
+  font-size: 24px;
+  font-weight: 600;
+  color: #1890ff;
+  line-height: 1;
+}
+
+.progress-label {
+  font-size: 12px;
+  color: #666;
+  margin-top: 4px;
+}
+
+.progress-details {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.detail-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.detail-label {
+  font-size: 13px;
+  color: #666;
+}
+
+.detail-progress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mini-progress-bar {
+  width: 60px;
+  height: 6px;
+  background: #e8f4fd;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.mini-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #1890ff, #40a9ff);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.detail-value {
+  font-size: 12px;
+  color: #1890ff;
+  font-weight: 500;
+  min-width: 45px;
 }
 
 .progress-ranking {
@@ -715,165 +786,43 @@ watch(() => props.groupId, (newGroupId) => {
   color: #666;
 }
 
-.performance-indicator {
+.progress-indicator {
   text-align: right;
 }
 
-.performance-score {
-  font-size: 12px;
-  padding: 2px 8px;
-  border-radius: 12px;
-  font-weight: 500;
-}
-
-.performance-score.excellent {
-  background: #f0f9ff;
-  color: #1890ff;
-}
-
-.performance-score.good {
-  background: #f6ffed;
-  color: #52c41a;
-}
-
-.performance-score.average {
-  background: #fff7e6;
-  color: #fa8c16;
-}
-
-.performance-score.poor {
-  background: #fff1f0;
-  color: #ff4d4f;
-}
-
-.daily-progress h4 {
+.progress-percentage {
   font-size: 16px;
   font-weight: 600;
-  color: #333;
-  margin: 0 0 16px 0;
-}
-
-.progress-chart {
-  background: #f8f9fa;
-  border-radius: 6px;
-  padding: 16px;
-}
-
-.chart-placeholder {
-  height: 120px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
-
-.progress-bars {
-  display: flex;
-  align-items: end;
-  justify-content: space-between;
-  height: 80px;
-  gap: 8px;
-}
-
-.progress-bar {
-  flex: 1;
-  border-radius: 4px 4px 0 0;
-  min-height: 20px;
-  position: relative;
-  display: flex;
-  align-items: end;
-  justify-content: center;
-  padding-bottom: 4px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.progress-bar.active {
-  background: linear-gradient(to top, #67c23a, #85ce61);
-}
-
-.progress-bar.active:hover {
-  background: linear-gradient(to top, #529b2e, #67c23a);
-  transform: scale(1.05);
-}
-
-.progress-bar.normal {
-  background: linear-gradient(to top, #409eff, #79bbff);
-}
-
-.progress-bar.normal:hover {
-  background: linear-gradient(to top, #337ecc, #409eff);
-  transform: scale(1.05);
-}
-
-.progress-bar.inactive {
-  background: linear-gradient(to top, #909399, #b4bccc);
-  min-height: 10px;
-}
-
-.progress-bar.inactive:hover {
-  background: linear-gradient(to top, #73767a, #909399);
-  transform: scale(1.05);
-}
-
-.bar-value {
-  font-size: 11px;
-  font-weight: 600;
-  color: white;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
-}
-
-.chart-labels {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 8px;
-}
-
-.label {
-  font-size: 12px;
-  color: #666;
-  text-align: center;
-  flex: 1;
-}
-
-.progress-legend {
-  display: flex;
-  justify-content: center;
-  gap: 20px;
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px solid #e8e8e8;
-}
-
-.legend-item {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  color: #666;
-}
-
-.legend-color {
-  width: 12px;
-  height: 12px;
-  border-radius: 2px;
-}
-
-.legend-color.active {
-  background: linear-gradient(135deg, #67c23a, #85ce61);
-}
-
-.legend-color.normal {
-  background: linear-gradient(135deg, #409eff, #79bbff);
-}
-
-.legend-color.inactive {
-  background: linear-gradient(135deg, #909399, #b4bccc);
+  color: #1890ff;
+  padding: 4px 12px;
+  background: linear-gradient(135deg, #e6f7ff, #f0f9ff);
+  border-radius: 16px;
+  border: 1px solid #bae7ff;
 }
 
 /* 响应式设计 */
 @media (max-width: 768px) {
   .personal-cards {
     grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .progress-dashboard {
+    padding: 16px;
+  }
+  
+  .dashboard-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .progress-ring {
+    width: 100px;
+    height: 100px;
+  }
+  
+  .progress-value {
+    font-size: 20px;
   }
   
   .progress-item {
@@ -885,11 +834,6 @@ watch(() => props.groupId, (newGroupId) => {
   .section-header {
     flex-direction: column;
     align-items: flex-start;
-    gap: 8px;
-  }
-  
-  .progress-legend {
-    flex-direction: column;
     gap: 8px;
   }
 }
