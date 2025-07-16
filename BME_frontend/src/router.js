@@ -20,6 +20,7 @@ import FindPasswordView from './views/FindPasswordView.vue'
 import MedalWallComponent from './components/User/MedalWallComponent.vue';
 
 import MedalView from './views/MedalView.vue';
+import NotificationView from './views/NotificationView.vue';
 import StudentGroupsComponent from './components/StudentGroup/StudentGroupsComponent.vue';
 import StudentGroupsDetails from './components/StudentGroup/StudentGroupsDetails.vue';
 import StudentGroupRank from './components/StudentGroup/StudentGroupRank.vue';
@@ -157,6 +158,11 @@ const router = createRouter({
                     component: MedalWallComponent,
                 }
             ]
+        },
+        {
+            path: '/notifications',
+            name: 'notifications',
+            component: NotificationView,
         },
     ]
 })

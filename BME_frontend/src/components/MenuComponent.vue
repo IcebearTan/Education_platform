@@ -1,8 +1,12 @@
 <script>
 import { useStore } from 'vuex'
-import { User } from '@element-plus/icons-vue'
+import { User, DataLine, Close } from '@element-plus/icons-vue'
+import NotificationComponent from './Notification/NotificationComponent.vue'
 
 export default {
+    components: {
+        NotificationComponent
+    },
     data() {
         return {
             activeIndex: "/",
@@ -29,6 +33,7 @@ import { ClickOutside as vClickOutside } from 'element-plus'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import api from '../api'
+import NotificationComponent from './Notification/NotificationComponent.vue'
 
 const buttonRef = ref()
 const popoverRef = ref()
@@ -127,6 +132,12 @@ const isSearchInputExpand = () => {
 
 const searchInputClass = ref('search-input')
 const searchInput = ref(null)
+const showNotificationHover = ref(false)
+
+// 处理消息点击事件
+const handleNotificationClick = () => {
+  router.push('/notifications')
+}
 
 onMounted(() => {
     if (token) {
@@ -200,6 +211,21 @@ const handleUserGroup = () => {
             />
         </div>
         
+        <!-- 消息提醒组件 -->
+        <el-menu-item v-if="isLogin" class="custom-menu-item notification-menu-item">
+            <div 
+              class="notification-wrapper"
+              @click="handleNotificationClick"
+              @mouseenter="showNotificationHover = true"
+              @mouseleave="showNotificationHover = false"
+            >
+              <NotificationComponent 
+                :show-hover="showNotificationHover"
+                @click-bell="handleNotificationClick"
+              />
+            </div>
+        </el-menu-item>
+        
         <el-menu-item v-if="isLogin" class="custom-menu-item">
             <div class="user-avatar" style="cursor: pointer;">
                 <el-popover
@@ -227,7 +253,7 @@ const handleUserGroup = () => {
                         <ul style="list-style: none; padding: 0; margin-bottom: 0;" role="none">
                             <li class="popli" role="none" @click="handleUserInfo()">
                                 <el-icon>
-                                    <user />
+                                    <User />
                                 </el-icon>
                                 <span style="margin-left: 10px;" >账户设置</span>
                                 
@@ -356,8 +382,22 @@ const handleUserGroup = () => {
   background-color: #ffffff !important;
   color: #777 !important;
   cursor: auto !important;
-  
 }
+
+.notification-menu-item {
+  padding: 0 10px !important;
+}
+
+.notification-wrapper {
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.notification-wrapper:hover {
+  background-color: rgba(64, 158, 255, 0.1);
+  border-radius: 4px;
+}
+
 .custom-link{
     text-decoration: none;
     transition: 0.3s;
