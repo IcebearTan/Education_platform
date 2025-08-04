@@ -496,6 +496,7 @@ const submitCheckCode = async (code) => {
           "check_code": code
         }
       });
+      console.log("签到响应:", res);
       if (res.status === 200) {
         ElMessage({
           type: 'success',
@@ -524,10 +525,18 @@ const submitCheckCode = async (code) => {
         })
       }
   } catch (error) {
-    ElMessage({
+    console.log("签到错误:", error);
+    if (error?.response?.status === 409) {
+      ElMessage({
       type: 'error',
-      message: error
+      message: error.response.data.error
     })
+    } else {
+      ElMessage({
+        type: 'error',
+        message: error?.response?.data?.error,
+      })
+    }
   }
 }
 const submitCheckOutCode = async (code) => {
@@ -539,6 +548,7 @@ const submitCheckOutCode = async (code) => {
           "check_code": code
         }
       });
+      console.log("签退响应:", res);
       if (res.status === 200) {
         ElMessage({
           type: 'success',
@@ -553,22 +563,30 @@ const submitCheckOutCode = async (code) => {
           type: 'error',
           message: '签退码已被使用',
         })
-      } else {
+      }
+      else if (res.code === 403){
+        ElMessage({
+          type: 'error',
+          message: '当前IP无权限进行操作',
+        })
+      } 
+      else {
         ElMessage({
           type: 'error',
           message: res.data?.message || res,
         })
       }
   } catch (error) {
+    console.log("签退错误:", error);
     if (error?.response?.status === 409) {
       ElMessage({
-        type: 'error',
-        message: '签退码已被使用',
-      })
+      type: 'error',
+      message: error.response.data.error
+    })
     } else {
       ElMessage({
         type: 'error',
-        message: error?.response?.data?.message || error,
+        message: error?.response?.data?.error,
       })
     }
   }
