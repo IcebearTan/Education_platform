@@ -73,7 +73,7 @@ nextTick(() => {
     loading.value = true
     setTimeout(() => {
         loading.value = false
-    }, 5000)
+    }, 1000)
 })
 
 onMounted(() => {
