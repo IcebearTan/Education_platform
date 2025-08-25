@@ -47,39 +47,36 @@
         <!-- 小组概览 -->
         <el-tab-pane label="小组概览" name="overview">
           <div class="overview-content">
-            <el-row :gutter="24">
-              <el-col :span="16">
-                <el-card title="小组介绍" class="info-card">
-                  <div class="group-description">
-                    <p v-if="groupInfo.description">{{ groupInfo.description }}</p>
-                    <p v-else class="no-description">暂无小组介绍</p>
-                  </div>
-                </el-card>
-                
-                <el-card title="最近活动" class="activity-card">
-                  <div class="activity-list">
-                    <div 
-                      v-for="activity in recentActivities" 
-                      :key="activity.id"
-                      class="activity-item"
-                    >
-                      <div class="activity-icon">
-                        <i :class="getActivityIcon(activity.type)"></i>
-                      </div>
-                      <div class="activity-content">
-                        <div class="activity-text">{{ activity.content }}</div>
-                        <div class="activity-time">{{ formatTime(activity.created_at) }}</div>
-                      </div>
+            <!-- 小组介绍 -->
+            <el-row :gutter="20">
+              <el-col :span="24">
+                <el-card class="info-card">
+                  <template #header>
+                    <div class="card-header">
+                      <span class="card-title">小组介绍</span>
                     </div>
-                    <div v-if="recentActivities.length === 0" class="no-activities">
-                      暂无最近活动
+                  </template>
+                  <div class="group-description">
+                    <p v-if="groupInfo.description" class="description-text">{{ groupInfo.description }}</p>
+                    <div v-else class="no-description">
+                      <el-icon class="no-data-icon"><Document /></el-icon>
+                      <span>暂无小组介绍</span>
                     </div>
                   </div>
                 </el-card>
               </el-col>
-              
-              <el-col :span="8">
-                <el-card title="小组成员" class="members-card">
+            </el-row>
+            
+            <!-- 小组成员 -->
+            <el-row :gutter="20" style="margin-top: 20px;">
+              <el-col :span="24">
+                <el-card class="members-card">
+                  <template #header>
+                    <div class="card-header">
+                      <span class="card-title">小组成员</span>
+                      <el-tag type="info" size="small">{{ (groupInfo.students?.length || 0) + (groupInfo.teacher_name ? 1 : 0) }}人</el-tag>
+                    </div>
+                  </template>
                   <div class="members-list">
                     <!-- 导师信息 -->
                     <div v-if="groupInfo.teacher_name" class="member-item teacher">
@@ -92,13 +89,19 @@
                       </el-avatar>
                       <div class="member-info">
                         <div class="member-name">{{ groupInfo.teacher_name }}</div>
-                        <div class="member-role">导师</div>
+                        <div class="member-role teacher-role">
+                          <el-icon><User /></el-icon>
+                          <span>导师</span>
+                        </div>
+                      </div>
+                      <div class="member-status">
+                        <el-tag type="warning" size="small">导师</el-tag>
                       </div>
                     </div>
                     
                     <!-- 学生列表 -->
                     <div 
-                      v-for="student in groupInfo.students" 
+                      v-for="(student, index) in groupInfo.students" 
                       :key="student.Student_Id"
                       class="member-item student"
                     >
@@ -111,11 +114,20 @@
                       </el-avatar>
                       <div class="member-info">
                         <div class="member-name">{{ student.Student }}</div>
-                        <div class="member-role">学生</div>
+                        <div class="member-role student-role">
+                          <el-icon><UserFilled /></el-icon>
+                          <span>学生</span>
+                        </div>
                       </div>
-                      <div class="member-actions" v-if="currentUserRole === 'teacher'">
-                        <el-button size="small" type="text">查看进度</el-button>
+                      <div class="member-status">
+                        <el-tag type="success" size="small">成员</el-tag>
                       </div>
+                    </div>
+                    
+                    <!-- 无成员提示 -->
+                    <div v-if="!groupInfo.teacher_name && (!groupInfo.students || groupInfo.students.length === 0)" class="no-members">
+                      <el-icon class="no-data-icon"><UserFilled /></el-icon>
+                      <span>暂无成员信息</span>
                     </div>
                   </div>
                 </el-card>
@@ -206,6 +218,7 @@
 import { ref, computed, onBeforeMount } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import { Document, User, UserFilled } from '@element-plus/icons-vue'
 import api from '../../api'
 import { 
   mockGroupData, 
@@ -231,7 +244,6 @@ const router = useRouter()
 
 const activeTab = ref('tasks') // 默认显示任务页面
 const groupInfo = ref({})
-const recentActivities = ref([])
 const tasks = ref([])
 const taskFilter = ref('all')
 const learningProgress = ref({
@@ -295,21 +307,6 @@ const getGroupTasks = async () => {
     ElMessage.success('任务列表加载成功')
   } catch (error) {
     console.error('获取任务列表失败:', error)
-  }
-}
-
-const getRecentActivities = async () => {
-  try {
-    const response = await mockApiRequest(
-      // 真实API调用
-      () => api.get(`/user/group/${route.params.groupId}/activities`),
-      // Mock响应
-      () => mockApiResponses.getGroupActivities(route.params.groupId)
-    )
-    
-    recentActivities.value = response.data || response
-  } catch (error) {
-    console.error('获取活动记录失败:', error)
   }
 }
 
@@ -385,16 +382,6 @@ const viewTaskDetail = (task) => {
   handleTaskClick(task)
 }
 
-const getActivityIcon = (type) => {
-  const iconMap = {
-    'task_create': 'el-icon-document-add',
-    'task_complete': 'el-icon-check',
-    'member_join': 'el-icon-user',
-    'file_upload': 'el-icon-upload'
-  }
-  return iconMap[type] || 'el-icon-info'
-}
-
 const getTaskStatusType = (status) => {
   const typeMap = {
     'in_progress': 'warning',
@@ -414,10 +401,6 @@ const getTaskStatusText = (status) => {
   return textMap[status] || '未知'
 }
 
-const formatTime = (time) => {
-  return new Date(time).toLocaleString()
-}
-
 const formatDate = (date) => {
   return new Date(date).toLocaleDateString()
 }
@@ -429,7 +412,6 @@ onBeforeMount(async () => {
   }
   
   await getGroupDetails()
-  await getRecentActivities()
   
   if (activeTab.value === 'tasks') {
     await getGroupTasks()
@@ -533,69 +515,158 @@ onBeforeMount(async () => {
 }
 
 /* 概览页面样式 */
+.overview-content {
+  padding: 20px 0;
+}
 
 .info-card,
-.activity-card,
 .members-card {
   margin-bottom: 20px;
-  border-radius: 6px;
+  border-radius: 8px;
   border: 1px solid #e8e8e8;
-  box-shadow: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: box-shadow 0.3s ease;
+}
+
+.info-card:hover,
+.members-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.card-title {
+  font-weight: 600;
+  color: #333;
+  font-size: 16px;
 }
 
 .group-description {
   color: #666;
   line-height: 1.6;
   font-size: 14px;
+  min-height: 60px;
 }
 
-.no-description {
-  color: #999;
-  font-style: italic;
-  font-size: 14px;
-}
-
-.activity-list {
-  max-height: 400px;
-  overflow-y: auto;
-}
-
-.activity-item {
-  display: flex;
-  align-items: flex-start;
+.description-text {
+  margin: 0;
   padding: 12px 0;
-  border-bottom: 1px solid #f0f0f0;
 }
 
-.activity-item:hover {
-  background-color: #f9f9f9;
-}
-
-.activity-icon {
-  width: 32px;
-  height: 32px;
-  background: #e8f4fd;
-  border-radius: 50%;
+.no-description,
+.no-members {
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-direction: column;
+  color: #999;
+  font-size: 14px;
+  padding: 40px 20px;
+  text-align: center;
+  gap: 8px;
+}
+
+.no-data-icon {
+  font-size: 32px;
+  color: #d9d9d9;
+  margin-bottom: 8px;
+}
+
+.members-list {
+  max-height: 400px;
+  overflow-y: auto;
+  padding: 8px 0;
+}
+
+.member-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  transition: all 0.3s ease;
+  background: #fafafa;
+  border: 1px solid #f0f0f0;
+}
+
+.member-item:hover {
+  background: #f0f7ff;
+  border-color: #d6e4ff;
+  transform: translateY(-1px);
+}
+
+.member-item:last-child {
+  margin-bottom: 0;
+}
+
+.member-item.teacher {
+  background: linear-gradient(135deg, #fff7e6, #fff2e6);
+  border: 1px solid #ffd591;
+  position: relative;
+}
+
+.member-item.teacher::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: #fa8c16;
+  border-radius: 2px 0 0 2px;
+}
+
+.member-avatar {
+  flex-shrink: 0;
+  border: 2px solid #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   margin-right: 12px;
-  color: #409eff;
 }
 
-.activity-content {
+.member-item.teacher .member-avatar {
+  border-color: #fa8c16;
+}
+
+.member-info {
   flex: 1;
+  min-width: 0;
 }
 
-.activity-text {
+.member-name {
+  font-weight: 500;
   color: #333;
   margin-bottom: 4px;
   font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.activity-time {
+.member-role {
   font-size: 12px;
-  color: #999;
+  color: #666;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.teacher-role {
+  color: #fa8c16;
+  font-weight: 500;
+}
+
+.student-role {
+  color: #52c41a;
+}
+
+.member-status {
+  flex-shrink: 0;
+  margin-left: 8px;
 }
 
 .members-list {

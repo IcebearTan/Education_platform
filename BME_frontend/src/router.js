@@ -124,7 +124,7 @@ const router = createRouter({
                         groupName: route.query.group_name,
                         taskId: route.query.taskId,
                         homeworkId: route.query.homeworkId,
-                        tab: route.query.tab || 'task',
+                        tab: route.query.tab || 'tasks',
                         viewMode: 'teacher'
                     }),
                     meta: { role: 'teacher' }

@@ -32,6 +32,14 @@
       </div>
 
       <div class="content-tabs">
+        <!-- 调试信息 -->
+        <!-- <div style="background: #f0f9ff; padding: 10px; margin-bottom: 16px; border-radius: 4px; font-size: 12px;">
+          <p>调试信息 - TeachingGroupDetails组件</p>
+          <p>当前activeTab: {{ activeTab }}</p>
+          <p>GroupId: {{ groupId }}</p>
+          <p>GroupData: {{ groupData ? '已加载' : '未加载' }}</p>
+        </div> -->
+        
         <el-tabs v-model="activeTab" @tab-change="handleTabChange">
           <el-tab-pane label="任务管理" name="tasks">
             <TeachingTaskManagement 
@@ -189,6 +197,8 @@ const refreshData = async () => {
 
 const fetchGroupData = async () => {
   try {
+    console.log('开始获取小组数据，groupId:', props.groupId)
+    
     const response = await api.get('/user/group')
     if (response.data.code === 200) {
       const allGroups = [
@@ -203,15 +213,34 @@ const fetchGroupData = async () => {
         if (!group.group_name && group.title) {
           group.group_name = group.title
         }
+        console.log('找到小组数据:', groupData.value)
+      } else {
+        console.log('未找到对应的小组，使用默认数据')
+        // 如果没找到小组，使用默认数据
+        groupData.value = {
+          group_id: props.groupId,
+          group_name: props.groupName || '教学小组',
+          group_type: 'study'
+        }
       }
     }
   } catch (error) {
     console.error('获取小组数据失败:', error)
-    ElMessage.error('获取小组数据失败')
+    // API失败时使用默认数据
+    groupData.value = {
+      group_id: props.groupId,
+      group_name: props.groupName || '教学小组',
+      group_type: 'study'
+    }
+    ElMessage.warning('获取小组数据失败，使用默认数据')
   }
 }
 
 onMounted(() => {
+  console.log('TeachingGroupDetails 组件已挂载')
+  console.log('Props:', props)
+  console.log('当前tab:', activeTab.value)
+  
   fetchGroupData()
   
   // 如果有taskId参数，自动切换到任务管理标签

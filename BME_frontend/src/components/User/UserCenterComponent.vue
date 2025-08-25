@@ -1,12 +1,12 @@
 <!-- 使用vue3语法 -->
 <script setup>
 import api from '../../api';
-import { ref, onMounted, reactive } from 'vue'
+import { ref, onMounted, reactive, watch } from 'vue'
 import { ElMessage } from 'element-plus'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { useStore } from 'vuex';
 import { el } from 'element-plus/es/locales.mjs';
-import { DataLine, Message } from '@element-plus/icons-vue';
+import { DataLine, Message, Setting, User } from '@element-plus/icons-vue';
 
 const User_Info = ref({})
 const User_Avatar = ref('');
@@ -15,6 +15,7 @@ const activeIndex = ref('/')
 const loading = ref(true)
 
 const router = useRouter()
+const route = useRoute()
 const store = useStore()
 
 const fetchUserInfo = async () => {
@@ -78,14 +79,59 @@ const vertifyUserMode = () => {
       return false
     }
   }
-  
+  return false
 }
+
+// 计算当前应该高亮的菜单项
+const getActiveMenuIndex = (currentPath) => {
+  console.log('路由匹配检查 - 当前路径:', currentPath)
+  
+  // 处理teaching相关的路由 (包括 /user-center/teaching-management 和 /user-center/teaching/:groupId)
+  if (currentPath.startsWith('/user-center/teaching')) {
+    console.log('匹配到teaching路由')
+    return '/user-center/teaching-management'
+  }
+  
+  // 处理学习小组相关的路由 (包括study-groups、my-groups重定向和study-group详情页)
+  if (currentPath.startsWith('/user-center/study-groups') || 
+      currentPath.startsWith('/user-center/my-groups') ||
+      currentPath.includes('/user-center/study-group/')) {
+    console.log('匹配到my-groups路由 (study-groups/my-groups/study-group)')
+    return '/user-center/my-groups'
+  }
+  
+  // 处理user-info的子路由
+  if (currentPath.startsWith('/user-center/user-info')) {
+    console.log('匹配到user-info路由')
+    return '/user-center/user-info'
+  }
+  
+  // 处理my-feedbacks的子路由
+  if (currentPath.startsWith('/user-center/my-feedbacks')) {
+    console.log('匹配到my-feedbacks路由')
+    return '/user-center/my-feedbacks'
+  }
+  
+  console.log('未匹配到特定路由，返回原路径')
+  // 其他路由直接返回路径
+  return currentPath
+}
+
+// 监听路由变化，更新activeIndex
+watch(() => route.path, (newPath) => {
+  const activeMenuIndex = getActiveMenuIndex(newPath)
+  console.log('路由变化:', newPath, '-> 激活菜单:', activeMenuIndex)
+  activeIndex.value = activeMenuIndex
+}, { immediate: true })
 
 onMounted(() => {
   fetchUserInfo().then(() => {
     fetchUserAvatar();
   });
-  activeIndex.value = router.currentRoute.value.path;
+  // 使用当前路由路径设置activeIndex
+  const initialActiveIndex = getActiveMenuIndex(route.path)
+  console.log('组件挂载 - 当前路径:', route.path, '-> 激活菜单:', initialActiveIndex)
+  activeIndex.value = initialActiveIndex;
 })
 </script>
 
@@ -113,27 +159,28 @@ onMounted(() => {
         >
           <div class="functionSection">
             <el-menu-item index="/user-center/user-info" @click="router.push('/user-center/user-info')">
-              <el-icon><user /></el-icon>
+              <el-icon><User /></el-icon>
               <span>账户设置</span>
             </el-menu-item>
-            <el-menu-item index="/user-center/my-groups" @click="router.push('/user-center/my-groups')">
+            <el-menu-item index="/user-center/my-groups" @click="router.push('/user-center/study-groups')">
               <el-icon><DataLine /></el-icon>
               <span>我的小组</span>
             </el-menu-item>
-            <!-- <el-menu-item index="3">
-              <el-icon><document /></el-icon>
-              <span>学过什么</span>
-            </el-menu-item> -->
+            <!-- 导师专用菜单项 -->
+            <el-menu-item 
+              v-if="vertifyUserMode()" 
+              index="/user-center/teaching-management" 
+              @click="router.push('/user-center/teaching-management')"
+            >
+              <el-icon><Setting /></el-icon>
+              <span>管理小组</span>
+            </el-menu-item>
           </div>
           <div class="functionSection">
             <el-menu-item index="/user-center/my-feedbacks" @click="router.push('/user-center/my-feedbacks')">
               <el-icon><Message /></el-icon>
               <span>反馈记录</span>
             </el-menu-item>
-            <!-- <el-menu-item index="3">
-              <el-icon><document /></el-icon>
-              <span>学过什么</span>
-            </el-menu-item> -->
           </div>
         </el-menu>
       </div>
@@ -237,5 +284,49 @@ onMounted(() => {
 
   width: 90%;
   margin: auto;
+}
+
+/* 统一菜单项选中风格为淡蓝色 */
+.el-menu-vertical-demo .el-menu-item {
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.el-menu-vertical-demo .el-menu-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: linear-gradient(135deg, #409EFF 0%, #87CEEB 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.el-menu-vertical-demo .el-menu-item:hover::before,
+.el-menu-vertical-demo .el-menu-item.is-active::before {
+  opacity: 1;
+}
+
+.el-menu-vertical-demo .el-menu-item:hover {
+  background-color: rgba(64, 158, 255, 0.1) !important;
+  color: #409EFF !important;
+}
+
+.el-menu-vertical-demo .el-menu-item.is-active {
+  background-color: rgba(64, 158, 255, 0.15) !important;
+  color: #409EFF !important;
+  font-weight: 500;
+}
+
+.el-menu-vertical-demo .el-menu-item:hover .el-icon,
+.el-menu-vertical-demo .el-menu-item.is-active .el-icon {
+  color: #409EFF !important;
+}
+
+.el-menu-vertical-demo .el-menu-item:hover span,
+.el-menu-vertical-demo .el-menu-item.is-active span {
+  color: #409EFF !important;
 }
 </style>
