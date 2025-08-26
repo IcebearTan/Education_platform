@@ -32,14 +32,6 @@
       </div>
 
       <div class="content-tabs">
-        <!-- 调试信息 -->
-        <!-- <div style="background: #f0f9ff; padding: 10px; margin-bottom: 16px; border-radius: 4px; font-size: 12px;">
-          <p>调试信息 - TeachingGroupDetails组件</p>
-          <p>当前activeTab: {{ activeTab }}</p>
-          <p>GroupId: {{ groupId }}</p>
-          <p>GroupData: {{ groupData ? '已加载' : '未加载' }}</p>
-        </div> -->
-        
         <el-tabs v-model="activeTab" @tab-change="handleTabChange">
           <el-tab-pane label="任务管理" name="tasks">
             <TeachingTaskManagement 
@@ -53,6 +45,13 @@
               :group-id="groupId" 
               :group-data="groupData"
               @students-updated="refreshData"
+            />
+          </el-tab-pane>
+          <el-tab-pane label="请假管理" name="leave">
+            <TeachingLeaveManagement 
+              :group-id="groupId" 
+              :group-data="groupData"
+              @leave-updated="refreshData"
             />
           </el-tab-pane>
           <el-tab-pane label="数据统计" name="analytics">
@@ -98,6 +97,7 @@ import api from '../../api'
 // 导入子组件（这些组件需要后续创建）
 import TeachingTaskManagement from './TeachingTaskManagement.vue'
 import TeachingStudentManagement from './TeachingStudentManagement.vue'
+import TeachingLeaveManagement from './TeachingLeaveManagement.vue'
 import TeachingAnalytics from './TeachingAnalytics.vue'
 import TeachingGroupSettings from './TeachingGroupSettings.vue'
 import QuickTaskForm from './QuickTaskForm.vue'

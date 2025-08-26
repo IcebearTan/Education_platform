@@ -20,18 +20,18 @@
           </el-card>
         </el-col>
         <el-col :span="6">
-          <el-card class="stats-card today">
+          <el-card class="stats-card group-stats">
             <div class="stats-content">
-              <div class="stats-number">{{ todayMessages }}</div>
-              <div class="stats-label">今日消息</div>
+              <div class="stats-number">{{ groupMessages }}</div>
+              <div class="stats-label">小组通知</div>
             </div>
           </el-card>
         </el-col>
         <el-col :span="6">
-          <el-card class="stats-card important">
+          <el-card class="stats-card course-stats">
             <div class="stats-content">
-              <div class="stats-number">{{ importantMessages }}</div>
-              <div class="stats-label">重要消息</div>
+              <div class="stats-number">{{ courseMessages }}</div>
+              <div class="stats-label">课程通知</div>
             </div>
           </el-card>
         </el-col>
@@ -51,7 +51,7 @@
         >
           <div class="tab-content">
             <el-icon>
-              <component :is="tab.icon" />
+              <component :is="typeof tab.icon === 'string' ? tab.icon : tab.icon" />
             </el-icon>
             <span class="tab-label">{{ tab.label }}</span>
           </div>
@@ -69,6 +69,39 @@
           <h3>{{ getCurrentTabLabel }}</h3>
           <div class="content-actions">
             <span class="message-count">共 {{ filteredMessages.length }} 条消息</span>
+          </div>
+        </div>
+        
+        <!-- 小组通知的子分类横栏 -->
+        <div v-if="activeTab === 'group'" class="group-sub-tabs-horizontal">
+          <div class="sub-tabs-container">
+            <div 
+              :class="['sub-tab-item', { active: activeGroupSubTab === 'all' }]"
+              @click="switchGroupSubTab('all')"
+            >
+              <span class="sub-tab-label">全部</span>
+              <el-badge 
+                v-if="getUnreadCount('group') > 0" 
+                :value="getUnreadCount('group')" 
+                class="sub-tab-badge"
+              />
+            </div>
+            <div 
+              v-for="subTab in groupSubTabs" 
+              :key="subTab.key"
+              :class="['sub-tab-item', { active: activeGroupSubTab === subTab.key }]"
+              @click="switchGroupSubTab(subTab.key)"
+            >
+              <el-icon class="sub-tab-icon">
+                <component :is="typeof subTab.icon === 'string' ? subTab.icon : subTab.icon" />
+              </el-icon>
+              <span class="sub-tab-label">{{ subTab.label }}</span>
+              <el-badge 
+                v-if="getGroupSubUnreadCount(subTab.key) > 0" 
+                :value="getGroupSubUnreadCount(subTab.key)" 
+                class="sub-tab-badge"
+              />
+            </div>
           </div>
         </div>
         
@@ -161,7 +194,7 @@ import { useRouter } from 'vue-router'
 import { useStore } from 'vuex'
 import { ElMessage } from 'element-plus'
 import { 
-  Bell, Document, User, Warning, InfoFilled, Notification, Star
+  Bell, Document, User, Star, Setting, Edit, Message
 } from '@element-plus/icons-vue'
 import api from '../../api'
 
@@ -176,24 +209,29 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['mark-read', 'mark-all-read', 'refresh'])
+const emit = defineEmits(['mark-read'])
 
 const router = useRouter()
 const store = useStore()
 
 const activeTab = ref('all')
+const activeGroupSubTab = ref('all') // 小组通知的子分类
 const currentPage = ref(1)
 const pageSize = 20
 
-// 学生消息分类配置（不包含教学管理相关）
+// 学生消息分类配置（小组通知、课程通知、系统通知）
 const messageTabs = [
   { key: 'all', label: '全部消息', icon: Bell },
-  { key: 'task', label: '任务', icon: Document },
-  { key: 'homework', label: '作业', icon: Document },
-  { key: 'notice', label: '通知', icon: Notification },
-  { key: 'leave', label: '请假', icon: User },
-  { key: 'error', label: '错误', icon: Warning },
-  { key: 'other', label: '其他', icon: InfoFilled }
+  { key: 'group', label: '小组通知', icon: User },
+  { key: 'course', label: '课程通知', icon: Document },
+  { key: 'system', label: '系统通知', icon: 'Setting' }
+]
+
+// 小组通知的子分类
+const groupSubTabs = [
+  { key: 'task', label: '任务发布', icon: Document },
+  { key: 'homework', label: '作业批改', icon: 'Edit' },
+  { key: 'leave', label: '请假反馈', icon: 'Message' }
 ]
 
 // 本地存储键名
@@ -209,8 +247,22 @@ const allMessages = computed(() => {
 const getCurrentMessages = computed(() => {
   if (activeTab.value === 'all') {
     return allMessages.value
+  } else if (activeTab.value === 'group') {
+    // 小组通知：如果选择了子分类，显示子分类内容；否则显示所有小组通知
+    if (activeGroupSubTab.value === 'all') {
+      // 返回所有小组相关通知（任务、作业、请假）
+      const taskMsgs = props.notifications.task || []
+      const homeworkMsgs = props.notifications.homework || []
+      const leaveMsgs = props.notifications.leave || []
+      return [...taskMsgs, ...homeworkMsgs, ...leaveMsgs].sort((a, b) => 
+        new Date(b.create_time) - new Date(a.create_time)
+      )
+    } else {
+      return props.notifications[activeGroupSubTab.value] || []
+    }
+  } else {
+    return props.notifications[activeTab.value] || []
   }
-  return props.notifications[activeTab.value] || []
 })
 
 const getCurrentTabLabel = computed(() => {
@@ -230,22 +282,37 @@ const paginatedMessages = computed(() => {
 
 const totalMessages = computed(() => allMessages.value.length)
 
-const todayMessages = computed(() => {
-  const today = new Date().toDateString()
-  return allMessages.value.filter(msg => 
-    new Date(msg.create_time).toDateString() === today
-  ).length
+const groupMessages = computed(() => {
+  const taskMsgs = props.notifications.task || []
+  const homeworkMsgs = props.notifications.homework || []
+  const leaveMsgs = props.notifications.leave || []
+  return taskMsgs.length + homeworkMsgs.length + leaveMsgs.length
 })
 
-const importantMessages = computed(() => {
-  return allMessages.value.filter(msg => msg.is_important).length
+const courseMessages = computed(() => {
+  return (props.notifications.course || []).length
+})
+
+const systemMessages = computed(() => {
+  return (props.notifications.system || []).length
 })
 
 // 方法
 const switchTab = (tabKey) => {
   activeTab.value = tabKey
   currentPage.value = 1
+  
+  // 如果切换到小组通知，默认显示全部子分类
+  if (tabKey === 'group') {
+    activeGroupSubTab.value = 'all'
+  }
+  
   localStorage.setItem(ACTIVE_TAB_KEY, tabKey)
+}
+
+const switchGroupSubTab = (subTabKey) => {
+  activeGroupSubTab.value = subTabKey
+  currentPage.value = 1
 }
 
 const restoreActiveTab = () => {
@@ -258,8 +325,18 @@ const restoreActiveTab = () => {
 const getUnreadCount = (type) => {
   if (type === 'all') {
     return props.totalUnread
+  } else if (type === 'group') {
+    // 小组通知未读数 = 任务 + 作业 + 请假未读数
+    const taskUnread = (props.notifications.task || []).filter(msg => !msg.is_read).length
+    const homeworkUnread = (props.notifications.homework || []).filter(msg => !msg.is_read).length
+    const leaveUnread = (props.notifications.leave || []).filter(msg => !msg.is_read).length
+    return taskUnread + homeworkUnread + leaveUnread
   }
   return props.notifications[type]?.filter(msg => !msg.is_read).length || 0
+}
+
+const getGroupSubUnreadCount = (subType) => {
+  return props.notifications[subType]?.filter(msg => !msg.is_read).length || 0
 }
 
 const getMessageType = (message) => {
@@ -274,47 +351,43 @@ const getMessageType = (message) => {
 const getMessageIcon = (type) => {
   const iconComponents = {
     task: Document,
-    homework: Document, 
-    notice: Notification,
-    leave: User,
-    error: Warning,
-    other: InfoFilled
+    homework: Edit,
+    leave: Message,
+    course: Document,
+    system: Setting
   }
-  return iconComponents[type] || InfoFilled
+  return iconComponents[type] || Document
 }
 
 const getMessageIconColor = (type) => {
   const colors = {
     task: '#409EFF',
     homework: '#67C23A',
-    notice: '#E6A23C',
-    leave: '#F56C6C',
-    error: '#F56C6C',
-    other: '#909399'
+    leave: '#E6A23C',
+    course: '#722ED1',
+    system: '#909399'
   }
-  return colors[type] || '#909399'
+  return colors[type] || '#409EFF'
 }
 
 const getMessageTagType = (type) => {
   const tagTypes = {
     task: 'primary',
     homework: 'success',
-    notice: 'warning',
-    leave: 'danger',
-    error: 'danger',
-    other: 'info'
+    leave: 'warning',
+    course: '',
+    system: 'info'
   }
-  return tagTypes[type] || 'info'
+  return tagTypes[type] || 'primary'
 }
 
 const getMessageTypeLabel = (type) => {
   const labels = {
-    task: '任务',
-    homework: '作业',
-    notice: '通知',
-    leave: '请假',
-    error: '错误',
-    other: '其他'
+    task: '任务发布',
+    homework: '作业批改',
+    leave: '请假反馈',
+    course: '课程通知',
+    system: '系统通知'
   }
   return labels[type] || '其他'
 }
@@ -331,14 +404,13 @@ const markAsRead = async (messageId) => {
 const handleMessageNavigation = async (message) => {
   const { source_type, related_info_id } = message
   
-  if (source_type === '2') { // 任务相关
+  if (source_type === '2') { // 任务发布
     try {
       const taskResponse = await api.get(`/task/detail?id=${related_info_id}`)
       if (taskResponse.data.code === 200) {
         const groupId = taskResponse.data.data.group_id
         const groupName = taskResponse.data.data.group_name || '未知小组'
         
-        // 学生角色直接跳转到学习小组详情页面
         router.push({
           name: 'StudyGroupDetails',
           params: { id: groupId },
@@ -356,7 +428,7 @@ const handleMessageNavigation = async (message) => {
       console.error('获取任务详情失败:', error)
       router.push('/user-center/study-groups')
     }
-  } else if (source_type === '1') { // 作业相关
+  } else if (source_type === '1') { // 作业批改
     try {
       const homeworkResponse = await api.get(`/homework/detail?id=${related_info_id}`)
       if (homeworkResponse.data.code === 200) {
@@ -364,7 +436,6 @@ const handleMessageNavigation = async (message) => {
         const groupId = homeworkResponse.data.data.group_id
         const groupName = homeworkResponse.data.data.group_name || '未知小组'
         
-        // 学生角色直接跳转到学习小组详情页面
         router.push({
           name: 'StudyGroupDetails',
           params: { id: groupId },
@@ -383,8 +454,12 @@ const handleMessageNavigation = async (message) => {
       console.error('获取作业详情失败:', error)
       router.push('/user-center/study-groups')
     }
-  } else if (source_type === '3') { // 通知相关
-    router.push(`/notifications?type=notice&id=${related_info_id}`)
+  } else if (source_type === '8') { // 请假反馈
+    router.push('/user-center/study-groups?tab=leave')
+  } else if (source_type === '3') { // 课程通知
+    router.push('/study')
+  } else if (source_type === '9') { // 系统通知
+    router.push('/user-center/user-info')
   } else {
     router.push('/user-center')
   }
@@ -443,6 +518,14 @@ onMounted(() => {
 
 .stats-card.important {
   border-left: 4px solid #F56C6C;
+}
+
+.stats-card.group-stats {
+  border-left: 4px solid #13C2C2;
+}
+
+.stats-card.course-stats {
+  border-left: 4px solid #722ED1;
 }
 
 .stats-content {
@@ -529,6 +612,75 @@ onMounted(() => {
   margin-left: 8px;
 }
 
+/* 右侧小组通知横栏子分类样式 */
+.group-sub-tabs-horizontal {
+  background: #f8f9fa;
+  border-bottom: 1px solid #e4e7ed;
+  padding: 16px 24px;
+}
+
+.sub-tabs-container {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.sub-tab-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.3s;
+  background: white;
+  border: 1px solid #e4e7ed;
+  color: #606266;
+  font-size: 14px;
+  position: relative;
+}
+
+.sub-tab-item:hover {
+  background: #e8f4ff;
+  border-color: #c6e2ff;
+  color: #409EFF;
+}
+
+.sub-tab-item.active {
+  background: #409EFF;
+  border-color: #409EFF;
+  color: white;
+}
+
+.sub-tab-icon {
+  font-size: 14px;
+}
+
+.sub-tab-label {
+  font-weight: 500;
+}
+
+.sub-tab-badge {
+  margin-left: 4px;
+}
+
+.sub-tab-badge :deep(.el-badge__content) {
+  position: relative;
+  transform: translateX(0);
+  background: #f56c6c !important;
+  color: white !important;
+  border: none !important;
+  font-size: 12px;
+  min-width: 18px;
+  height: 18px;
+  line-height: 18px;
+  padding: 0;
+  border-radius: 50% !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 /* 右侧消息内容区域 */
 .message-content-wrapper {
   flex: 1;
@@ -570,6 +722,8 @@ onMounted(() => {
   overflow-y: auto;
   padding: 20px 24px;
   background: #fafafa;
+  /* 当有横栏子分类时，减少一些高度 */
+  max-height: calc(70vh - 120px);
 }
 
 .empty-state {

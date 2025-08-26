@@ -13,9 +13,11 @@
             <el-icon><Check /></el-icon>
             全部已读
           </el-button>
-          <el-button @click="refreshMessages">
-            <el-icon><Refresh /></el-icon>
-            刷新
+          <el-button @click="refreshMessages" :disabled="refreshing">
+            <el-icon :class="{ 'refresh-spinning': refreshing }">
+              <Refresh />
+            </el-icon>
+            {{ refreshing ? '刷新中...' : '刷新' }}
           </el-button>
         </div>
       </div>
@@ -75,6 +77,7 @@ const notifications = ref({
 
 const totalUnread = ref(0)
 const loading = ref(false)
+const refreshing = ref(false) // 添加刷新状态
 
 // 用户身份判断
 const isTeacher = computed(() => {
@@ -151,9 +154,21 @@ const fetchTeachingNotifications = async () => {
   }
 }
 
-const refreshMessages = () => {
-  fetchNotifications()
-  ElMessage.success('消息已刷新')
+const refreshMessages = async () => {
+  if (refreshing.value) return // 防止重复点击
+  
+  refreshing.value = true
+  try {
+    await fetchNotifications()
+    ElMessage.success('消息已刷新')
+  } catch (error) {
+    ElMessage.error('刷新失败')
+  } finally {
+    // 确保动画至少播放1秒，提供良好的视觉反馈
+    setTimeout(() => {
+      refreshing.value = false
+    }, 1000)
+  }
 }
 
 const markAsRead = async (messageId) => {
@@ -282,6 +297,20 @@ html {
 .header-actions {
   display: flex;
   gap: 12px;
+}
+
+/* 刷新按钮旋转动画 */
+.refresh-spinning {
+  animation: refresh-rotate 1s linear infinite;
+}
+
+@keyframes refresh-rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* 移动端适配 */
