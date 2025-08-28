@@ -307,10 +307,26 @@ body {
     border: none !important;
 }
 
-.el-button--primary:hover {
+.el-button:hover {
     transform: translateY(-1px) !important;
     box-shadow: var(--shadow-md) !important;
 }
+
+.el-button--danger {
+    background-image: linear-gradient(135deg, #eda7a7, #e76060) !important;
+    border-width: 0;
+}
+
+.el-button--warning {
+    background-image: linear-gradient(135deg, #eec778, #ba912a) !important;
+    border-width: 0;
+}
+
+.el-button--success {
+    background-image: linear-gradient(135deg, #a7eda8, #6dcfb5) !important;
+    border-width: 0;
+}
+
 
 .el-input__wrapper {
     border-radius: var(--radius-md) !important;

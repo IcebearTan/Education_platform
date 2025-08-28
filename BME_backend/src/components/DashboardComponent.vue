@@ -81,7 +81,7 @@
             </div>
           </div>
           <div class="activity-more">
-            <el-button text type="primary">查看更多</el-button>
+            <el-button text type="primary" style="color: white;">查看更多</el-button>
           </div>
         </div>
       </div>

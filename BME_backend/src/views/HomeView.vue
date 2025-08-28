@@ -885,8 +885,19 @@ const handleClose = (key, keyPath) => {
 }
 
 /* 确保子菜单展开时的平滑动画 */
-.admin-layout .modern-menu .el-sub-menu .el-menu {
+
+/* 子菜单展开时有 padding 和 margin，收起时为 0，动画更流畅 */
+.admin-layout .modern-menu .el-sub-menu.is-opened .el-menu {
+  padding: 8px 0 !important;
+  margin: 6px 0 !important;
   overflow: hidden;
-  transition: all var(--transition-normal);
+  transition: padding 0.2s, margin 0.2s, max-height var(--transition-fast);
 }
+.admin-layout .modern-menu .el-sub-menu .el-menu {
+  padding: 0 !important;
+  margin: 0 !important;
+  overflow: hidden;
+  transition: padding 0.2s, margin 0.2s, max-height var(--transition-fast);
+}
+
 </style>

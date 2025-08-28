@@ -393,13 +393,13 @@ onMounted(() => {
         <el-form-item label="勋章名字" prop="medal_name">
           <el-input v-model="form.medal_name" placeholder="请输入勋章名字" autocomplete="off" />
         </el-form-item>
-        <el-form-item label="勋章描述" prop="medal_description">
+        <el-form-item label="勋章内容" prop="medal_description">
           <el-input 
             v-model="form.medal_description" 
             type="textarea" 
             :rows="3" 
             autocomplete="off" 
-            placeholder="中文名"
+            placeholder="完成的项目"
             @input="val => { form.medal_description = val; form.medal_name_cn = val }"
             
           />
