@@ -2,7 +2,7 @@
   <div class="teaching-management-container">
     <div class="teaching-management-card">
       <div class="title">
-        <div class="title-text">教学管理</div>
+        <div class="title-text">小组管理</div>
         <div class="title-actions">
           <el-button type="primary" @click="createNewGroup">
             <el-icon><Plus /></el-icon>
@@ -11,8 +11,7 @@
           <el-select
             v-model="selectedGroupType"
             placeholder="选择小组类型"
-            size="large"
-            style="width: 160px; margin-left: 12px;"
+            style="width: 120px; margin-left: 12px;"
           >
             <el-option
               v-for="item in teachingGroupOptions"
@@ -29,9 +28,9 @@
             <el-loading text="加载中..." />
           </div>
           <div v-else class="scroll-container">
-            <template v-if="teachingGroups.length > 0">
+            <template v-if="filteredGroups.length > 0">
               <TeachingGroupCard
-                v-for="(group, index) in teachingGroups"
+                v-for="(group, index) in filteredGroups"
                 :key="index"
                 :group="group"
                 @edit-group="handleEditGroup"
@@ -325,14 +324,14 @@ onMounted(() => {
 <style scoped>
 .teaching-management-container {
   width: 100%;
-  margin-top: 10px;
+  /* margin-top: 10px; */
 }
 
 .teaching-management-card {
   min-height: 1000px;
   background-color: #fff;
-  border-radius: 10px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  /* border-radius: 10px; */
+  /* box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); */
 }
 
 .title {
@@ -340,7 +339,6 @@ onMounted(() => {
   justify-content: space-between;
   align-items: center;
   padding: 20px;
-  border-bottom: 1px solid #eee;
 }
 
 .title-text {
@@ -357,7 +355,7 @@ onMounted(() => {
 }
 
 .groups-container {
-  padding: 20px;
+  /* padding: 20px; */
 }
 
 .transparent-form {

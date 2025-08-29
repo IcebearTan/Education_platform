@@ -23,7 +23,6 @@ import MedalView from './views/MedalView.vue';
 import NotificationView from './views/NotificationView.vue';
 import StudentGroupsComponent from './components/StudentGroup/StudentGroupsComponent.vue';
 import StudyGroupDetails from './components/StudentGroup/StudyGroupDetails.vue';
-import StudentGroupRank from './components/StudentGroup/StudentGroupRank.vue';
 import StudentGroupTask from './components/StudentGroup/StudentGroupTask.vue';
 import TaskDetailView from './views/TaskDetailView.vue';
 import MyFeedbacksComponent from './components/User/MyFeedbacksComponent.vue';

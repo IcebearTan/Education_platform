@@ -8,24 +8,46 @@
       <p>Loading状态: {{ loading }}</p>
     </div> -->
 
-    <!-- 任务统计卡片 -->
-    <div class="stats-section">
-      <div class="stat-card">
-        <div class="stat-number">{{ taskStats.total }}</div>
-        <div class="stat-label">总任务数</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-number">{{ taskStats.pending }}</div>
-        <div class="stat-label">待完成</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-number">{{ taskStats.completed }}</div>
-        <div class="stat-label">已完成</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-number">{{ taskStats.overdue }}</div>
-        <div class="stat-label">已过期</div>
-      </div>
+    <!-- 任务统计概览 -->
+    <div class="stats-overview">
+      <el-row :gutter="20">
+        <el-col :span="6">
+          <el-card class="stats-card">
+            <div class="stats-content">
+              <div class="stats-number">{{ taskStats.total }}</div>
+              <div class="stats-label">总任务数</div>
+              <el-icon class="stats-icon"><Document /></el-icon>
+            </div>
+          </el-card>
+        </el-col>
+        <el-col :span="6">
+          <el-card class="stats-card pending">
+            <div class="stats-content">
+              <div class="stats-number">{{ taskStats.pending }}</div>
+              <div class="stats-label">进行中</div>
+              <el-icon class="stats-icon"><Clock /></el-icon>
+            </div>
+          </el-card>
+        </el-col>
+        <el-col :span="6">
+          <el-card class="stats-card completed">
+            <div class="stats-content">
+              <div class="stats-number">{{ taskStats.completed }}</div>
+              <div class="stats-label">已完成</div>
+              <el-icon class="stats-icon"><Check /></el-icon>
+            </div>
+          </el-card>
+        </el-col>
+        <el-col :span="6">
+          <el-card class="stats-card overdue">
+            <div class="stats-content">
+              <div class="stats-number">{{ taskStats.overdue }}</div>
+              <div class="stats-label">已过期</div>
+              <el-icon class="stats-icon"><Close /></el-icon>
+            </div>
+          </el-card>
+        </el-col>
+      </el-row>
     </div>
 
     <!-- 任务操作栏 -->
@@ -171,7 +193,7 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   Plus, Refresh, Search, MoreFilled, Calendar, User,
-  Document, Upload
+  Document, Upload, Clock, Check, Close
 } from '@element-plus/icons-vue'
 
 const props = defineProps({
@@ -517,34 +539,61 @@ onMounted(() => {
 
 <style scoped>
 .teaching-task-management {
-  max-width: 100%;
+  width: 100%;
 }
 
-.stats-section {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 16px;
+.stats-overview {
   margin-bottom: 24px;
 }
 
-.stat-card {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  border-radius: 12px;
-  padding: 20px;
+.stats-card {
   text-align: center;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: all 0.3s;
+  position: relative;
+  overflow: hidden;
 }
 
-.stat-number {
+.stats-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.stats-card.pending {
+  border-left: 4px solid #E6A23C;
+}
+
+.stats-card.completed {
+  border-left: 4px solid #67C23A;
+}
+
+.stats-card.overdue {
+  border-left: 4px solid #F56C6C;
+}
+
+.stats-content {
+  padding: 20px;
+  position: relative;
+}
+
+.stats-number {
   font-size: 32px;
   font-weight: bold;
+  color: #303133;
   margin-bottom: 8px;
 }
 
-.stat-label {
+.stats-label {
+  color: #606266;
   font-size: 14px;
-  opacity: 0.9;
+}
+
+.stats-icon {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  font-size: 24px;
+  color: #C0C4CC;
 }
 
 .task-toolbar {
@@ -638,10 +687,6 @@ onMounted(() => {
 }
 
 @media (max-width: 768px) {
-  .stats-section {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  
   .task-toolbar {
     flex-direction: column;
     gap: 16px;
@@ -662,6 +707,10 @@ onMounted(() => {
   .task-meta {
     flex-direction: column;
     gap: 8px;
+  }
+  
+  .stats-overview .el-col {
+    margin-bottom: 12px;
   }
 }
 </style>

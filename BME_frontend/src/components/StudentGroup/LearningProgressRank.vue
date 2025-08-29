@@ -55,7 +55,6 @@
       <div class="progress-dashboard">
         <div class="dashboard-header">
           <!-- <h5>学习进度仪表盘</h5> -->
-          <span class="progress-percentage">{{ currentUserStats.progress || 0 }}%</span>
         </div>
         <div class="circular-progress">
           <svg class="progress-ring" width="120" height="120">
@@ -84,26 +83,6 @@
           <div class="progress-center">
             <div class="progress-value">{{ currentUserStats.progress || 0 }}%</div>
             <div class="progress-label">总进度</div>
-          </div>
-        </div>
-        <div class="progress-details">
-          <div class="detail-item">
-            <span class="detail-label">本周目标</span>
-            <div class="detail-progress">
-              <div class="mini-progress-bar">
-                <div class="mini-progress-fill" :style="{ width: `${Math.min(100, ((currentUserStats.studyHours || 0) / 20) * 100)}%` }"></div>
-              </div>
-              <span class="detail-value">{{ currentUserStats.studyHours || 0 }}/20h</span>
-            </div>
-          </div>
-          <div class="detail-item">
-            <span class="detail-label">本月任务</span>
-            <div class="detail-progress">
-              <div class="mini-progress-bar">
-                <div class="mini-progress-fill" :style="{ width: `${Math.min(100, ((currentUserStats.completedTasks || 0) / 30) * 100)}%` }"></div>
-              </div>
-              <span class="detail-value">{{ currentUserStats.completedTasks || 0 }}/30</span>
-            </div>
           </div>
         </div>
       </div>
