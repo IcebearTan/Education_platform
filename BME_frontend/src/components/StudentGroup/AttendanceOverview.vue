@@ -112,6 +112,7 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { ElAvatar, ElSkeleton, ElButton } from 'element-plus'
 import api from '../../api'
 import { mockApiRequest } from '../../mock/config'
+import { mockApiResponses } from '../../mock/studyGroupData'
 
 const props = defineProps({
   groupId: {

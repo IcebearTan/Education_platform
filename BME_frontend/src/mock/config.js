@@ -30,7 +30,7 @@ export const mockConfig = {
     // 用户信息
     mockUser: {
         User_Id: 2001,
-        username: '测试学生',
+        username: '李小明',
         role: 'student'
     }
 }

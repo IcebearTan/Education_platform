@@ -291,6 +291,8 @@ import { ref, onMounted, computed, reactive } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Plus, Check } from '@element-plus/icons-vue'
 import api from '../../api'
+import { mockApiRequest } from '../../mock/config'
+import { mockApiResponses } from '../../mock/studyGroupData'
 
 // Props
 const props = defineProps({
@@ -337,28 +339,40 @@ async function fetchLeaveList() {
   leaveLoading.value = true
   leaveError.value = ''
   try {
-    let params = {}
-    if (props.userRole === 'teacher') {
-      params.group_id = props.groupId
-    }
-    const res = await api({
-      url: '/information/leave/query',
-      method: 'get',
-      params
-    })
-    if (res.data && res.data.data) {
-      // 兼容后端返回，学生端直接合并 approved 和 pending，按 status 分类
-      const all = [
-        ...(res.data.data.approved || []),
-        ...(res.data.data.pending || [])
-      ]
-      myLeaveList.value = all
-      leaveListApproved.value = res.data.data.approved || []
-      leaveListPending.value = res.data.data.pending || []
-    } else {
-      leaveError.value = '暂无请假信息'
-    }
+    const response = await mockApiRequest(
+      // 真实API调用
+      async () => {
+        let params = {}
+        if (props.userRole === 'teacher') {
+          params.group_id = props.groupId
+        }
+        const res = await api({
+          url: '/information/leave/query',
+          method: 'get',
+          params
+        })
+        if (res.data && res.data.data) {
+          return res.data.data
+        }
+        throw new Error('API返回错误')
+      },
+      // Mock响应
+      async () => {
+        const response = await mockApiResponses.getLeaveList(props.groupId)
+        return response.data
+      }
+    )
+
+    // 处理统一的数据结构
+    const all = [
+      ...(response.approved || []),
+      ...(response.pending || [])
+    ]
+    myLeaveList.value = all
+    leaveListApproved.value = response.approved || []
+    leaveListPending.value = response.pending || []
   } catch (e) {
+    console.error('获取请假列表失败:', e)
     leaveError.value = '请假信息获取失败'
   } finally {
     leaveLoading.value = false

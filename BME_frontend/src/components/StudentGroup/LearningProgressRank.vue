@@ -144,6 +144,7 @@ import { ref, onMounted, watch, computed } from 'vue'
 import { ElAvatar, ElSkeleton } from 'element-plus'
 import api from '../../api'
 import { mockApiRequest } from '../../mock/config'
+import { mockApiResponses } from '../../mock/studyGroupData'
 
 const props = defineProps({
   groupId: {
@@ -198,96 +199,28 @@ const currentUserRank = computed(() => {
 
 // Mock数据 - 临时用于开发
 const getMockProgressData = () => {
-  const mockData = {
-    group_name: '测试小组',
-    result: [
-      {
-        user_id: 2001,
-        username: '张三',
-        records: [{
-          course_name: 'Vue3开发实战',
-          chapter_name: '组件通信',
-          section_name: 'Props与Events',
-          chapter_num: 8,
-          section_num: 3,
-          course_chapters: 12
-        }]
-      },
-      {
-        user_id: 2002,
-        username: '李四',
-        records: [{
-          course_name: 'Vue3开发实战',
-          chapter_name: '路由管理',
-          chapter_num: 6,
-          section_num: 2,
-          course_chapters: 12
-        }]
-      },
-      {
-        user_id: 2003,
-        username: '王五',
-        records: [{
-          course_name: 'Vue3开发实战',
-          chapter_name: 'Composition API',
-          chapter_num: 10,
-          section_num: 4,
-          course_chapters: 12
-        }]
-      },
-      {
-        user_id: 2004,
-        username: '赵六',
-        records: [{
-          course_name: 'Vue3开发实战',
-          chapter_name: '基础语法',
-          chapter_num: 4,
-          section_num: 1,
-          course_chapters: 12
-        }]
-      },
-      {
-        user_id: 2005,
-        username: '钱七',
-        records: [{
-          course_name: 'Vue3开发实战',
-          chapter_name: '高级特性',
-          chapter_num: 11,
-          section_num: 2,
-          course_chapters: 12
-        }]
+  return mockApiRequest(
+    // 真实API调用
+    async () => {
+      const res = await api({
+        url: '/learningProgress/group',
+        method: 'get',
+        params: { Group_Id: props.groupId }
+      })
+      if (res.data.code === 200) {
+        return res.data
       }
-    ]
-  }
-
-  // 如果有当前用户ID，确保当前用户在数据中
-  let currentUser = null
-  if (props.currentUserId) {
-    const existingUser = mockData.result.find(u => u.user_id == props.currentUserId)
-    if (existingUser) {
-      currentUser = existingUser
-    } else {
-      currentUser = {
-        user_id: props.currentUserId,
-        username: '我',
-        records: [{
-          course_name: 'Vue3开发实战',
-          chapter_name: '响应式原理',
-          chapter_num: Math.floor(Math.random() * 10) + 3,
-          section_num: Math.floor(Math.random() * 4) + 1,
-          course_chapters: 12
-        }]
+      throw new Error('API返回错误')
+    },
+    // Mock响应
+    async () => {
+      const response = await mockApiResponses.getLearningProgressRank(props.groupId)
+      return {
+        code: 200,
+        data: response.data
       }
-      mockData.result.push(currentUser)
     }
-  }
-
-  return Promise.resolve({
-    data: {
-      code: 200,
-      data: mockData
-    }
-  })
+  )
 }
 
 // 获取学习进度数据
@@ -296,92 +229,66 @@ const fetchLearningProgress = async () => {
   
   isLoading.value = true
   try {
-    const response = await mockApiRequest(
-      // 真实API调用
-      () => api({
-        url: '/learningProgress/group',
-        method: 'get',
-        params: { Group_Id: props.groupId }
-      }),
-      // Mock响应
-      getMockProgressData
-    )
+    const response = await getMockProgressData()
     
-    if (response.data.code === 200) {
-      // 处理学习进度数据
-      const processedData = response.data.data.result.map(user => {
-        let totalProgress = 0
-        let currentChapter = 0
-        let currentSection = 0
-        let latestCourse = null
-        // let completedTasks = 0
-        // let studyHours = 0
-        
-        if (user.records && user.records.length > 0) {
-          const maxProgressRecord = user.records.reduce((prev, current) => 
-            (prev.chapter_num > current.chapter_num) ? prev : current
-          )
-          latestCourse = maxProgressRecord
-          currentChapter = maxProgressRecord.chapter_num || 0
-          currentSection = maxProgressRecord.section_num || 0
-          
-          // 计算进度
-          const validRecords = user.records.filter(record => record.course_chapters > 0)
-          if (validRecords.length > 0) {
-            totalProgress = validRecords.reduce((sum, record) => {
-              let percent = 0
-              if (record.course_chapters > 0) {
-                percent = (record.chapter_num / record.course_chapters) * 100
-                percent = Math.min(100, Math.max(0, percent))
-              }
-              return sum + percent
-            }, 0) / validRecords.length
-            totalProgress = Math.min(100, Math.max(0, totalProgress))
-          }
-          
-          // 模拟其他统计数据
-          // completedTasks = currentChapter * currentSection + Math.floor(Math.random() * 5)
-          // studyHours = Math.floor(totalProgress * 0.8) + Math.floor(Math.random() * 20)
-        }
-        
-        // 模拟连续学习天数
-        // const streak = Math.floor(Math.random() * 30) + 1
-        
-        return {
-          id: user.user_id,
-          name: user.username,
-          progress: Math.round(totalProgress),
-          chapter: currentChapter,
-          section: currentSection,
-          courseName: latestCourse?.course_name || '未开始学习',
-          chapterName: latestCourse?.chapter_name || '',
-          sectionName: latestCourse?.section_name || '',
-          // completedTasks: completedTasks,
-          // studyHours: studyHours,
-          // streak: streak
-        }
-      })
+    if (response.code === 200) {
+      // 处理新的mock数据结构
+      const rankData = response.data || []
       
-      // 按进度排序
-      progressList.value = processedData.sort((a, b) => b.progress - a.progress)
+      // 转换数据格式以兼容现有UI
+      const processedData = rankData.map((student, index) => ({
+        id: student.id,
+        name: student.name,
+        progress: student.progress,
+        completedTasks: student.completedTasks,
+        totalTasks: student.totalTasks,
+        studyHours: student.studyHours,
+        rank: student.rank || index + 1,
+        // 兼容原有字段
+        username: student.name,
+        chapter: Math.floor(student.progress / 10),
+        section: Math.floor(student.progress / 5) % 5,
+        courseName: 'JavaScript进阶开发',
+        chapterName: `第${Math.floor(student.progress / 10)}章`,
+        sectionName: `第${Math.floor(student.progress / 5) % 5}节`
+      }))
+
+      progressList.value = processedData
       
-      // 设置当前用户统计数据
+      // 设置当前用户统计信息
       if (props.currentUserId) {
-        const currentUserData = processedData.find(user => user.id == props.currentUserId)
-        if (currentUserData) {
-          currentUserStats.value = currentUserData
+        const currentUser = processedData.find(s => s.id == props.currentUserId)
+        if (currentUser) {
+          currentUserStats.value = {
+            progress: currentUser.progress,
+            completedTasks: currentUser.completedTasks,
+            totalTasks: currentUser.totalTasks,
+            studyHours: currentUser.studyHours,
+            rank: currentUser.rank,
+            streak: Math.floor(Math.random() * 10) + 5, // 随机生成连续学习天数
+            // 兼容原有字段
+            chapter: currentUser.chapter,
+            section: currentUser.section,
+            courseName: currentUser.courseName,
+            chapterName: currentUser.chapterName,
+            sectionName: currentUser.sectionName
+          }
         }
       }
       
-      // 获取所有学生的头像
-      progressList.value.forEach(student => {
-        getUserAvatar(student.id)
+      // 预加载头像
+      processedData.forEach(student => {
+        if (student.id) {
+          getUserAvatar(student.id)
+        }
       })
       
       // 获取当前用户头像
       if (currentUserStats.value && props.currentUserId) {
         getUserAvatar(props.currentUserId)
       }
+    } else {
+      console.warn('获取学习进度数据失败')
     }
   } catch (error) {
     console.error('获取学习进度失败:', error)
