@@ -126,6 +126,20 @@ const router = createRouter({
                     }),
                     meta: { title: '任务详情' }
                 },
+                // 教师任务详情页面
+                {
+                    path: '/teacher-task-detail',
+                    name: 'teacher-task-detail',
+                    component: () => import('./views/TeacherTaskDetailView.vue'),
+                    meta: { role: 'teacher', title: '任务详情' }
+                },
+                // 教学小组详情页面（在user-center内）
+                {
+                    path: '/user-center/teaching-group-details',
+                    name: 'teaching-group-details',
+                    component: () => import('./components/Teacher/TeachingGroupDetails.vue'),
+                    meta: { role: 'teacher', title: '小组管理' }
+                },
                 // 教学管理详情页面
                 {
                     path: '/user-center/teaching/:groupId',
@@ -236,6 +250,20 @@ const router = createRouter({
             path: '/notifications',
             name: 'notifications',
             component: NotificationView,
+        },
+        // 任务详情页面（通用路由，支持query参数）
+        {
+            path: '/task-detail',
+            name: 'task-detail-general',
+            component: TaskDetailView,
+            meta: { title: '任务详情' }
+        },
+        // 教师任务详情页面（通用路由，支持query参数）
+        {
+            path: '/teacher-task-detail',
+            name: 'teacher-task-detail-general',
+            component: () => import('./views/TeacherTaskDetailView.vue'),
+            meta: { role: 'teacher', title: '任务详情' }
         },
     ]
 })

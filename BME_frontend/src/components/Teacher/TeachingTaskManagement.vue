@@ -93,7 +93,16 @@
       <div v-else>
         <div v-for="task in filteredTasks" :key="task.id" class="task-item">
           <div class="task-header">
-            <div class="task-title">{{ task.title }}</div>
+            <div class="task-title-row">
+              <div class="task-title">{{ task.title }}</div>
+              <el-tag 
+                :type="getPriorityType(task.priority)" 
+                size="small" 
+                class="priority-tag"
+              >
+                {{ getPriorityText(task.priority) }}
+              </el-tag>
+            </div>
             <div class="task-actions">
               <el-tag :type="getTaskStatusType(task.status)">
                 {{ getTaskStatusText(task.status) }}
@@ -106,7 +115,6 @@
                   <el-dropdown-menu>
                     <el-dropdown-item command="view">查看详情</el-dropdown-item>
                     <el-dropdown-item command="edit">编辑任务</el-dropdown-item>
-                    <el-dropdown-item command="statistics">查看统计</el-dropdown-item>
                     <el-dropdown-item command="delete" divided>删除任务</el-dropdown-item>
                   </el-dropdown-menu>
                 </template>
@@ -121,12 +129,12 @@
                 截止时间：{{ formatDate(task.deadline) }}
               </span>
               <span class="meta-item">
-                <el-icon><User /></el-icon>
-                参与人数：{{ task.participants || 0 }}人
+                <el-icon><Check /></el-icon>
+                已提交：{{ task.completed_count || 0 }}人
               </span>
               <span class="meta-item">
-                <el-icon><Document /></el-icon>
-                完成率：{{ getCompletionRate(task) }}%
+                <el-icon><User /></el-icon>
+                未提交：{{ getUnsubmittedCount(task) }}人
               </span>
             </div>
           </div>
@@ -156,12 +164,11 @@
             style="width: 100%"
           />
         </el-form-item>
-        <el-form-item label="任务类型" prop="type">
-          <el-select v-model="newTask.type" placeholder="选择任务类型" style="width: 100%">
-            <el-option label="作业" value="homework" />
-            <el-option label="项目" value="project" />
-            <el-option label="实验" value="experiment" />
-            <el-option label="测试" value="test" />
+        <el-form-item label="优先级">
+          <el-select v-model="newTask.priority" placeholder="选择优先级" style="width: 100%">
+            <el-option label="高优先级" value="high" />
+            <el-option label="中优先级" value="medium" />
+            <el-option label="低优先级" value="low" />
           </el-select>
         </el-form-item>
         <el-form-item label="附件">
@@ -185,16 +192,70 @@
         </el-button>
       </template>
     </el-dialog>
+
+    <!-- 编辑任务对话框 -->
+    <el-dialog v-model="showEditDialog" title="编辑任务" width="600px">
+      <el-form :model="editTask" :rules="taskRules" ref="editTaskFormRef" label-width="100px">
+        <el-form-item label="任务标题" prop="title">
+          <el-input v-model="editTask.title" placeholder="请输入任务标题" />
+        </el-form-item>
+        <el-form-item label="任务描述" prop="description">
+          <el-input
+            v-model="editTask.description"
+            type="textarea"
+            :rows="4"
+            placeholder="请输入任务描述"
+          />
+        </el-form-item>
+        <el-form-item label="截止时间" prop="deadline">
+          <el-date-picker
+            v-model="editTask.deadline"
+            type="datetime"
+            placeholder="选择截止时间"
+            style="width: 100%"
+          />
+        </el-form-item>
+        <el-form-item label="优先级" prop="priority">
+          <el-select v-model="editTask.priority" placeholder="选择优先级" style="width: 100%">
+            <el-option label="高优先级" value="high" />
+            <el-option label="中优先级" value="medium" />
+            <el-option label="低优先级" value="low" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="附件">
+          <el-upload
+            v-model:file-list="editTask.attachments"
+            action="#"
+            :auto-upload="false"
+            multiple
+          >
+            <el-button>
+              <el-icon><Upload /></el-icon>
+              上传附件
+            </el-button>
+          </el-upload>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="showEditDialog = false">取消</el-button>
+        <el-button type="primary" @click="handleUpdateTask" :loading="editing">
+          更新任务
+        </el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   Plus, Refresh, Search, MoreFilled, Calendar, User,
   Document, Upload, Clock, Check, Close
 } from '@element-plus/icons-vue'
+
+const router = useRouter()
 
 const props = defineProps({
   groupId: {
@@ -212,18 +273,32 @@ const emit = defineEmits(['task-updated'])
 // 响应式数据
 const loading = ref(false)
 const creating = ref(false)
+const editing = ref(false)
 const tasks = ref([])
 const filterStatus = ref('')
 const searchKeyword = ref('')
 const showCreateDialog = ref(false)
+const showEditDialog = ref(false)
 const taskFormRef = ref()
+const editTaskFormRef = ref()
+const currentEditTask = ref(null)
 
 // 新任务表单
 const newTask = ref({
   title: '',
   description: '',
   deadline: '',
-  type: '',
+  priority: 'medium',
+  attachments: []
+})
+
+// 编辑任务表单
+const editTask = ref({
+  id: null,
+  title: '',
+  description: '',
+  deadline: '',
+  priority: '',
   attachments: []
 })
 
@@ -237,9 +312,6 @@ const taskRules = {
   ],
   deadline: [
     { required: true, message: '请选择截止时间', trigger: 'change' }
-  ],
-  type: [
-    { required: true, message: '请选择任务类型', trigger: 'change' }
   ]
 }
 
@@ -292,6 +364,28 @@ const getTaskStatusText = (status) => {
   return textMap[status] || '未知'
 }
 
+const getPriorityType = (priority) => {
+  const typeMap = {
+    'high': 'danger',
+    'medium': 'warning',
+    'low': 'info'
+  }
+  return typeMap[priority] || 'info'
+}
+
+const getPriorityText = (priority) => {
+  const textMap = {
+    'high': '高优先级',
+    'medium': '中优先级',
+    'low': '低优先级'
+  }
+  return textMap[priority] || '普通'
+}
+
+const getUnsubmittedCount = (task) => {
+  return (task.participants || 0) - (task.completed_count || 0)
+}
+
 const getCompletionRate = (task) => {
   if (!task.participants || task.participants === 0) return 0
   return Math.round(((task.completed_count || 0) / task.participants) * 100)
@@ -313,17 +407,67 @@ const handleSearch = () => {
 const handleTaskAction = async (action, task) => {
   switch (action) {
     case 'view':
-      ElMessage.info('查看任务详情功能开发中')
+      // 跳转到教师任务详情页
+      router.push({
+        path: '/teacher-task-detail',
+        query: {
+          taskId: task.id,
+          groupId: props.groupId,
+          groupName: props.groupData?.group_name || '教学小组'
+        }
+      })
       break
     case 'edit':
-      ElMessage.info('编辑任务功能开发中')
-      break
-    case 'statistics':
-      ElMessage.info('任务统计功能开发中')
+      handleEditTask(task)
       break
     case 'delete':
       await handleDeleteTask(task)
       break
+  }
+}
+
+const handleEditTask = (task) => {
+  currentEditTask.value = task
+  editTask.value = {
+    id: task.id,
+    title: task.title,
+    description: task.description || '',
+    deadline: task.deadline,
+    priority: task.priority || 'medium',
+    attachments: []
+  }
+  showEditDialog.value = true
+}
+
+const handleUpdateTask = async () => {
+  if (!editTaskFormRef.value) return
+  
+  try {
+    await editTaskFormRef.value.validate()
+    editing.value = true
+    
+    // 模拟API调用
+    await new Promise(resolve => setTimeout(resolve, 1000))
+    
+    // 更新任务列表中的数据
+    const taskIndex = tasks.value.findIndex(t => t.id === editTask.value.id)
+    if (taskIndex !== -1) {
+      tasks.value[taskIndex] = {
+        ...tasks.value[taskIndex],
+        ...editTask.value,
+        updated_time: new Date().toISOString()
+      }
+    }
+    
+    showEditDialog.value = false
+    ElMessage.success('任务更新成功')
+    emit('task-updated')
+    
+  } catch (error) {
+    console.error('更新任务失败:', error)
+    ElMessage.error('更新任务失败')
+  } finally {
+    editing.value = false
   }
 }
 
@@ -362,6 +506,7 @@ const handleCreateTask = async () => {
     const task = {
       id: Date.now(),
       ...newTask.value,
+      priority: 'medium', // 默认中优先级
       status: 'pending',
       participants: Math.floor(Math.random() * 20) + 5,
       completed_count: 0,
@@ -375,7 +520,7 @@ const handleCreateTask = async () => {
       title: '',
       description: '',
       deadline: '',
-      type: '',
+      priority: 'medium',
       attachments: []
     }
     
@@ -409,6 +554,7 @@ const fetchTasks = async () => {
       {
         id: 1,
         title: '数学作业第一章',
+        priority: 'medium',
         description: '完成教材第一章的所有练习题，包括课后习题1-10题。要求：1. 写出详细解题过程；2. 标明每题的解题思路；3. 如有疑问及时提问。',
         deadline: '2025-09-01T23:59:00',
         type: 'homework',
@@ -420,6 +566,7 @@ const fetchTasks = async () => {
       {
         id: 2,
         title: '物理实验报告',
+        priority: 'high',
         description: '根据实验课内容，撰写详细的实验报告。包括：实验目的、实验原理、实验步骤、数据记录、结果分析、实验结论等部分。',
         deadline: '2025-08-28T23:59:00',
         type: 'experiment',
@@ -431,6 +578,7 @@ const fetchTasks = async () => {
       {
         id: 3,
         title: '期中测试复习',
+        priority: 'high',
         description: '复习前五章内容，准备期中测试。重点复习概念、公式和典型例题。',
         deadline: '2025-09-10T09:00:00',
         type: 'test',
@@ -442,6 +590,7 @@ const fetchTasks = async () => {
       {
         id: 4,
         title: '编程项目：学生管理系统',
+        priority: 'medium',
         description: '使用Python开发一个简单的学生管理系统，要求实现学生信息的增删改查功能。技术要求：使用面向对象编程，包含异常处理，有完整的用户界面。',
         deadline: '2025-09-15T23:59:00',
         type: 'project',
@@ -453,6 +602,7 @@ const fetchTasks = async () => {
       {
         id: 5,
         title: '英语口语展示',
+        priority: 'low',
         description: '准备5分钟的英语口语展示，主题为"我的未来职业规划"。要求：发音清晰、语法正确、内容充实、有适当的肢体语言。',
         deadline: '2025-09-03T14:30:00',
         type: 'presentation',
@@ -464,6 +614,7 @@ const fetchTasks = async () => {
       {
         id: 6,
         title: '历史课讨论：改革开放的影响',
+        priority: 'low',
         description: '参与课堂讨论，分析改革开放对中国社会经济发展的影响。请提前准备发言提纲，每人发言时间3-5分钟。',
         deadline: '2025-08-30T15:00:00',
         type: 'discussion',
@@ -475,6 +626,7 @@ const fetchTasks = async () => {
       {
         id: 7,
         title: '化学实验：酸碱中和反应',
+        priority: 'medium',
         description: '完成酸碱中和反应实验，记录实验现象，分析实验结果。实验报告要求：实验步骤清晰、数据准确、分析深入。',
         deadline: '2025-09-05T17:00:00',
         type: 'experiment',
@@ -486,6 +638,7 @@ const fetchTasks = async () => {
       {
         id: 8,
         title: '数学竞赛模拟测试',
+        priority: 'high',
         description: '参加数学竞赛模拟测试，题目难度较高，主要考查数学思维和解题技巧。测试时间120分钟。',
         deadline: '2025-09-08T10:00:00',
         type: 'test',
@@ -497,6 +650,7 @@ const fetchTasks = async () => {
       {
         id: 9,
         title: '文学作品阅读报告',
+        priority: 'low',
         description: '阅读指定文学作品《平凡的世界》第一部，撰写读后感。要求：不少于1000字，有个人见解，文笔流畅。',
         deadline: '2025-09-12T23:59:00',
         type: 'homework',
@@ -508,6 +662,7 @@ const fetchTasks = async () => {
       {
         id: 10,
         title: '计算机基础操作考试',
+        priority: 'high',
         description: '计算机基础操作技能考试，包括Word文档编辑、Excel表格制作、PowerPoint演示文稿制作等内容。',
         deadline: '2025-08-29T16:00:00',
         type: 'test',
@@ -652,10 +807,43 @@ onMounted(() => {
   margin-bottom: 12px;
 }
 
+.task-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
 .task-title {
   font-size: 18px;
   font-weight: 600;
   color: #303133;
+}
+
+.priority-tag {
+  font-size: 12px;
+  padding: 2px 6px;
+  border-radius: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.priority-tag.high {
+  background-color: #fef0f0;
+  color: #f56c6c;
+  border: 1px solid #fbc4c4;
+}
+
+.priority-tag.medium {
+  background-color: #fdf6ec;
+  color: #e6a23c;
+  border: 1px solid #f5dab1;
+}
+
+.priority-tag.low {
+  background-color: #f0f9ff;
+  color: #409eff;
+  border: 1px solid #b3d8ff;
 }
 
 .task-actions {
@@ -702,6 +890,12 @@ onMounted(() => {
     flex-direction: column;
     align-items: flex-start;
     gap: 12px;
+  }
+  
+  .task-title-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
   }
   
   .task-meta {

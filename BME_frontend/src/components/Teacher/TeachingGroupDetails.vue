@@ -1,33 +1,31 @@
 <template>
   <div class="teaching-group-details">
+    <!-- 面包屑导航 -->
+    <div class="breadcrumb-nav">
+      <el-breadcrumb separator="/">
+        <el-breadcrumb-item :to="{ path: '/user-center/teaching-management' }">小组管理</el-breadcrumb-item>
+        <el-breadcrumb-item>{{ groupTitle }}</el-breadcrumb-item>
+      </el-breadcrumb>
+    </div>
+
     <div class="details-card">
       <div class="header">
         <div class="back-button" @click="goBack()">
           <el-icon class="back-arrow"><Back /></el-icon>
         </div>
         <div class="header-info">
-          <h1 class="group-title">{{ groupTitle }}</h1>
-          <el-tag :type="getGroupTypeTag(groupData?.group_type)" size="large">
-            教学管理 - {{ getGroupTypeLabel(groupData?.group_type) }}
-          </el-tag>
+          <div class="title-row">
+            <h1 class="group-title">{{ groupTitle }}</h1>
+            <el-tag :type="getGroupTypeTag(groupData?.group_type)" size="large" class="group-type-tag">
+              {{ getGroupTypeLabel(groupData?.group_type) }}管理
+            </el-tag>
+          </div>
         </div>
         <div class="header-actions">
-          <el-button type="primary" @click="showCreateTask = true">
-            <el-icon><Plus /></el-icon>
-            发布任务
-          </el-button>
-          <el-dropdown @command="handleHeaderCommand">
-            <el-button>
-              <el-icon><MoreFilled /></el-icon>
-            </el-button>
-            <template #dropdown>
-              <el-dropdown-menu>
-                <el-dropdown-item command="edit">编辑小组</el-dropdown-item>
-                <el-dropdown-item command="invite">邀请学生</el-dropdown-item>
-                <el-dropdown-item command="export">导出数据</el-dropdown-item>
-              </el-dropdown-menu>
-            </template>
-          </el-dropdown>
+          <div class="course-info">
+            <div class="course-label">关联课程：</div>
+            <div class="course-name">{{ groupData?.course_name || '高等数学' }}</div>
+          </div>
         </div>
       </div>
 
@@ -54,7 +52,7 @@
               @leave-updated="refreshData"
             />
           </el-tab-pane>
-          <el-tab-pane label="数据统计" name="analytics">
+          <el-tab-pane label="小组动态" name="analytics">
             <TeachingAnalytics 
               :group-id="groupId" 
               :group-data="groupData"
@@ -70,19 +68,6 @@
         </el-tabs>
       </div>
     </div>
-
-    <!-- 快速创建任务弹窗 -->
-    <el-dialog
-      v-model="showCreateTask"
-      title="发布新任务"
-      width="600px"
-    >
-      <QuickTaskForm 
-        :group-id="groupId"
-        @task-created="handleTaskCreated"
-        @cancel="showCreateTask = false"
-      />
-    </el-dialog>
   </div>
 </template>
 
@@ -90,7 +75,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { Back, Plus, MoreFilled } from '@element-plus/icons-vue'
+import { Back } from '@element-plus/icons-vue'
 import { useStore } from 'vuex'
 import api from '../../api'
 
@@ -100,16 +85,22 @@ import TeachingStudentManagement from './TeachingStudentManagement.vue'
 import TeachingLeaveManagement from './TeachingLeaveManagement.vue'
 import TeachingAnalytics from './TeachingAnalytics.vue'
 import TeachingGroupSettings from './TeachingGroupSettings.vue'
-import QuickTaskForm from './QuickTaskForm.vue'
 
 const router = useRouter()
 const route = useRoute()
 const store = useStore()
 
+// 从route.query或props获取参数，优先使用query
+const groupId = computed(() => route.query.groupId || props.groupId)
+const groupName = computed(() => route.query.groupName || props.groupName)
+const taskId = computed(() => route.query.taskId || props.taskId)
+const homeworkId = computed(() => route.query.homeworkId || props.homeworkId)
+const activeTabName = computed(() => route.query.tab || props.tab)
+
 const props = defineProps({
   groupId: {
     type: [String, Number],
-    required: true
+    default: null
   },
   groupName: {
     type: String,
@@ -133,12 +124,11 @@ const props = defineProps({
   }
 })
 
-const activeTab = ref(props.tab)
+const activeTab = ref(activeTabName.value)
 const groupData = ref(null)
-const showCreateTask = ref(false)
 
 const groupTitle = computed(() => {
-  return props.groupName || groupData.value?.group_name || '小组管理'
+  return groupName.value || groupData.value?.group_name || '小组管理'
 })
 
 const getGroupTypeTag = (type) => {
@@ -168,36 +158,13 @@ const handleTabChange = (tabName) => {
   console.log('切换到标签页:', tabName)
 }
 
-const handleHeaderCommand = (command) => {
-  switch (command) {
-    case 'edit':
-      // 编辑小组信息
-      ElMessage.info('编辑小组功能开发中')
-      break
-    case 'invite':
-      // 邀请学生
-      ElMessage.info('邀请学生功能开发中')
-      break
-    case 'export':
-      // 导出数据
-      ElMessage.info('导出数据功能开发中')
-      break
-  }
-}
-
-const handleTaskCreated = () => {
-  showCreateTask.value = false
-  refreshData()
-  ElMessage.success('任务发布成功')
-}
-
 const refreshData = async () => {
   await fetchGroupData()
 }
 
 const fetchGroupData = async () => {
   try {
-    console.log('开始获取小组数据，groupId:', props.groupId)
+    console.log('开始获取小组数据，groupId:', groupId.value)
     
     const response = await api.get('/user/group')
     if (response.data.code === 200) {
@@ -206,7 +173,7 @@ const fetchGroupData = async () => {
         ...(response.data.study_group || [])
       ]
       
-      const group = allGroups.find(g => g.group_id === parseInt(props.groupId))
+      const group = allGroups.find(g => g.group_id === parseInt(groupId.value))
       if (group) {
         groupData.value = group
         // 确保group_name字段
@@ -218,9 +185,10 @@ const fetchGroupData = async () => {
         console.log('未找到对应的小组，使用默认数据')
         // 如果没找到小组，使用默认数据
         groupData.value = {
-          group_id: props.groupId,
-          group_name: props.groupName || '教学小组',
-          group_type: 'study'
+          group_id: groupId.value,
+          group_name: groupName.value || '教学小组',
+          group_type: 'study',
+          course_name: '高等数学'
         }
       }
     }
@@ -228,9 +196,10 @@ const fetchGroupData = async () => {
     console.error('获取小组数据失败:', error)
     // API失败时使用默认数据
     groupData.value = {
-      group_id: props.groupId,
-      group_name: props.groupName || '教学小组',
-      group_type: 'study'
+      group_id: groupId.value,
+      group_name: groupName.value || '教学小组',
+      group_type: 'study',
+      course_name: '高等数学'
     }
     ElMessage.warning('获取小组数据失败，使用默认数据')
   }
@@ -238,13 +207,13 @@ const fetchGroupData = async () => {
 
 onMounted(() => {
   console.log('TeachingGroupDetails 组件已挂载')
-  console.log('Props:', props)
+  console.log('GroupId:', groupId.value)
   console.log('当前tab:', activeTab.value)
   
   fetchGroupData()
   
   // 如果有taskId参数，自动切换到任务管理标签
-  if (props.taskId) {
+  if (taskId.value) {
     activeTab.value = 'tasks'
   }
 })
@@ -254,6 +223,16 @@ onMounted(() => {
 .teaching-group-details {
   width: 100%;
   margin-top: 10px;
+}
+
+.breadcrumb-nav {
+  margin-bottom: 16px;
+  padding: 0 4px;
+}
+
+.breadcrumb-nav :deep(.el-breadcrumb__item:last-child .el-breadcrumb__inner) {
+  color: #303133;
+  font-weight: 500;
 }
 
 .details-card {
@@ -287,16 +266,48 @@ onMounted(() => {
   flex: 1;
 }
 
+.title-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .group-title {
-  margin: 0 0 8px 0;
+  margin: 0;
   font-size: 24px;
   font-weight: 600;
   color: #303133;
 }
 
+.group-type-tag {
+  margin-left: 8px;
+}
+
 .header-actions {
   display: flex;
-  gap: 12px;
+  align-items: center;
+}
+
+.course-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background-color: #f0f9ff;
+  border-radius: 6px;
+  border: 1px solid #b3d8ff;
+}
+
+.course-label {
+  font-size: 14px;
+  color: #606266;
+  font-weight: 500;
+}
+
+.course-name {
+  font-size: 14px;
+  color: #409eff;
+  font-weight: 600;
 }
 
 .content-tabs {
@@ -314,5 +325,41 @@ onMounted(() => {
 
 :deep(.el-tabs__content) {
   min-height: 600px;
+}
+
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  
+  .header-info {
+    width: 100%;
+  }
+  
+  .title-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .group-title {
+    font-size: 20px;
+  }
+  
+  .header-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+  
+  .course-info {
+    width: 100%;
+    justify-content: flex-start;
+  }
+  
+  .content-tabs {
+    padding: 16px;
+  }
 }
 </style>

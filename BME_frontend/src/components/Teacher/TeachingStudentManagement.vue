@@ -1,22 +1,10 @@
 <template>
   <div class="teaching-student-management">
-    <!-- 学生统计卡片 -->
+    <!-- 学生统计 -->
     <div class="stats-section">
       <div class="stat-card">
         <div class="stat-number">{{ studentStats.total }}</div>
-        <div class="stat-label">总学生数</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-number">{{ studentStats.active }}</div>
-        <div class="stat-label">活跃学生</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-number">{{ studentStats.avgScore }}</div>
-        <div class="stat-label">平均成绩</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-number">{{ studentStats.attendance }}%</div>
-        <div class="stat-label">出勤率</div>
+        <div class="stat-label">学生总数</div>
       </div>
     </div>
 
@@ -37,11 +25,6 @@
         </el-button>
       </div>
       <div class="toolbar-right">
-        <el-select v-model="filterStatus" placeholder="学生状态" style="width: 120px" @change="handleFilterChange">
-          <el-option label="全部" value="" />
-          <el-option label="活跃" value="active" />
-          <el-option label="不活跃" value="inactive" />
-        </el-select>
         <el-input
           v-model="searchKeyword"
           placeholder="搜索学生"
@@ -60,58 +43,51 @@
       <div v-if="loading" class="loading">
         <el-skeleton :rows="5" animated />
       </div>
-      <div v-else-if="filteredStudents.length === 0" class="empty-state">
+      <div v-else-if="totalCount === 0" class="empty-state">
         <el-empty description="暂无学生" />
       </div>
-      <div v-else class="students-grid">
-        <div v-for="student in filteredStudents" :key="student.id" class="student-card">
-          <div class="student-header">
-            <el-avatar :size="60" :src="getStudentAvatar(student)">
-              {{ student.name.charAt(0) }}
-            </el-avatar>
-            <div class="student-info">
-              <div class="student-name">{{ student.name }}</div>
-              <div class="student-id">学号：{{ student.student_id }}</div>
-              <el-tag :type="getStatusType(student.status)" size="small">
-                {{ getStatusText(student.status) }}
-              </el-tag>
-            </div>
-            <div class="student-actions">
-              <el-dropdown @command="(cmd) => handleStudentAction(cmd, student)">
-                <el-button text>
-                  <el-icon><MoreFilled /></el-icon>
-                </el-button>
-                <template #dropdown>
-                  <el-dropdown-menu>
-                    <el-dropdown-item command="view">查看详情</el-dropdown-item>
-                    <el-dropdown-item command="message">发送消息</el-dropdown-item>
-                    <el-dropdown-item command="progress">学习进度</el-dropdown-item>
-                    <el-dropdown-item command="remove" divided>移除学生</el-dropdown-item>
-                  </el-dropdown-menu>
-                </template>
-              </el-dropdown>
-            </div>
-          </div>
+      <div v-else class="table-container">
+        <el-table 
+          :data="filteredStudents" 
+          style="width: 100%; height: 100%"
+          :height="400"
+        >
+          <el-table-column label="头像" width="80">
+            <template #default="{ row }">
+              <el-avatar :size="40" :src="getStudentAvatar(row)">
+                {{ row.name.charAt(0) }}
+              </el-avatar>
+            </template>
+          </el-table-column>
           
-          <div class="student-stats">
-            <div class="stat-item">
-              <div class="stat-value">{{ student.completed_tasks || 0 }}</div>
-              <div class="stat-name">完成任务</div>
-            </div>
-            <div class="stat-item">
-              <div class="stat-value">{{ student.score || 0 }}</div>
-              <div class="stat-name">平均分</div>
-            </div>
-            <div class="stat-item">
-              <div class="stat-value">{{ student.attendance || 0 }}%</div>
-              <div class="stat-name">出勤率</div>
-            </div>
-          </div>
+          <el-table-column prop="name" label="姓名" min-width="150" />
           
-          <div class="student-footer">
-            <span class="join-time">加入时间：{{ formatDate(student.join_time) }}</span>
-            <span class="last-active">最后活跃：{{ formatDate(student.last_active) }}</span>
-          </div>
+          <el-table-column prop="student_id" label="学号" min-width="150" />
+          
+          <el-table-column label="操作" width="100" fixed="right">
+            <template #default="{ row }">
+              <el-button 
+                type="danger" 
+                size="small" 
+                @click="handleRemoveStudent(row)"
+              >
+                移除
+              </el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+
+        <!-- 分页 -->
+        <div class="pagination-container">
+          <el-pagination
+            v-model:current-page="currentPage"
+            v-model:page-size="pageSize"
+            :page-sizes="[10, 20, 50, 100]"
+            :total="totalCount"
+            layout="total, sizes, prev, pager, next, jumper"
+            @current-change="handlePageChange"
+            @size-change="handleSizeChange"
+          />
         </div>
       </div>
     </div>
@@ -212,7 +188,7 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
-  Plus, Refresh, Download, Search, MoreFilled
+  Plus, Refresh, Download, Search
 } from '@element-plus/icons-vue'
 
 const props = defineProps({
@@ -232,13 +208,15 @@ const emit = defineEmits(['students-updated'])
 const loading = ref(false)
 const inviting = ref(false)
 const students = ref([])
-const filterStatus = ref('')
 const searchKeyword = ref('')
 const showInviteDialog = ref(false)
 const showStudentDetail = ref(false)
 const selectedStudent = ref(null)
 const inviteFormRef = ref()
 const inviteCode = ref('')
+const currentPage = ref(1)
+const pageSize = ref(10)
+const totalCount = ref(0)
 
 // 邀请表单
 const inviteForm = ref({
@@ -257,24 +235,11 @@ const inviteRules = {
 // 计算属性
 const studentStats = computed(() => {
   const total = students.value.length
-  const active = students.value.filter(s => s.status === 'active').length
-  const avgScore = total > 0 
-    ? Math.round(students.value.reduce((sum, s) => sum + (s.score || 0), 0) / total)
-    : 0
-  const attendance = total > 0
-    ? Math.round(students.value.reduce((sum, s) => sum + (s.attendance || 0), 0) / total)
-    : 0
-  
-  return { total, active, avgScore, attendance }
+  return { total }
 })
 
 const filteredStudents = computed(() => {
   let result = students.value
-
-  // 状态筛选
-  if (filterStatus.value) {
-    result = result.filter(student => student.status === filterStatus.value)
-  }
 
   // 关键词搜索
   if (searchKeyword.value) {
@@ -286,7 +251,13 @@ const filteredStudents = computed(() => {
     )
   }
 
-  return result
+  // 更新总数
+  totalCount.value = result.length
+
+  // 分页
+  const start = (currentPage.value - 1) * pageSize.value
+  const end = start + pageSize.value
+  return result.slice(start, end)
 })
 
 // 方法
@@ -294,51 +265,23 @@ const getStudentAvatar = (student) => {
   return student.avatar || ''
 }
 
-const getStatusType = (status) => {
-  const typeMap = {
-    'active': 'success',
-    'inactive': 'warning'
-  }
-  return typeMap[status] || 'info'
-}
-
-const getStatusText = (status) => {
-  const textMap = {
-    'active': '活跃',
-    'inactive': '不活跃'
-  }
-  return textMap[status] || '未知'
-}
-
 const formatDate = (dateStr) => {
   if (!dateStr) return '未知'
   return new Date(dateStr).toLocaleString()
 }
 
-const handleFilterChange = () => {
-  // 筛选逻辑已在计算属性中处理
-}
-
 const handleSearch = () => {
-  // 搜索逻辑已在计算属性中处理
+  // 搜索时重置到第一页
+  currentPage.value = 1
 }
 
-const handleStudentAction = async (action, student) => {
-  switch (action) {
-    case 'view':
-      selectedStudent.value = student
-      showStudentDetail.value = true
-      break
-    case 'message':
-      ElMessage.info('发送消息功能开发中')
-      break
-    case 'progress':
-      ElMessage.info('学习进度功能开发中')
-      break
-    case 'remove':
-      await handleRemoveStudent(student)
-      break
-  }
+const handlePageChange = (page) => {
+  currentPage.value = page
+}
+
+const handleSizeChange = (size) => {
+  pageSize.value = size
+  currentPage.value = 1
 }
 
 const handleRemoveStudent = async (student) => {
@@ -355,6 +298,13 @@ const handleRemoveStudent = async (student) => {
     
     // 这里应该调用删除API
     students.value = students.value.filter(s => s.id !== student.id)
+    
+    // 检查当前页是否还有数据，如果没有则回到上一页
+    const maxPage = Math.ceil(totalCount.value / pageSize.value)
+    if (currentPage.value > maxPage && maxPage > 0) {
+      currentPage.value = maxPage
+    }
+    
     ElMessage.success('学生移除成功')
     emit('students-updated')
   } catch {
@@ -570,6 +520,9 @@ const fetchStudents = async () => {
         last_active: '2025-08-24T15:30:00'
       }
     ]
+    
+    // 初始化总数
+    totalCount.value = students.value.length
   } catch (error) {
     console.error('获取学生列表失败:', error)
     ElMessage.error('获取学生列表失败')
@@ -591,13 +544,15 @@ onMounted(() => {
 
 <style scoped>
 .teaching-student-management {
-  max-width: 100%;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .stats-section {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 16px;
+  display: flex;
+  justify-content: flex-start;
   margin-bottom: 24px;
 }
 
@@ -608,6 +563,7 @@ onMounted(() => {
   padding: 20px;
   text-align: center;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  min-width: 200px;
 }
 
 .stat-number {
@@ -645,6 +601,24 @@ onMounted(() => {
   background: white;
   border-radius: 8px;
   overflow: hidden;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.table-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.pagination-container {
+  display: flex;
+  justify-content: center;
+  padding: 20px;
+  border-top: 1px solid #e4e7ed;
+  background: #fafafa;
 }
 
 .loading {
@@ -654,82 +628,6 @@ onMounted(() => {
 .empty-state {
   padding: 60px 20px;
   text-align: center;
-}
-
-.students-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-  gap: 20px;
-  padding: 20px;
-}
-
-.student-card {
-  background: white;
-  border: 1px solid #e4e7ed;
-  border-radius: 12px;
-  padding: 20px;
-  transition: all 0.3s ease;
-}
-
-.student-card:hover {
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  transform: translateY(-2px);
-}
-
-.student-header {
-  display: flex;
-  align-items: center;
-  margin-bottom: 16px;
-}
-
-.student-info {
-  flex: 1;
-  margin-left: 16px;
-}
-
-.student-name {
-  font-size: 18px;
-  font-weight: 600;
-  color: #303133;
-  margin-bottom: 4px;
-}
-
-.student-id {
-  font-size: 14px;
-  color: #909399;
-  margin-bottom: 8px;
-}
-
-.student-stats {
-  display: flex;
-  justify-content: space-around;
-  margin-bottom: 16px;
-  padding: 16px;
-  background: #f8f9fa;
-  border-radius: 8px;
-}
-
-.stat-item {
-  text-align: center;
-}
-
-.stat-value {
-  font-size: 20px;
-  font-weight: bold;
-  color: #409EFF;
-  margin-bottom: 4px;
-}
-
-.stat-name {
-  font-size: 12px;
-  color: #909399;
-}
-
-.student-footer {
-  display: flex;
-  justify-content: space-between;
-  font-size: 12px;
-  color: #c0c4cc;
 }
 
 .invite-code-info {
@@ -786,10 +684,6 @@ onMounted(() => {
 }
 
 @media (max-width: 768px) {
-  .stats-section {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  
   .student-toolbar {
     flex-direction: column;
     gap: 16px;
@@ -799,15 +693,6 @@ onMounted(() => {
   .toolbar-right {
     width: 100%;
     justify-content: center;
-  }
-  
-  .students-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .student-footer {
-    flex-direction: column;
-    gap: 4px;
   }
 }
 </style>

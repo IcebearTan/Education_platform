@@ -264,9 +264,11 @@ const handleDeleteGroup = async (group) => {
 // 查看小组详情
 const handleViewGroup = (group) => {
   router.push({
-    name: 'teaching-group-management',
-    params: { groupId: group.group_id },
-    query: { group_name: group.group_name }
+    path: '/user-center/teaching-group-details',
+    query: { 
+      groupId: group.group_id,
+      groupName: group.group_name 
+    }
   })
 }
 
