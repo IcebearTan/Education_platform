@@ -27,16 +27,12 @@
         
         <div class="group-stats">
           <div class="stat-card">
-            <div class="stat-number">{{ groupInfo.student_count || 0 }}</div>
+            <div class="stat-number">{{ getMemberCount() }}</div>
             <div class="stat-label">成员数量</div>
           </div>
-          <div class="stat-card">
-            <div class="stat-number">{{ taskStats.total || 0 }}</div>
-            <div class="stat-label">总任务</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-number">{{ taskStats.completed || 0 }}</div>
-            <div class="stat-label">已完成</div>
+          <div class="stat-card course-card">
+            <div class="stat-course">{{ groupInfo.course_name || '暂无课程' }}</div>
+            <div class="stat-label">所属课程</div>
           </div>
         </div>
       </div>
@@ -48,97 +44,90 @@
         <el-tab-pane label="小组概览" name="overview">
           <div class="overview-content">
             <!-- 小组介绍 -->
-            <el-row :gutter="20">
-              <el-col :span="24">
-                <el-card class="info-card">
-                  <template #header>
-                    <div class="card-header">
-                      <span class="card-title">小组介绍</span>
-                    </div>
-                  </template>
-                  <div class="group-description">
-                    <p v-if="groupInfo.description" class="description-text">{{ groupInfo.description }}</p>
-                    <div v-else class="no-description">
-                      <el-icon class="no-data-icon"><Document /></el-icon>
-                      <span>暂无小组介绍</span>
-                    </div>
+            <div class="overview-section">
+              <div class="section-header">
+                <div class="section-title">
+                  <span class="title-icon">📖</span>
+                  <span>小组介绍</span>
+                </div>
+              </div>
+              <div class="section-content">
+                <div class="group-description">
+                  <p v-if="groupInfo.description" class="description-text">{{ groupInfo.description }}</p>
+                  <div v-else class="no-description">
+                    <span class="no-data-text">暂无小组介绍</span>
                   </div>
-                </el-card>
-              </el-col>
-            </el-row>
+                </div>
+              </div>
+            </div>
             
             <!-- 小组成员 -->
-            <el-row :gutter="20" style="margin-top: 20px;">
-              <el-col :span="24">
-                <el-card class="members-card">
-                  <template #header>
-                    <div class="card-header">
-                      <span class="card-title">小组成员</span>
-                      <el-tag type="info" size="small">{{ (groupInfo.students?.length || 0) + (groupInfo.teacher_name ? 1 : 0) }}人</el-tag>
-                    </div>
-                  </template>
-                  <div class="members-list">
-                    <!-- 导师信息 -->
-                    <div v-if="groupInfo.teacher_name" class="member-item teacher">
+            <div class="overview-section">
+              <div class="section-header">
+                <div class="section-title">
+                  <span class="title-icon">👥</span>
+                  <span>小组成员</span>
+                </div>
+                <div class="member-count-badge">{{ getMemberCount() }}人</div>
+              </div>
+              <div class="section-content">
+                <div class="members-grid">
+                  <!-- 导师信息 -->
+                  <div v-if="groupInfo.teacher_name" class="member-card teacher-card">
+                    <div class="member-avatar-wrapper">
                       <el-avatar 
-                        :size="40" 
+                        :size="44" 
                         :src="groupInfo.teacher_avatar"
                         class="member-avatar"
                       >
                         {{ groupInfo.teacher_name?.charAt(0) }}
                       </el-avatar>
-                      <div class="member-info">
-                        <div class="member-name">{{ groupInfo.teacher_name }}</div>
-                        <div class="member-role teacher-role">
-                          <el-icon><User /></el-icon>
-                          <span>导师</span>
-                        </div>
-                      </div>
-                      <div class="member-status">
-                        <el-tag type="warning" size="small">导师</el-tag>
-                      </div>
+                      <div class="role-badge teacher-badge">导师</div>
                     </div>
-                    
-                    <!-- 学生列表 -->
-                    <div 
-                      v-for="(student, index) in groupInfo.students" 
-                      :key="student.Student_Id"
-                      class="member-item student"
-                    >
+                    <div class="member-info">
+                      <div class="member-name">{{ groupInfo.teacher_name }}</div>
+                      <div class="member-role">负责指导小组学习</div>
+                    </div>
+                  </div>
+                  
+                  <!-- 学生列表 -->
+                  <div 
+                    v-for="(student, index) in groupInfo.students" 
+                    :key="student.Student_Id"
+                    class="member-card student-card"
+                  >
+                    <div class="member-avatar-wrapper">
                       <el-avatar 
-                        :size="36" 
+                        :size="40" 
                         :src="student.avatar"
                         class="member-avatar"
                       >
                         {{ student.Student?.charAt(0) }}
                       </el-avatar>
-                      <div class="member-info">
-                        <div class="member-name">{{ student.Student }}</div>
-                        <div class="member-role student-role">
-                          <el-icon><UserFilled /></el-icon>
-                          <span>学生</span>
-                        </div>
-                      </div>
-                      <div class="member-status">
-                        <el-tag type="success" size="small">成员</el-tag>
-                      </div>
+                      <div class="role-badge student-badge">学生</div>
                     </div>
-                    
-                    <!-- 无成员提示 -->
-                    <div v-if="!groupInfo.teacher_name && (!groupInfo.students || groupInfo.students.length === 0)" class="no-members">
-                      <el-icon class="no-data-icon"><UserFilled /></el-icon>
-                      <span>暂无成员信息</span>
+                    <div class="member-info">
+                      <div class="member-name">{{ student.Student }}</div>
+                      <div class="member-role">小组成员</div>
                     </div>
                   </div>
-                </el-card>
-              </el-col>
-            </el-row>
+                  
+                  <!-- 无成员提示 -->
+                  <div v-if="!groupInfo.teacher_name && (!groupInfo.students || groupInfo.students.length === 0)" class="no-members-card">
+                    <div class="no-data-content">
+                      <span class="no-data-icon">👤</span>
+                      <span class="no-data-text">暂无成员信息</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </el-tab-pane>
 
         <!-- 学习任务 - 复用现有组件 -->
         <el-tab-pane label="学习任务" name="tasks">
-          <div class="tab-content-wrapper">
+          <div class="tab-content-wrapper task-tab-wrapper">
             <StudentGroupTask 
               :Group_Id="route.params.groupId"
               :user-role="currentUserRole"
@@ -180,32 +169,18 @@
       </el-tabs>
     </div>
 
-    <!-- 任务详情弹出层 -->
-    <el-dialog 
-      v-model="showTaskDetail" 
-      title="任务详情" 
-      width="90%"
-      top="5vh"
-      :close-on-click-modal="false"
-    >
-      <TaskDetailComponent 
-        v-if="selectedTask"
-        :taskId="selectedTask.id"
-        :groupId="route.params.groupId"
-        :userRole="currentUserRole"
-        :taskDetail="selectedTask"
-        @close="closeTaskDetail"
-        @back="closeTaskDetail"
-      />
-    </el-dialog>
-
-    <!-- 出勤详情弹出层 -->
+    <!-- 出勤详情弹出层 - 优化响应式设计 -->
     <el-dialog 
       v-model="showAttendanceDetail" 
       title="出勤详细统计" 
-      width="90%"
-      top="5vh"
+      :width="taskDialogWidth"
+      top="3vh"
       :close-on-click-modal="false"
+      :show-close="true"
+      :modal="true"
+      :modal-class="'attendance-detail-modal'"
+      class="attendance-detail-dialog"
+      :destroy-on-close="true"
     >
       <StudentGroupRank 
         :groupId="route.params.groupId"
@@ -233,7 +208,7 @@ import { mockApiRequest } from '../../mock/config'
 import StudentGroupTask from './StudentGroupTask.vue'
 import StudentGroupRank from './StudentGroupRank.vue'
 import StudentGroupLeave from './StudentGroupLeave.vue'
-import TaskDetailComponent from './TaskDetailComponent.vue'
+// import TaskDetailComponent from './TaskDetailComponent.vue' // 已移除，改用路由跳转
 
 // 导入新的排行组件
 import LearningProgressRank from './LearningProgressRank.vue'
@@ -252,9 +227,26 @@ const learningProgress = ref({
   weeklyHours: 0
 })
 
-// 任务详情相关状态
-const showTaskDetail = ref(false)
-const selectedTask = ref(null)
+// 任务详情相关状态（已移除，改用路由跳转）
+// const showTaskDetail = ref(false)
+// const selectedTask = ref(null)
+
+// 响应式弹窗宽度计算
+const taskDialogWidth = computed(() => {
+  if (typeof window !== 'undefined') {
+    const width = window.innerWidth
+    if (width <= 768) {
+      return '95%' // 移动端几乎全屏
+    } else if (width <= 1024) {
+      return '85%' // 平板
+    } else if (width <= 1440) {
+      return '75%' // 中等桌面
+    } else {
+      return '65%' // 大屏桌面
+    }
+  }
+  return '75%' // 默认值
+})
 
 // 出勤详情相关状态
 const showAttendanceDetail = ref(false)
@@ -339,6 +331,13 @@ const getCurrentUserId = () => {
   }
 }
 
+// 计算成员总数（包括学生和导师）
+const getMemberCount = () => {
+  const studentCount = groupInfo.value.students?.length || 0
+  const teacherCount = groupInfo.value.teacher_name ? 1 : 0
+  return studentCount + teacherCount
+}
+
 const handleTabChange = (tabName) => {
   // 可以根据tab切换加载不同数据
   if (tabName === 'tasks' && tasks.value.length === 0) {
@@ -349,23 +348,28 @@ const handleTabChange = (tabName) => {
   }
 }
 
-// 处理任务点击事件
+// 处理任务点击事件 - 跳转到任务详情页面
 const handleTaskClick = (taskData) => {
-  // 如果传入的是完整的任务数据对象（从StudentGroupTask组件来的）
-  if (taskData.taskDetail) {
-    selectedTask.value = taskData.taskDetail
-  } else {
-    // 如果传入的是简单的任务对象
-    selectedTask.value = taskData
+  const taskId = taskData.id
+  if (taskId) {
+    router.push({
+      name: 'task-detail',
+      params: {
+        groupId: route.params.groupId,
+        taskId: taskId
+      },
+      query: {
+        role: currentUserRole.value
+      }
+    })
   }
-  showTaskDetail.value = true
 }
 
-// 关闭任务详情
-const closeTaskDetail = () => {
-  showTaskDetail.value = false
-  selectedTask.value = null
-}
+// 关闭任务详情（已废弃，改用路由跳转）
+// const closeTaskDetail = () => {
+//   showTaskDetail.value = false
+//   selectedTask.value = null
+// }
 
 // 查看出勤详情
 const handleViewAttendanceDetail = () => {
@@ -474,6 +478,13 @@ onBeforeMount(async () => {
   border-radius: 6px;
   min-width: 80px;
   border: 1px solid #e8e8e8;
+  transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+  background: #f0f7ff;
+  border-color: #d6e4ff;
+  transform: translateY(-2px);
 }
 
 .stat-number {
@@ -486,6 +497,36 @@ onBeforeMount(async () => {
 .stat-label {
   font-size: 12px;
   color: #666;
+}
+
+/* 课程卡片特殊样式 */
+.course-card {
+  min-width: 120px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: 1px solid #667eea;
+}
+
+.course-card:hover {
+  background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+  border-color: #5a6fd8;
+  transform: translateY(-2px);
+}
+
+.stat-course {
+  font-size: 14px;
+  font-weight: 600;
+  color: white;
+  margin-bottom: 4px;
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 0 4px;
+}
+
+.course-card .stat-label {
+  color: rgba(255, 255, 255, 0.8);
 }
 
 .details-content {
@@ -501,6 +542,15 @@ onBeforeMount(async () => {
   padding: 0 24px;
 }
 
+/* 为任务标签页移除内边距 */
+.details-content :deep(.el-tab-pane[aria-labelledby*="tasks"]) {
+  margin: 0 -24px;
+}
+
+.task-tab-wrapper {
+  margin: 0;
+}
+
 .details-content :deep(.el-tabs__header) {
   margin: 0 0 20px 0;
   padding-top: 20px;
@@ -514,122 +564,160 @@ onBeforeMount(async () => {
   padding: 0;
 }
 
-/* 概览页面样式 */
+/* 概览页面样式 - 扁平化设计 */
 .overview-content {
-  padding: 20px 0;
+  padding: 24px;
 }
 
-.info-card,
-.members-card {
-  margin-bottom: 20px;
-  border-radius: 8px;
-  border: 1px solid #e8e8e8;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-  transition: box-shadow 0.3s ease;
+.overview-section {
+  margin-bottom: 32px;
 }
 
-.info-card:hover,
-.members-card:hover {
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+.overview-section:last-child {
+  margin-bottom: 0;
 }
 
-.card-header {
+.section-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  width: 100%;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #f0f0f0;
 }
 
-.card-title {
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 18px;
   font-weight: 600;
-  color: #333;
-  font-size: 16px;
+  color: #2c3e50;
 }
 
-.group-description {
-  color: #666;
-  line-height: 1.6;
+.title-icon {
+  font-size: 20px;
+}
+
+.member-count-badge {
+  background: #f8f9fa;
+  color: #6c757d;
+  padding: 4px 12px;
+  border-radius: 16px;
   font-size: 14px;
-  min-height: 60px;
+  font-weight: 500;
+  border: 1px solid #e9ecef;
+}
+
+.section-content {
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid #e9ecef;
+  overflow: hidden;
+}
+
+/* 小组介绍样式 */
+.group-description {
+  padding: 24px;
+  min-height: 80px;
+  display: flex;
+  align-items: center;
 }
 
 .description-text {
   margin: 0;
-  padding: 12px 0;
+  color: #495057;
+  line-height: 1.6;
+  font-size: 15px;
 }
 
-.no-description,
-.no-members {
+.no-description {
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-direction: column;
-  color: #999;
+  color: #adb5bd;
   font-size: 14px;
-  padding: 40px 20px;
-  text-align: center;
-  gap: 8px;
+  width: 100%;
 }
 
-.no-data-icon {
-  font-size: 32px;
-  color: #d9d9d9;
-  margin-bottom: 8px;
+/* 成员网格布局 */
+.members-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  padding: 20px;
 }
 
-.members-list {
-  max-height: 400px;
-  overflow-y: auto;
-  padding: 8px 0;
-}
-
-.member-item {
+.member-card {
+  background: #fff;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 20px;
+  transition: all 0.2s ease;
   display: flex;
   align-items: center;
-  padding: 12px 16px;
-  border-radius: 8px;
-  margin-bottom: 8px;
-  transition: all 0.3s ease;
-  background: #fafafa;
-  border: 1px solid #f0f0f0;
+  gap: 16px;
 }
 
-.member-item:hover {
-  background: #f0f7ff;
-  border-color: #d6e4ff;
+.member-card:hover {
+  border-color: #dee2e6;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   transform: translateY(-1px);
 }
 
-.member-item:last-child {
-  margin-bottom: 0;
+.teacher-card {
+  border-left: 4px solid #ff6b35;
+  background: linear-gradient(135deg, #fff9f6, #ffffff);
 }
 
-.member-item.teacher {
-  background: linear-gradient(135deg, #fff7e6, #fff2e6);
-  border: 1px solid #ffd591;
+.student-card {
+  border-left: 4px solid #28a745;
+}
+
+.member-avatar-wrapper {
   position: relative;
-}
-
-.member-item.teacher::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 4px;
-  background: #fa8c16;
-  border-radius: 2px 0 0 2px;
+  flex-shrink: 0;
 }
 
 .member-avatar {
-  flex-shrink: 0;
+  background: #f8f9fa;
+  color: #495057;
+  font-weight: 600;
   border: 2px solid #fff;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  margin-right: 12px;
 }
 
-.member-item.teacher .member-avatar {
-  border-color: #fa8c16;
+.teacher-card .member-avatar {
+  border-color: #ff6b35;
+  background: linear-gradient(135deg, #ff6b35, #ff8c69);
+  color: white;
+}
+
+.student-card .member-avatar {
+  border-color: #28a745;
+  background: linear-gradient(135deg, #28a745, #20c997);
+  color: white;
+}
+
+.role-badge {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  background: #6c757d;
+  color: white;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 8px;
+  font-weight: 500;
+  border: 2px solid #fff;
+}
+
+.teacher-badge {
+  background: #ff6b35;
+}
+
+.student-badge {
+  background: #28a745;
 }
 
 .member-info {
@@ -638,95 +726,48 @@ onBeforeMount(async () => {
 }
 
 .member-name {
-  font-weight: 500;
-  color: #333;
+  font-size: 16px;
+  font-weight: 600;
+  color: #2c3e50;
   margin-bottom: 4px;
-  font-size: 14px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .member-role {
-  font-size: 12px;
-  color: #666;
+  font-size: 13px;
+  color: #6c757d;
+  font-weight: 400;
+}
+
+/* 无成员提示 */
+.no-members-card {
+  grid-column: 1 / -1;
   display: flex;
   align-items: center;
-  gap: 4px;
-}
-
-.teacher-role {
-  color: #fa8c16;
-  font-weight: 500;
-}
-
-.student-role {
-  color: #52c41a;
-}
-
-.member-status {
-  flex-shrink: 0;
-  margin-left: 8px;
-}
-
-.members-list {
-  max-height: 500px;
-  overflow-y: auto;
-}
-
-.member-item {
-  display: flex;
-  align-items: center;
-  padding: 12px 0;
-  border-bottom: 1px solid #f0f0f0;
-}
-
-.member-item:hover {
-  background-color: #f9f9f9;
-}
-
-.member-item.teacher {
+  justify-content: center;
+  padding: 40px;
+  border: 2px dashed #dee2e6;
+  border-radius: 8px;
   background: #f8f9fa;
-  padding: 16px 12px;
-  border-radius: 6px;
-  margin-bottom: 12px;
-  border: 1px solid #e8e8e8;
 }
 
-.member-item.teacher .member-name {
-  color: #333;
+.no-data-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
 }
 
-.member-item.teacher .member-role {
-  color: #666;
+.no-data-icon {
+  font-size: 32px;
+  opacity: 0.5;
 }
 
-.member-avatar {
-  margin-right: 12px;
-}
-
-.member-info {
-  flex: 1;
-}
-
-.member-name {
-  font-weight: 500;
-  color: #333;
-  margin-bottom: 2px;
+.no-data-text {
+  color: #6c757d;
   font-size: 14px;
-}
-
-.member-role {
-  font-size: 12px;
-  color: #666;
-}
-
-.member-actions {
-  opacity: 0;
-}
-
-.member-item:hover .member-actions {
-  opacity: 1;
 }
 
 /* 任务页面样式 */
@@ -877,7 +918,8 @@ onBeforeMount(async () => {
 
 /* 复用组件的包装样式 */
 .tab-content-wrapper {
-  padding: 0;
+  width: 98%;
+  padding: 10px;
   background: transparent;
 }
 
@@ -938,6 +980,81 @@ onBeforeMount(async () => {
   }
 }
 
+/* 出勤详情弹窗样式优化 */
+:deep(.attendance-detail-dialog) {
+  .el-dialog {
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+    margin: 0 auto;
+  }
+  
+  .el-dialog__header {
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid #f0f0f0;
+    background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%);
+    color: white;
+    border-radius: 12px 12px 0 0;
+  }
+  
+  .el-dialog__title {
+    font-size: 18px;
+    font-weight: 600;
+    color: white;
+  }
+  
+  .el-dialog__headerbtn {
+    top: 16px;
+    right: 20px;
+  }
+  
+  .el-dialog__headerbtn .el-dialog__close {
+    color: white;
+    font-size: 18px;
+  }
+  
+  .el-dialog__body {
+    padding: 0;
+    max-height: 85vh;
+    overflow-y: auto;
+  }
+}
+
+/* 出勤详情模态层样式 */
+:deep(.attendance-detail-modal) {
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+}
+
+/* 响应式优化 */
+@media (max-width: 1200px) {
+  :deep(.attendance-detail-dialog .el-dialog) {
+    margin: 5vh auto;
+  }
+}
+
+@media (max-width: 768px) {
+  :deep(.attendance-detail-dialog) {
+    .el-dialog {
+      margin: 2vh 2.5%;
+      width: 95% !important;
+      max-width: none;
+      border-radius: 8px;
+    }
+    
+    .el-dialog__header {
+      padding: 16px 20px 12px;
+    }
+    
+    .el-dialog__title {
+      font-size: 16px;
+    }
+    
+    .el-dialog__body {
+      max-height: 82vh;
+    }
+  }
+}
+
 @media (max-width: 480px) {
   .group-title {
     font-size: 18px;
@@ -949,6 +1066,18 @@ onBeforeMount(async () => {
   
   .stat-label {
     font-size: 11px;
+  }
+  
+  .stat-course {
+    font-size: 12px;
+  }
+  
+  .course-card {
+    min-width: 100px;
+  }
+  
+  .group-stats {
+    gap: 12px;
   }
 }
 </style>

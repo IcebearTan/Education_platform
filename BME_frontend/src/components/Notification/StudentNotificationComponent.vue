@@ -3,7 +3,7 @@
     <!-- 统计信息 -->
     <div class="stats-section">
       <el-row :gutter="20">
-        <el-col :span="6">
+        <el-col :span="8">
           <el-card class="stats-card">
             <div class="stats-content">
               <div class="stats-number">{{ totalMessages }}</div>
@@ -11,7 +11,7 @@
             </div>
           </el-card>
         </el-col>
-        <el-col :span="6">
+        <el-col :span="8">
           <el-card class="stats-card unread">
             <div class="stats-content">
               <div class="stats-number">{{ totalUnread }}</div>
@@ -19,19 +19,11 @@
             </div>
           </el-card>
         </el-col>
-        <el-col :span="6">
+        <el-col :span="8">
           <el-card class="stats-card group-stats">
             <div class="stats-content">
               <div class="stats-number">{{ groupMessages }}</div>
               <div class="stats-label">小组通知</div>
-            </div>
-          </el-card>
-        </el-col>
-        <el-col :span="6">
-          <el-card class="stats-card course-stats">
-            <div class="stats-content">
-              <div class="stats-number">{{ courseMessages }}</div>
-              <div class="stats-label">课程通知</div>
             </div>
           </el-card>
         </el-col>
@@ -219,11 +211,10 @@ const activeGroupSubTab = ref('all') // 小组通知的子分类
 const currentPage = ref(1)
 const pageSize = 20
 
-// 学生消息分类配置（小组通知、课程通知、系统通知）
+// 学生消息分类配置（小组通知、系统通知）
 const messageTabs = [
   { key: 'all', label: '全部消息', icon: Bell },
   { key: 'group', label: '小组通知', icon: User },
-  { key: 'course', label: '课程通知', icon: Document },
   { key: 'system', label: '系统通知', icon: 'Setting' }
 ]
 
@@ -289,10 +280,6 @@ const groupMessages = computed(() => {
   return taskMsgs.length + homeworkMsgs.length + leaveMsgs.length
 })
 
-const courseMessages = computed(() => {
-  return (props.notifications.course || []).length
-})
-
 const systemMessages = computed(() => {
   return (props.notifications.system || []).length
 })
@@ -353,7 +340,6 @@ const getMessageIcon = (type) => {
     task: Document,
     homework: Edit,
     leave: Message,
-    course: Document,
     system: Setting
   }
   return iconComponents[type] || Document
@@ -364,7 +350,6 @@ const getMessageIconColor = (type) => {
     task: '#409EFF',
     homework: '#67C23A',
     leave: '#E6A23C',
-    course: '#722ED1',
     system: '#909399'
   }
   return colors[type] || '#409EFF'
@@ -375,7 +360,6 @@ const getMessageTagType = (type) => {
     task: 'primary',
     homework: 'success',
     leave: 'warning',
-    course: '',
     system: 'info'
   }
   return tagTypes[type] || 'primary'
@@ -386,7 +370,6 @@ const getMessageTypeLabel = (type) => {
     task: '任务发布',
     homework: '作业批改',
     leave: '请假反馈',
-    course: '课程通知',
     system: '系统通知'
   }
   return labels[type] || '其他'
@@ -456,8 +439,6 @@ const handleMessageNavigation = async (message) => {
     }
   } else if (source_type === '8') { // 请假反馈
     router.push('/user-center/study-groups?tab=leave')
-  } else if (source_type === '3') { // 课程通知
-    router.push('/study')
   } else if (source_type === '9') { // 系统通知
     router.push('/user-center/user-info')
   } else {
@@ -522,10 +503,6 @@ onMounted(() => {
 
 .stats-card.group-stats {
   border-left: 4px solid #13C2C2;
-}
-
-.stats-card.course-stats {
-  border-left: 4px solid #722ED1;
 }
 
 .stats-content {

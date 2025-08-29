@@ -3,7 +3,7 @@
     <!-- 统计信息 -->
     <div class="stats-section">
       <el-row :gutter="20">
-        <el-col :span="5">
+        <el-col :span="6">
           <el-card class="stats-card">
             <div class="stats-content">
               <div class="stats-number">{{ totalMessages }}</div>
@@ -11,7 +11,7 @@
             </div>
           </el-card>
         </el-col>
-        <el-col :span="5">
+        <el-col :span="6">
           <el-card class="stats-card unread">
             <div class="stats-content">
               <div class="stats-number">{{ totalUnread }}</div>
@@ -19,7 +19,7 @@
             </div>
           </el-card>
         </el-col>
-        <el-col :span="5">
+        <el-col :span="6">
           <el-card class="stats-card group-stats">
             <div class="stats-content">
               <div class="stats-number">{{ groupMessages }}</div>
@@ -27,19 +27,11 @@
             </div>
           </el-card>
         </el-col>
-        <el-col :span="5">
+        <el-col :span="6">
           <el-card class="stats-card management-stats">
             <div class="stats-content">
               <div class="stats-number">{{ managementMessages }}</div>
               <div class="stats-label">小组管理</div>
-            </div>
-          </el-card>
-        </el-col>
-        <el-col :span="4">
-          <el-card class="stats-card course-stats">
-            <div class="stats-content">
-              <div class="stats-number">{{ courseMessages }}</div>
-              <div class="stats-label">课程通知</div>
             </div>
           </el-card>
         </el-col>
@@ -227,12 +219,11 @@ const activeGroupSubTab = ref('all') // 小组通知的子分类
 const currentPage = ref(1)
 const pageSize = 20
 
-// 导师消息分类配置（在学生基础上增加小组管理）
+// 导师消息分类配置（在学生基础上增加小组管理，移除课程通知）
 const messageTabs = [
   { key: 'all', label: '全部消息', icon: Bell },
   { key: 'group', label: '小组通知', icon: User },
   { key: 'management', label: '小组管理', icon: Tools },
-  { key: 'course', label: '课程通知', icon: Document },
   { key: 'system', label: '系统通知', icon: Setting }
 ]
 
@@ -302,10 +293,6 @@ const managementMessages = computed(() => {
   return (props.notifications.management || []).length
 })
 
-const courseMessages = computed(() => {
-  return (props.notifications.course || []).length
-})
-
 const systemMessages = computed(() => {
   return (props.notifications.system || []).length
 })
@@ -367,7 +354,6 @@ const getMessageIcon = (type) => {
     homework: Edit,
     leave: Message,
     management: Tools,
-    course: Document,
     system: Setting
   }
   return iconComponents[type] || Document
@@ -379,7 +365,6 @@ const getMessageIconColor = (type) => {
     homework: '#67C23A',
     leave: '#E6A23C',
     management: '#722ED1',
-    course: '#722ED1',
     system: '#909399'
   }
   return colors[type] || '#409EFF'
@@ -391,7 +376,6 @@ const getMessageTagType = (type) => {
     homework: 'success',
     leave: 'warning',
     management: '',
-    course: '',
     system: 'info'
   }
   return tagTypes[type] || 'primary'
@@ -403,7 +387,6 @@ const getMessageTypeLabel = (type) => {
     homework: '作业批改',
     leave: '请假反馈',
     management: '小组管理',
-    course: '课程通知',
     system: '系统通知'
   }
   return labels[type] || '其他'
@@ -476,8 +459,6 @@ const handleMessageNavigation = async (message) => {
     router.push('/user-center/teaching-management?tab=leave')
   } else if (source_type === '10') { // 小组管理
     router.push('/user-center/teaching-management')
-  } else if (source_type === '3') { // 课程通知
-    router.push('/study')
   } else if (source_type === '9') { // 系统通知
     router.push('/user-center/user-info')
   } else {
@@ -537,10 +518,6 @@ onMounted(() => {
 }
 
 .stats-card.management-stats {
-  border-left: 4px solid #722ED1;
-}
-
-.stats-card.course-stats {
   border-left: 4px solid #722ED1;
 }
 

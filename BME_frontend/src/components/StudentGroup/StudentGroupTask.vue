@@ -331,22 +331,17 @@ function onEditTask(task) {
 // 跳转到任务详情
 function goToTaskDetail(task) {
   emit('goToTaskDetail', {
-    taskId: task.id,
-    groupId: props.groupId,
-    userRole: props.userRole,
-    taskDetail: {
-      id: task.id,
-      title: task.title,
-      content: task.content,
-      create_time: task.create_time,
-      end_time: task.end_time,
-      priority: task.priority,
-      _priority: task._priority,
-      group_id: task.group_id,
-      group_name: task.group_name,
-      submitted_students: task.submitted_students || [],
-      not_submitted_students: task.not_submitted_students || []
-    }
+    id: task.id,
+    title: task.title,
+    content: task.content,
+    create_time: task.create_time,
+    end_time: task.end_time,
+    priority: task.priority,
+    _priority: task._priority,
+    group_id: task.group_id,
+    group_name: task.group_name,
+    submitted_students: task.submitted_students || [],
+    not_submitted_students: task.not_submitted_students || []
   })
 }
 

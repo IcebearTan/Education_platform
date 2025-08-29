@@ -25,6 +25,7 @@ import StudentGroupsComponent from './components/StudentGroup/StudentGroupsCompo
 import StudyGroupDetails from './components/StudentGroup/StudyGroupDetails.vue';
 import StudentGroupRank from './components/StudentGroup/StudentGroupRank.vue';
 import StudentGroupTask from './components/StudentGroup/StudentGroupTask.vue';
+import TaskDetailView from './views/TaskDetailView.vue';
 import MyFeedbacksComponent from './components/User/MyFeedbacksComponent.vue';
 
 const router = createRouter({
@@ -113,6 +114,18 @@ const router = createRouter({
                         viewMode: 'student'
                     }),
                     meta: { role: 'student' }
+                },
+                // 任务详情页面
+                {
+                    path: '/user-center/study-group/:groupId/task/:taskId',
+                    name: 'task-detail',
+                    component: TaskDetailView,
+                    props: route => ({
+                        groupId: parseInt(route.params.groupId),
+                        taskId: parseInt(route.params.taskId),
+                        userRole: route.query.role || 'student'
+                    }),
+                    meta: { title: '任务详情' }
                 },
                 // 教学管理详情页面
                 {

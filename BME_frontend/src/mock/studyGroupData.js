@@ -6,6 +6,7 @@ export const mockGroupData = {
     group_name: 'JavaScript 进阶学习小组',
     group_type: 'study',
     description: '专注于 JavaScript 高级特性、框架应用和项目实战的学习小组。通过理论学习和实践项目，提升编程技能和解决问题的能力。我们将深入学习ES6+特性、Vue.js框架、Node.js后端开发，以及现代前端工程化工具的使用。',
+    course_name: 'Web前端高级开发',
     teacher_id: 1001,
     teacher_name: '张老师',
     teacher_avatar: '/src/assets/Jerry_Scintilla_avatar.jpg',
