@@ -105,6 +105,39 @@
           </div>
         </div>
         
+        <!-- 小组管理的子分类横栏 -->
+        <div v-if="activeTab === 'management'" class="management-sub-tabs-horizontal">
+          <div class="sub-tabs-container">
+            <div 
+              :class="['sub-tab-item', { active: activeManagementSubTab === 'all' }]"
+              @click="switchManagementSubTab('all')"
+            >
+              <span class="sub-tab-label">全部</span>
+              <el-badge 
+                v-if="getUnreadCount('management') > 0" 
+                :value="getUnreadCount('management')" 
+                class="sub-tab-badge"
+              />
+            </div>
+            <div 
+              v-for="subTab in managementSubTabs" 
+              :key="subTab.key"
+              :class="['sub-tab-item', { active: activeManagementSubTab === subTab.key }]"
+              @click="switchManagementSubTab(subTab.key)"
+            >
+              <el-icon class="sub-tab-icon">
+                <component :is="typeof subTab.icon === 'string' ? subTab.icon : subTab.icon" />
+              </el-icon>
+              <span class="sub-tab-label">{{ subTab.label }}</span>
+              <el-badge 
+                v-if="getManagementSubUnreadCount(subTab.key) > 0" 
+                :value="getManagementSubUnreadCount(subTab.key)" 
+                class="sub-tab-badge"
+              />
+            </div>
+          </div>
+        </div>
+        
         <div class="message-content-scrollable">
           <div v-if="filteredMessages.length === 0" class="empty-state">
             <el-empty 
@@ -216,6 +249,7 @@ const store = useStore()
 
 const activeTab = ref('all')
 const activeGroupSubTab = ref('all') // 小组通知的子分类
+const activeManagementSubTab = ref('all') // 小组管理的子分类
 const currentPage = ref(1)
 const pageSize = 20
 
@@ -232,6 +266,13 @@ const groupSubTabs = [
   { key: 'task', label: '任务发布', icon: Document },
   { key: 'homework', label: '作业批改', icon: Edit },
   { key: 'leave', label: '请假反馈', icon: Message }
+]
+
+// 小组管理的子分类
+const managementSubTabs = [
+  { key: 'homework-submission', label: '作业提交', icon: Edit },
+  { key: 'leave-application', label: '请假申请', icon: Message },
+  { key: 'join-application', label: '加入申请', icon: User }
 ]
 
 // 本地存储键名
@@ -259,6 +300,19 @@ const getCurrentMessages = computed(() => {
       )
     } else {
       return props.notifications[activeGroupSubTab.value] || []
+    }
+  } else if (activeTab.value === 'management') {
+    // 小组管理：如果选择了子分类，显示子分类内容；否则显示所有管理消息
+    if (activeManagementSubTab.value === 'all') {
+      // 返回所有管理相关消息（作业提交、请假申请、加入申请）
+      const homeworkSubmissionMsgs = props.notifications['homework-submission'] || []
+      const leaveApplicationMsgs = props.notifications['leave-application'] || []
+      const joinApplicationMsgs = props.notifications['join-application'] || []
+      return [...homeworkSubmissionMsgs, ...leaveApplicationMsgs, ...joinApplicationMsgs].sort((a, b) => 
+        new Date(b.create_time) - new Date(a.create_time)
+      )
+    } else {
+      return props.notifications[activeManagementSubTab.value] || []
     }
   } else {
     return props.notifications[activeTab.value] || []
@@ -290,7 +344,10 @@ const groupMessages = computed(() => {
 })
 
 const managementMessages = computed(() => {
-  return (props.notifications.management || []).length
+  const homeworkSubmissionMsgs = props.notifications['homework-submission'] || []
+  const leaveApplicationMsgs = props.notifications['leave-application'] || []
+  const joinApplicationMsgs = props.notifications['join-application'] || []
+  return homeworkSubmissionMsgs.length + leaveApplicationMsgs.length + joinApplicationMsgs.length
 })
 
 const systemMessages = computed(() => {
@@ -307,11 +364,21 @@ const switchTab = (tabKey) => {
     activeGroupSubTab.value = 'all'
   }
   
+  // 如果切换到小组管理，默认显示全部子分类
+  if (tabKey === 'management') {
+    activeManagementSubTab.value = 'all'
+  }
+  
   localStorage.setItem(ACTIVE_TAB_KEY, tabKey)
 }
 
 const switchGroupSubTab = (subTabKey) => {
   activeGroupSubTab.value = subTabKey
+  currentPage.value = 1
+}
+
+const switchManagementSubTab = (subTabKey) => {
+  activeManagementSubTab.value = subTabKey
   currentPage.value = 1
 }
 
@@ -331,11 +398,21 @@ const getUnreadCount = (type) => {
     const homeworkUnread = (props.notifications.homework || []).filter(msg => !msg.is_read).length
     const leaveUnread = (props.notifications.leave || []).filter(msg => !msg.is_read).length
     return taskUnread + homeworkUnread + leaveUnread
+  } else if (type === 'management') {
+    // 小组管理未读数 = 作业提交 + 请假申请 + 加入申请未读数
+    const homeworkSubmissionUnread = (props.notifications['homework-submission'] || []).filter(msg => !msg.is_read).length
+    const leaveApplicationUnread = (props.notifications['leave-application'] || []).filter(msg => !msg.is_read).length
+    const joinApplicationUnread = (props.notifications['join-application'] || []).filter(msg => !msg.is_read).length
+    return homeworkSubmissionUnread + leaveApplicationUnread + joinApplicationUnread
   }
   return props.notifications[type]?.filter(msg => !msg.is_read).length || 0
 }
 
 const getGroupSubUnreadCount = (subType) => {
+  return props.notifications[subType]?.filter(msg => !msg.is_read).length || 0
+}
+
+const getManagementSubUnreadCount = (subType) => {
   return props.notifications[subType]?.filter(msg => !msg.is_read).length || 0
 }
 
@@ -624,6 +701,13 @@ onMounted(() => {
 
 /* 右侧小组通知横栏子分类样式 */
 .group-sub-tabs-horizontal {
+  background: #f8f9fa;
+  border-bottom: 1px solid #e4e7ed;
+  padding: 16px 24px;
+}
+
+/* 右侧小组管理横栏子分类样式 */
+.management-sub-tabs-horizontal {
   background: #f8f9fa;
   border-bottom: 1px solid #e4e7ed;
   padding: 16px 24px;
