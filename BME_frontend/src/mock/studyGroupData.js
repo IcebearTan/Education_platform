@@ -485,14 +485,52 @@ export const mockApiResponses = {
                             student_id: 2001,
                             student_name: '李小明',
                             student: '李小明',
-                            title: '因病请假',
-                            content: '发烧感冒，需要在家休息',
+                            title: '病假',
+                            content: '发烧感冒，需要在家休息治疗，医生建议休息2天',
                             start_time: '2024-02-01 08:00:00',
                             end_time: '2024-02-02 18:00:00',
                             status: 1,
                             create_time: '2024-01-31 20:00:00',
                             approve_time: '2024-01-31 21:00:00',
-                            group_id: groupId
+                            approve_comment: '同意请假，注意身体健康，按时吃药，康复后及时返校',
+                            group_id: groupId,
+                            attachments: [
+                                {
+                                    name: '医院诊断书.jpg',
+                                    url: '/files/medical_certificate.jpg',
+                                    size: 245760,
+                                    type: 'image/jpeg'
+                                },
+                                {
+                                    name: '病假条.pdf',
+                                    url: '/files/sick_leave.pdf',
+                                    size: 128000,
+                                    type: 'application/pdf'
+                                }
+                            ]
+                        },
+                        {
+                            id: 3,
+                            student_id: 2003,
+                            student_name: '陈小强',
+                            student: '陈小强',
+                            title: '事假',
+                            content: '参加亲戚婚礼，需要请假半天',
+                            start_time: '2024-02-03 13:00:00',
+                            end_time: '2024-02-03 18:00:00',
+                            status: 1,
+                            create_time: '2024-02-01 10:00:00',
+                            approve_time: '2024-02-01 14:00:00',
+                            approve_comment: '同意请假，祝贺新人！注意安全，及时返校',
+                            group_id: groupId,
+                            attachments: [
+                                {
+                                    name: '婚礼邀请函.jpg',
+                                    url: '/files/wedding_invitation.jpg',
+                                    size: 320000,
+                                    type: 'image/jpeg'
+                                }
+                            ]
                         }
                     ],
                     pending: [
@@ -501,13 +539,32 @@ export const mockApiResponses = {
                             student_id: 2002,
                             student_name: '王小红',
                             student: '王小红',
-                            title: '家中有事',
+                            title: '事假',
                             content: '家里有急事需要处理，请假一天',
                             start_time: '2024-02-05 08:00:00',
                             end_time: '2024-02-05 18:00:00',
                             status: 0,
                             create_time: '2024-02-04 19:00:00',
-                            group_id: groupId
+                            group_id: groupId,
+                            attachments: []
+                        }
+                    ],
+                    rejected: [
+                        {
+                            id: 4,
+                            student_id: 2004,
+                            student_name: '赵小美',
+                            student: '赵小美',
+                            title: '事假',
+                            content: '想要参加朋友聚会',
+                            start_time: '2024-02-06 08:00:00',
+                            end_time: '2024-02-06 18:00:00',
+                            status: 2,
+                            create_time: '2024-02-04 15:00:00',
+                            approve_time: '2024-02-04 16:00:00',
+                            approve_comment: '理由不够充分，建议将聚会安排在周末或课余时间',
+                            group_id: groupId,
+                            attachments: []
                         }
                     ]
                 }

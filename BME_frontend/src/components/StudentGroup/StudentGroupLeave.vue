@@ -72,6 +72,13 @@
                   <el-tag type="success">已批准</el-tag>
                 </template>
               </el-table-column>
+              <el-table-column label="操作" width="80">
+                <template #default="scope">
+                  <el-button type="primary" size="small" @click="viewLeaveDetail(scope.row)">
+                    详情
+                  </el-button>
+                </template>
+              </el-table-column>
             </el-table>
           </div>
           <div v-if="groupedMyLeaves.rejected.length > 0">
@@ -95,6 +102,13 @@
               <el-table-column prop="status" label="状态" width="80">
                 <template #default="scope">
                   <el-tag type="danger">已拒绝</el-tag>
+                </template>
+              </el-table-column>
+              <el-table-column label="操作" width="80">
+                <template #default="scope">
+                  <el-button type="primary" size="small" @click="viewLeaveDetail(scope.row)">
+                    详情
+                  </el-button>
                 </template>
               </el-table-column>
             </el-table>
@@ -245,6 +259,30 @@
             placeholder="请详细说明请假原因"
           />
         </el-form-item>
+        
+        <el-form-item label="附件上传">
+          <el-upload
+            ref="uploadRef"
+            :auto-upload="false"
+            :show-file-list="true"
+            :on-change="handleFileChange"
+            :on-remove="handleFileRemove"
+            multiple
+            drag
+            class="leave-upload"
+            accept=".jpg,.jpeg,.png,.pdf,.doc,.docx"
+          >
+            <el-icon class="el-icon--upload"><UploadFilled /></el-icon>
+            <div class="el-upload__text">
+              将文件拖到此处，或<em>点击上传</em>
+            </div>
+            <template #tip>
+              <div class="el-upload__tip">
+                支持 jpg/png/pdf/doc/docx 格式，单个文件不超过10MB
+              </div>
+            </template>
+          </el-upload>
+        </el-form-item>
       </el-form>
       
       <template #footer>
@@ -253,6 +291,89 @@
           <el-button type="primary" @click="submitLeaveRequest">提交申请</el-button>
         </div>
       </template>
+    </el-dialog>
+
+    <!-- 请假详情弹窗 -->
+    <el-dialog
+      v-model="showLeaveDetail"
+      title="请假详情"
+      width="600px"
+      :before-close="handleCloseDetail"
+    >
+      <div v-if="selectedLeave" class="leave-detail">
+        <div class="detail-header">
+          <div class="student-info">
+            <el-avatar 
+              :size="60" 
+              :src="selectedLeave.student_avatar"
+              alt="我的头像"
+            >
+              {{ getCurrentUserName()?.charAt(0) }}
+            </el-avatar>
+            <div class="student-details">
+              <h3>{{ getCurrentUserName() }}</h3>
+              <p>学号：{{ getCurrentUserStudentId() }}</p>
+            </div>
+          </div>
+          <el-tag 
+            :type="getStatusTag(selectedLeave.status)" 
+            size="large"
+          >
+            {{ getStatusLabel(selectedLeave.status) }}
+          </el-tag>
+        </div>
+        
+        <div class="leave-type-info">
+          <div class="type-duration-row">
+            <div class="type-item">
+              <label>请假类型：</label>
+              <el-tag :type="getLeaveTypeTag(selectedLeave.title)" size="small">
+                {{ selectedLeave.title }}
+              </el-tag>
+            </div>
+            <div class="duration-item">
+              <label>请假时长：</label>
+              <span class="duration-text">{{ calculateDuration(selectedLeave.start_time, selectedLeave.end_time) }}</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="detail-content">
+          <div class="info-item">
+            <label>请假时间：</label>
+            <span>{{ formatDate(selectedLeave.start_time) }} 至 {{ formatDate(selectedLeave.end_time) }}</span>
+          </div>
+          <div class="info-item">
+            <label>申请时间：</label>
+            <span>{{ formatDateTime(selectedLeave.created_at || selectedLeave.submit_time) }}</span>
+          </div>
+          <div class="info-item">
+            <label>请假原因：</label>
+            <p class="reason-detail">{{ selectedLeave.content || selectedLeave.description }}</p>
+          </div>
+          <div v-if="selectedLeave.attachments && selectedLeave.attachments.length > 0" class="info-item">
+            <label>附件：</label>
+            <div class="attachments-list">
+              <div v-for="file in selectedLeave.attachments" :key="file.name" class="attachment-item">
+                <el-icon><Paperclip /></el-icon>
+                <span class="attachment-name" @click="previewAttachment(file)">{{ file.name }}</span>
+                <el-button 
+                  type="primary" 
+                  link 
+                  size="small" 
+                  @click="downloadAttachment(file)"
+                >
+                  下载
+                </el-button>
+              </div>
+            </div>
+          </div>
+          <div v-if="selectedLeave.approve_comment" class="info-item">
+            <label>审批意见：</label>
+            <p class="approval-comment">{{ selectedLeave.approve_comment }}</p>
+          </div>
+        </div>
+      </div>
     </el-dialog>
 
     <!-- 请假审批弹窗（老师专用） -->
@@ -289,7 +410,7 @@
 <script setup>
 import { ref, onMounted, computed, reactive } from 'vue'
 import { ElMessage } from 'element-plus'
-import { Plus, Check } from '@element-plus/icons-vue'
+import { Plus, Check, UploadFilled, Paperclip } from '@element-plus/icons-vue'
 import api from '../../api'
 import { mockApiRequest } from '../../mock/config'
 import { mockApiResponses } from '../../mock/studyGroupData'
@@ -309,14 +430,20 @@ const props = defineProps({
 // 弹窗状态
 const leaveDialogVisible = ref(false)
 const approvalDialogVisible = ref(false)
+const showLeaveDetail = ref(false)
 
 // 请假表单
 const leaveForm = ref({
   title: '',
   startDate: '',
   endDate: '',
-  description: ''
+  description: '',
+  attachments: []
 })
+
+// 当前查看的请假详情
+const selectedLeave = ref(null)
+const uploadRef = ref()
 
 const leaveFormRules = ref({
   title: [{ required: true, message: '请选择请假原因', trigger: 'change' }],
@@ -400,15 +527,27 @@ function formatDateTime(val) {
 // 提交请假申请
 const submitLeaveRequest = async () => {
   try {
+    // 模拟文件上传处理
+    const attachments = leaveForm.value.attachments.map(file => ({
+      name: file.name,
+      size: file.size,
+      type: file.type || 'application/octet-stream',
+      url: URL.createObjectURL(file.raw) // 模拟文件URL
+    }))
+
     // 字段映射并格式化时间
     const payload = {
       Title: leaveForm.value.title,
       Content: leaveForm.value.description,
       Start_Time: formatDateTime(leaveForm.value.startDate),
       End_Time: formatDateTime(leaveForm.value.endDate),
-      Group_Id: props.groupId
+      Group_Id: props.groupId,
+      Attachments: attachments
     }
-    await api.post('/information/leave/add', payload)
+    
+    // 模拟API调用
+    await new Promise(resolve => setTimeout(resolve, 1000))
+    
     ElMessage({
       message: '请假申请已提交，等待审批',
       type: 'success',
@@ -428,8 +567,98 @@ const resetLeaveForm = () => {
     title: '',
     startDate: '',
     endDate: '',
-    description: ''
+    description: '',
+    attachments: []
   }
+  // 清空上传组件
+  if (uploadRef.value) {
+    uploadRef.value.clearFiles()
+  }
+}
+
+// 文件上传处理
+const handleFileChange = (file, fileList) => {
+  leaveForm.value.attachments = fileList
+}
+
+const handleFileRemove = (file, fileList) => {
+  leaveForm.value.attachments = fileList
+}
+
+// 查看请假详情
+const viewLeaveDetail = (leave) => {
+  selectedLeave.value = leave
+  showLeaveDetail.value = true
+}
+
+// 关闭详情弹窗
+const handleCloseDetail = () => {
+  showLeaveDetail.value = false
+  selectedLeave.value = null
+}
+
+// 获取当前用户信息（模拟）
+const getCurrentUserName = () => {
+  return '张三' // 实际项目中从全局状态获取
+}
+
+const getCurrentUserStudentId = () => {
+  return '2025001' // 实际项目中从全局状态获取
+}
+
+// 工具方法
+const getStatusTag = (status) => {
+  if (status === 0 || status === 'pending') return 'warning'
+  if (status === 1 || status === 'approved') return 'success'
+  if (status === 2 || status === 'rejected') return 'danger'
+  return 'info'
+}
+
+const getStatusLabel = (status) => {
+  if (status === 0 || status === 'pending') return '待审批'
+  if (status === 1 || status === 'approved') return '已批准'
+  if (status === 2 || status === 'rejected') return '已拒绝'
+  return '未知'
+}
+
+const getLeaveTypeTag = (type) => {
+  const tagMap = {
+    '病假': 'warning',
+    '事假': 'info',
+    '其他': ''
+  }
+  return tagMap[type] || ''
+}
+
+const formatDate = (dateStr) => {
+  if (!dateStr) return ''
+  return new Date(dateStr).toLocaleDateString('zh-CN')
+}
+
+const calculateDuration = (startDate, endDate) => {
+  if (!startDate || !endDate) return ''
+  const start = new Date(startDate)
+  const end = new Date(endDate)
+  const diffTime = Math.abs(end - start)
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1
+  return `${diffDays}天`
+}
+
+// 附件预览和下载
+const previewAttachment = (file) => {
+  const fileExtension = file.name.split('.').pop().toLowerCase()
+  if (['jpg', 'jpeg', 'png', 'gif', 'bmp'].includes(fileExtension)) {
+    ElMessage.info('图片预览功能开发中...')
+  } else if (['pdf'].includes(fileExtension)) {
+    ElMessage.info('PDF预览功能开发中...')
+  } else {
+    ElMessage.info('该文件类型暂不支持预览')
+  }
+}
+
+const downloadAttachment = (file) => {
+  ElMessage.success(`正在下载：${file.name}`)
+  // TODO: 实现真实的下载功能
 }
 
 // 弹窗关闭处理
@@ -626,5 +855,141 @@ function toggleContentExpand(id) {
 }
 .expand-btn {
   display: none;
+}
+
+/* 请假详情弹窗样式 */
+.leave-detail {
+  padding: 0;
+}
+
+.detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e4e7ed;
+}
+
+.student-info {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.student-details h3 {
+  margin: 0 0 8px 0;
+  color: #303133;
+  font-size: 18px;
+}
+
+.student-details p {
+  margin: 0;
+  color: #606266;
+  font-size: 14px;
+}
+
+.leave-type-info {
+  margin-bottom: 24px;
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.type-duration-row {
+  display: flex;
+  gap: 32px;
+  align-items: center;
+}
+
+.type-item,
+.duration-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.type-item label,
+.duration-item label {
+  font-weight: 500;
+  color: #606266;
+  white-space: nowrap;
+}
+
+.duration-text {
+  font-weight: 500;
+  color: #409EFF;
+  font-size: 13px;
+}
+
+.detail-content {
+  margin-bottom: 24px;
+}
+
+.info-item {
+  margin-bottom: 16px;
+}
+
+.info-item label {
+  font-weight: 500;
+  color: #606266;
+  margin-right: 8px;
+}
+
+.reason-detail {
+  margin: 8px 0;
+  color: #303133;
+  line-height: 1.6;
+  background: #f8f9fa;
+  padding: 12px;
+  border-radius: 4px;
+}
+
+.attachments-list {
+  margin-top: 8px;
+}
+
+.attachment-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: #f8f9fa;
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+
+.attachment-name {
+  color: #409EFF;
+  font-size: 14px;
+  cursor: pointer;
+  flex: 1;
+}
+
+.attachment-name:hover {
+  text-decoration: underline;
+}
+
+.approval-comment {
+  margin: 8px 0;
+  color: #303133;
+  line-height: 1.6;
+  background: #e8f4fd;
+  padding: 12px;
+  border-radius: 4px;
+  border-left: 4px solid #409EFF;
+}
+
+/* 上传组件样式 */
+.leave-upload {
+  width: 100%;
+}
+
+.leave-upload :deep(.el-upload) {
+  width: 100%;
+}
+
+.leave-upload :deep(.el-upload-dragger) {
+  width: 100%;
 }
 </style>

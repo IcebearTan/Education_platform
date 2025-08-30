@@ -17,24 +17,6 @@
           />
         </el-form-item>
         
-        <el-form-item label="小组类型" prop="groupType">
-          <el-select v-model="basicSettings.groupType" style="width: 200px">
-            <el-option label="学习小组" value="study" />
-            <el-option label="项目小组" value="project" />
-            <el-option label="研究小组" value="research" />
-          </el-select>
-        </el-form-item>
-        
-        <el-form-item label="小组状态" prop="status">
-          <el-switch
-            v-model="basicSettings.isActive"
-            active-text="活跃"
-            inactive-text="暂停"
-            :active-value="true"
-            :inactive-value="false"
-          />
-        </el-form-item>
-        
         <el-form-item label="最大成员数" prop="maxMembers">
           <el-input-number
             v-model="basicSettings.maxMembers"
@@ -58,42 +40,10 @@
       <div class="permission-grid">
         <div class="permission-item">
           <div class="permission-info">
-            <div class="permission-title">学生可以邀请其他学生</div>
-            <div class="permission-desc">允许学生邀请新成员加入小组</div>
-          </div>
-          <el-switch v-model="permissions.studentCanInvite" />
-        </div>
-        
-        <div class="permission-item">
-          <div class="permission-info">
-            <div class="permission-title">学生可以创建任务</div>
-            <div class="permission-desc">允许学生发布小组任务</div>
-          </div>
-          <el-switch v-model="permissions.studentCanCreateTask" />
-        </div>
-        
-        <div class="permission-item">
-          <div class="permission-info">
-            <div class="permission-title">学生可以上传文件</div>
-            <div class="permission-desc">允许学生上传和分享文件</div>
-          </div>
-          <el-switch v-model="permissions.studentCanUpload" />
-        </div>
-        
-        <div class="permission-item">
-          <div class="permission-info">
             <div class="permission-title">自动审核加入申请</div>
             <div class="permission-desc">新成员加入时无需手动审核</div>
           </div>
           <el-switch v-model="permissions.autoApprove" />
-        </div>
-        
-        <div class="permission-item">
-          <div class="permission-info">
-            <div class="permission-title">公开小组信息</div>
-            <div class="permission-desc">小组信息对其他用户可见</div>
-          </div>
-          <el-switch v-model="permissions.publicGroup" />
         </div>
       </div>
       
@@ -137,23 +87,12 @@
           </div>
           <el-switch v-model="notifications.gradeRelease" />
         </div>
-      </div>
-      
-      <div class="notification-methods">
-        <h4>通知方式</h4>
-        <el-checkbox-group v-model="notifications.methods">
-          <el-checkbox label="email">邮箱通知</el-checkbox>
-          <el-checkbox label="system">系统内通知</el-checkbox>
-          <el-checkbox label="wechat">微信通知</el-checkbox>
-        </el-checkbox-group>
-      </div>
+        </div>
       
       <el-button type="primary" @click="saveNotifications" :loading="saving" style="margin-top: 20px">
         保存通知设置
       </el-button>
-    </div>
-
-    <!-- 数据管理 -->
+    </div>    <!-- 数据管理 -->
     <div class="settings-section">
       <h3>数据管理</h3>
       <div class="data-actions">
@@ -165,28 +104,6 @@
           <el-button @click="exportGroupData">
             <el-icon><Download /></el-icon>
             导出数据
-          </el-button>
-        </div>
-        
-        <div class="action-item">
-          <div class="action-info">
-            <div class="action-title">备份小组</div>
-            <div class="action-desc">创建小组的完整备份</div>
-          </div>
-          <el-button @click="backupGroup">
-            <el-icon><FolderOpened /></el-icon>
-            创建备份
-          </el-button>
-        </div>
-        
-        <div class="action-item">
-          <div class="action-info">
-            <div class="action-title">清空聊天记录</div>
-            <div class="action-desc">删除所有聊天记录（不可恢复）</div>
-          </div>
-          <el-button type="warning" @click="clearChatHistory">
-            <el-icon><Delete /></el-icon>
-            清空记录
           </el-button>
         </div>
       </div>
@@ -218,7 +135,6 @@
         <ul>
           <li>所有学生数据和学习记录</li>
           <li>所有任务和提交记录</li>
-          <li>所有聊天记录和文件</li>
           <li>所有统计数据</li>
         </ul>
         <p>请输入小组名称 <strong>"{{ basicSettings.groupName }}"</strong> 以确认解散：</p>
@@ -244,7 +160,7 @@ import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
-  Download, FolderOpened, Delete, WarningFilled
+  Download, Delete, WarningFilled
 } from '@element-plus/icons-vue'
 
 const props = defineProps({
@@ -272,7 +188,6 @@ const basicFormRef = ref()
 const basicSettings = reactive({
   groupName: '',
   description: '',
-  groupType: 'study',
   isActive: true,
   maxMembers: 50
 })
@@ -291,8 +206,7 @@ const notifications = reactive({
   newMember: true,
   taskSubmission: true,
   taskDeadline: true,
-  gradeRelease: true,
-  methods: ['email', 'system']
+  gradeRelease: true
 })
 
 // 表单验证规则
@@ -303,9 +217,6 @@ const basicRules = {
   ],
   description: [
     { max: 500, message: '描述不能超过 500 个字符', trigger: 'blur' }
-  ],
-  groupType: [
-    { required: true, message: '请选择小组类型', trigger: 'change' }
   ]
 }
 
@@ -365,28 +276,6 @@ const exportGroupData = () => {
   ElMessage.info('导出数据功能开发中')
 }
 
-const backupGroup = () => {
-  ElMessage.info('备份功能开发中')
-}
-
-const clearChatHistory = async () => {
-  try {
-    await ElMessageBox.confirm(
-      '确定要清空所有聊天记录吗？此操作不可恢复。',
-      '确认清空',
-      {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }
-    )
-    
-    ElMessage.success('聊天记录已清空')
-  } catch {
-    // 用户取消
-  }
-}
-
 const deleteGroup = async () => {
   deleting.value = true
   
@@ -413,7 +302,6 @@ const loadSettings = () => {
     Object.assign(basicSettings, {
       groupName: props.groupData.group_name || props.groupData.title || '',
       description: props.groupData.description || '',
-      groupType: props.groupData.group_type || 'study',
       isActive: props.groupData.is_active !== false,
       maxMembers: props.groupData.max_members || 50
     })
@@ -505,17 +393,6 @@ onMounted(() => {
 .notification-desc {
   font-size: 14px;
   color: #909399;
-}
-
-.notification-methods {
-  padding: 16px;
-  background: #f8f9fa;
-  border-radius: 8px;
-}
-
-.notification-methods h4 {
-  margin: 0 0 12px 0;
-  color: #303133;
 }
 
 .data-actions {

@@ -64,9 +64,19 @@
           <el-input v-model="groupForm.name" placeholder="请输入小组名称" />
         </el-form-item>
         <el-form-item label="小组类型" required>
-          <el-select v-model="groupForm.type" placeholder="选择小组类型" style="width: 100%">
+          <el-select v-model="groupForm.type" placeholder="选择小组类型" style="width: 100%" @change="handleTypeChange">
             <el-option label="学习小组" value="study" />
             <el-option label="项目小组" value="project" />
+          </el-select>
+        </el-form-item>
+        <el-form-item v-if="groupForm.type === 'study'" label="关联课程" required>
+          <el-select v-model="groupForm.courseId" placeholder="选择关联课程" style="width: 100%">
+            <el-option
+              v-for="course in availableCourses"
+              :key="course.id"
+              :label="course.name"
+              :value="course.id"
+            />
           </el-select>
         </el-form-item>
         <el-form-item label="小组描述">
@@ -77,20 +87,32 @@
             placeholder="请输入小组描述"
           />
         </el-form-item>
-        <el-form-item label="学生邀请">
+        <el-form-item label="邀请学生">
           <el-select
             v-model="groupForm.students"
             multiple
-            placeholder="选择学生成员"
+            filterable
+            remote
+            reserve-keyword
+            placeholder="搜索学生姓名或学号"
+            :remote-method="searchStudents"
+            :loading="searchLoading"
             style="width: 100%"
+            size="large"
           >
             <el-option
               v-for="student in availableStudents"
               :key="student.id"
-              :label="student.name"
+              :label="`${student.name} (${student.studentId})`"
               :value="student.id"
-            />
+            >
+              <span style="float: left">{{ student.name }}</span>
+              <span style="float: right; color: #8492a6; font-size: 13px">{{ student.studentId }}</span>
+            </el-option>
           </el-select>
+          <div class="invite-help-text">
+            <p>💡 提示：输入学生姓名或学号进行搜索，可以选择多个学生</p>
+          </div>
         </el-form-item>
       </el-form>
       
@@ -139,11 +161,14 @@ const currentEditId = ref(null)
 const groupForm = ref({
   name: '',
   type: 'study',
+  courseId: '',
   description: '',
   students: []
 })
 
 const availableStudents = ref([])
+const availableCourses = ref([])
+const searchLoading = ref(false)
 
 // 获取教学小组数据
 const getTeachingGroups = async () => {
@@ -215,11 +240,14 @@ const createNewGroup = () => {
   groupForm.value = {
     name: '',
     type: 'study',
+    courseId: '',
     description: '',
     students: []
   }
   groupDialogVisible.value = true
-  loadAvailableStudents()
+  loadAvailableCourses()
+  // 初始化时清空学生列表，等待搜索
+  availableStudents.value = []
 }
 
 // 编辑小组
@@ -229,11 +257,22 @@ const handleEditGroup = (group) => {
   groupForm.value = {
     name: group.group_name,
     type: group.group_type,
+    courseId: group.course_id || '',
     description: group.description || '',
     students: group.students ? group.students.map(s => s.Student_Id) : []
   }
   groupDialogVisible.value = true
-  loadAvailableStudents()
+  loadAvailableCourses()
+  // 如果有已选择的学生，预加载他们的信息
+  if (group.students && group.students.length > 0) {
+    availableStudents.value = group.students.map(s => ({
+      id: s.Student_Id,
+      name: s.Student,
+      studentId: s.Student_Id.toString()
+    }))
+  } else {
+    availableStudents.value = []
+  }
 }
 
 // 删除小组
@@ -274,27 +313,110 @@ const handleViewGroup = (group) => {
   })
 }
 
-// 加载可选学生列表
-const loadAvailableStudents = async () => {
+// 加载可选课程列表
+const loadAvailableCourses = async () => {
   try {
-    const response = await api.get('/user/students')
-    if (response.data.code === 200) {
-      availableStudents.value = response.data.data.map(student => ({
-        id: student.Student_Id,
-        name: student.Student_Name
-      }))
-    }
+    // 模拟课程数据，实际项目中应该从API获取
+    const mockCourses = [
+      { id: 'course_001', name: 'JavaScript 基础与进阶' },
+      { id: 'course_002', name: 'Vue.js 框架开发' },
+      { id: 'course_003', name: 'React 前端开发' },
+      { id: 'course_004', name: 'Node.js 后端开发' },
+      { id: 'course_005', name: 'Python 数据分析' },
+      { id: 'course_006', name: 'Java Spring Boot' },
+      { id: 'course_007', name: '数据库设计与优化' },
+      { id: 'course_008', name: '移动端开发实战' }
+    ]
+    
+    availableCourses.value = mockCourses
+    
+    // 实际API调用示例：
+    // const response = await api.get('/courses')
+    // if (response.data.code === 200) {
+    //   availableCourses.value = response.data.data
+    // }
   } catch (error) {
-    console.error('获取学生列表失败:', error)
+    console.error('获取课程列表失败:', error)
+    ElMessage.error('获取课程列表失败')
+  }
+}
+
+// 搜索学生
+const searchStudents = async (query) => {
+  if (!query) {
+    availableStudents.value = []
+    return
+  }
+
+  searchLoading.value = true
+  
+  try {
+    // 模拟远程搜索API调用
+    await new Promise(resolve => setTimeout(resolve, 300))
+    
+    // 模拟学生数据
+    const mockStudents = [
+      { id: 'stu_001', name: '张小明', studentId: '2025013', major: '计算机科学与技术', grade: '大三' },
+      { id: 'stu_002', name: '李小红', studentId: '2025014', major: '软件工程', grade: '大二' },
+      { id: 'stu_003', name: '王小刚', studentId: '2025015', major: '人工智能', grade: '大三' },
+      { id: 'stu_004', name: '赵小美', studentId: '2025016', major: '数据科学与大数据技术', grade: '大一' },
+      { id: 'stu_005', name: '刘小强', studentId: '2025017', major: '网络工程', grade: '大二' },
+      { id: 'stu_006', name: '陈小丽', studentId: '2025018', major: '信息安全', grade: '大三' },
+      { id: 'stu_007', name: '杨小龙', studentId: '2025019', major: '物联网工程', grade: '大二' },
+      { id: 'stu_008', name: '周小华', studentId: '2025020', major: '电子信息工程', grade: '大一' },
+      { id: 'stu_009', name: '吴小梅', studentId: '2025021', major: '通信工程', grade: '大三' },
+      { id: 'stu_010', name: '郑小峰', studentId: '2025022', major: '自动化', grade: '大二' }
+    ]
+    
+    // 过滤搜索结果
+    const filteredStudents = mockStudents.filter(student => 
+      student.name.toLowerCase().includes(query.toLowerCase()) ||
+      student.studentId.toLowerCase().includes(query.toLowerCase())
+    )
+    
+    availableStudents.value = filteredStudents
+    
+    // 实际API调用示例：
+    // const response = await api.get('/students/search', {
+    //   params: { keyword: query }
+    // })
+    // if (response.data.code === 200) {
+    //   availableStudents.value = response.data.data
+    // }
+    
+  } catch (error) {
+    console.error('搜索学生失败:', error)
+    ElMessage.error('搜索学生失败')
+  } finally {
+    searchLoading.value = false
+  }
+}
+
+// 小组类型变化处理
+const handleTypeChange = (type) => {
+  if (type !== 'study') {
+    groupForm.value.courseId = ''
   }
 }
 
 // 提交小组表单
 const submitGroup = async () => {
   try {
+    // 验证必填字段
+    if (!groupForm.value.name.trim()) {
+      ElMessage.warning('请输入小组名称')
+      return
+    }
+    
+    if (groupForm.value.type === 'study' && !groupForm.value.courseId) {
+      ElMessage.warning('学习小组必须选择关联课程')
+      return
+    }
+    
     const payload = {
       name: groupForm.value.name,
       type: groupForm.value.type,
+      courseId: groupForm.value.courseId,
       description: groupForm.value.description,
       students: groupForm.value.students
     }
@@ -383,5 +505,21 @@ onMounted(() => {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
+}
+
+/* 邀请提示文本样式 */
+.invite-help-text {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #909399;
+  background: #f8f9fa;
+  padding: 8px 12px;
+  border-radius: 4px;
+  border-left: 3px solid #409EFF;
+}
+
+.invite-help-text p {
+  margin: 0;
+  line-height: 1.4;
 }
 </style>
