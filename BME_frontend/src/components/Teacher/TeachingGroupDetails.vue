@@ -3,7 +3,7 @@
     <!-- 面包屑导航 -->
     <div class="breadcrumb-nav">
       <el-breadcrumb separator="/">
-        <el-breadcrumb-item :to="{ path: '/user-center/teaching-management' }">小组管理</el-breadcrumb-item>
+        <el-breadcrumb-item :to="{ name: 'teaching-management' }">教学管理</el-breadcrumb-item>
         <el-breadcrumb-item>{{ groupTitle }}</el-breadcrumb-item>
       </el-breadcrumb>
     </div>
@@ -42,6 +42,7 @@
             <TeachingStudentManagement 
               :group-id="groupId" 
               :group-data="groupData"
+              :highlight-application-id="applicationId"
               @students-updated="refreshData"
             />
           </el-tab-pane>
@@ -90,11 +91,12 @@ const router = useRouter()
 const route = useRoute()
 const store = useStore()
 
-// 从route.query或props获取参数，优先使用query
-const groupId = computed(() => route.query.groupId || props.groupId)
-const groupName = computed(() => route.query.groupName || props.groupName)
+// 统一从route.params获取groupId，从route.query获取其他参数
+const groupId = computed(() => route.params.groupId || props.groupId)
+const groupName = computed(() => route.query.group_name || props.groupName)
 const taskId = computed(() => route.query.taskId || props.taskId)
 const homeworkId = computed(() => route.query.homeworkId || props.homeworkId)
+const applicationId = computed(() => route.query.applicationId || props.applicationId)
 const activeTabName = computed(() => route.query.tab || props.tab)
 
 const props = defineProps({
@@ -112,6 +114,10 @@ const props = defineProps({
   },
   homeworkId: {
     type: [String, Number],
+    default: null
+  },
+  applicationId: {
+    type: String,
     default: null
   },
   tab: {
@@ -150,7 +156,7 @@ const getGroupTypeLabel = (type) => {
 }
 
 const goBack = () => {
-  router.push('/user-center/teaching-management')
+  router.push({ name: 'teaching-management' })
 }
 
 const handleTabChange = (tabName) => {
@@ -209,12 +215,18 @@ onMounted(() => {
   console.log('TeachingGroupDetails 组件已挂载')
   console.log('GroupId:', groupId.value)
   console.log('当前tab:', activeTab.value)
+  console.log('ApplicationId:', applicationId.value)
   
   fetchGroupData()
   
   // 如果有taskId参数，自动切换到任务管理标签
   if (taskId.value) {
     activeTab.value = 'tasks'
+  }
+  
+  // 如果有applicationId参数，自动切换到学生管理标签
+  if (applicationId.value) {
+    activeTab.value = 'students'
   }
 })
 </script>

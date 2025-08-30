@@ -230,6 +230,8 @@ import {
   Bell, Document, User, Star, Setting, Edit, Message, Tools
 } from '@element-plus/icons-vue'
 import api from '../../api'
+// 导入mock数据用于开发测试
+import { mockNotificationApiResponses } from '../../mock/notificationData.js'
 
 const props = defineProps({
   notifications: {
@@ -430,6 +432,9 @@ const getMessageIcon = (type) => {
     task: Document,
     homework: Edit,
     leave: Message,
+    'homework-submission': Edit,
+    'leave-application': Message,
+    'join-application': User,
     management: Tools,
     system: Setting
   }
@@ -441,6 +446,9 @@ const getMessageIconColor = (type) => {
     task: '#409EFF',
     homework: '#67C23A',
     leave: '#E6A23C',
+    'homework-submission': '#67C23A',
+    'leave-application': '#E6A23C',
+    'join-application': '#722ED1',
     management: '#722ED1',
     system: '#909399'
   }
@@ -452,6 +460,9 @@ const getMessageTagType = (type) => {
     task: 'primary',
     homework: 'success',
     leave: 'warning',
+    'homework-submission': 'success',
+    'leave-application': 'warning',
+    'join-application': '',
     management: '',
     system: 'info'
   }
@@ -463,6 +474,9 @@ const getMessageTypeLabel = (type) => {
     task: '任务发布',
     homework: '作业批改',
     leave: '请假反馈',
+    'homework-submission': '作业提交',
+    'leave-application': '请假申请',
+    'join-application': '加入申请',
     management: '小组管理',
     system: '系统通知'
   }
@@ -483,14 +497,16 @@ const handleMessageNavigation = async (message) => {
   
   if (source_type === '2') { // 任务发布
     try {
-      const taskResponse = await api.get(`/task/detail?id=${related_info_id}`)
-      if (taskResponse.data.code === 200) {
-        const groupId = taskResponse.data.data.group_id
-        const groupName = taskResponse.data.data.group_name || '未知小组'
+      // 在开发环境使用mock数据
+      const taskResponse = mockNotificationApiResponses.getTaskDetail(related_info_id)
+      
+      if (taskResponse.code === 200 && taskResponse.data) {
+        const groupId = taskResponse.data.group_id
+        const groupName = taskResponse.data.group_name || '未知小组'
         
         // 导师跳转到教学管理页面
         router.push({
-          name: 'TeachingGroupDetails',
+          name: 'teaching-group-details',
           params: { groupId: groupId },
           query: { 
             group_name: groupName,
@@ -508,14 +524,16 @@ const handleMessageNavigation = async (message) => {
     }
   } else if (source_type === '1') { // 作业批改
     try {
-      const homeworkResponse = await api.get(`/homework/detail?id=${related_info_id}`)
-      if (homeworkResponse.data.code === 200) {
-        const taskId = homeworkResponse.data.data.task_id
-        const groupId = homeworkResponse.data.data.group_id
-        const groupName = homeworkResponse.data.data.group_name || '未知小组'
+      // 在开发环境使用mock数据
+      const homeworkResponse = mockNotificationApiResponses.getHomeworkDetail(related_info_id)
+      
+      if (homeworkResponse.code === 200 && homeworkResponse.data) {
+        const taskId = homeworkResponse.data.task_id
+        const groupId = homeworkResponse.data.group_id
+        const groupName = homeworkResponse.data.group_name || '未知小组'
         
         router.push({
-          name: 'TeachingGroupDetails',
+          name: 'teaching-group-details',
           params: { groupId: groupId },
           query: { 
             group_name: groupName,
@@ -535,12 +553,83 @@ const handleMessageNavigation = async (message) => {
   } else if (source_type === '8') { // 请假反馈
     router.push('/user-center/teaching-management?tab=leave')
   } else if (source_type === '10') { // 小组管理
-    router.push('/user-center/teaching-management')
+    // 根据消息内容判断具体的管理类型
+    const managementType = getManagementType(message)
+    
+    if (managementType === 'homework-submission') {
+      // 作业提交 - 跳转到小组详情的任务管理页面
+      const groupId = message.group_id
+      const groupName = message.group_name || '未知小组'
+      
+      router.push({
+        name: 'teaching-group-details',
+        params: { groupId: groupId },
+        query: { 
+          group_name: groupName,
+          tab: 'tasks',
+          highlight: 'homework-submissions'
+        }
+      })
+    } else if (managementType === 'leave-application') {
+      // 请假申请 - 跳转到小组详情的请假管理页面
+      const groupId = message.group_id
+      const groupName = message.group_name || '未知小组'
+      
+      router.push({
+        name: 'teaching-group-details',
+        params: { groupId: groupId },
+        query: { 
+          group_name: groupName,
+          tab: 'leave',
+          leaveId: related_info_id
+        }
+      })
+    } else if (managementType === 'join-application') {
+      // 加入申请 - 跳转到小组详情的学生管理页面
+      const groupId = message.group_id
+      const groupName = message.group_name || '未知小组'
+      
+      router.push({
+        name: 'teaching-group-details',
+        params: { groupId: groupId },
+        query: { 
+          group_name: groupName,
+          tab: 'students',
+          applicationId: related_info_id
+        }
+      })
+    } else {
+      // 默认跳转到教学管理首页
+      router.push('/user-center/teaching-management')
+    }
   } else if (source_type === '9') { // 系统通知
     router.push('/user-center/user-info')
   } else {
     router.push('/user-center')
   }
+}
+
+// 判断小组管理消息的具体类型
+const getManagementType = (message) => {
+  // 检查消息是否包含特定字段来判断类型
+  if (message.submission_type === 'homework' || message.task_id) {
+    return 'homework-submission'
+  } else if (message.leave_type || message.leave_reason) {
+    return 'leave-application'
+  } else if (message.application_reason || message.student_major) {
+    return 'join-application'
+  }
+  
+  // 通过消息ID前缀判断
+  if (message.id.startsWith('homework_submit_')) {
+    return 'homework-submission'
+  } else if (message.id.startsWith('leave_apply_')) {
+    return 'leave-application'
+  } else if (message.id.startsWith('join_apply_')) {
+    return 'join-application'
+  }
+  
+  return 'general'
 }
 
 const formatTime = (timeStr) => {

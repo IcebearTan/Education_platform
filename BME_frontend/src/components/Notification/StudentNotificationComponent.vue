@@ -98,7 +98,11 @@
         </div>
         
         <div class="message-content-scrollable">
-          <div v-if="filteredMessages.length === 0" class="empty-state">
+          <div v-if="isLoading" class="loading-state">
+            <el-loading text="加载通知中..." />
+          </div>
+          
+          <div v-else-if="filteredMessages.length === 0" class="empty-state">
             <el-empty 
               :image-size="120"
               :description="`暂无${getCurrentTabLabel}消息`"
@@ -153,7 +157,7 @@
                         size="small" 
                         @click.stop="handleMessageNavigation(message)"
                       >
-                        查看详情
+                        {{ getNavigationButtonText(message) }}
                       </el-button>
                     </div>
                   </div>
@@ -189,19 +193,13 @@ import {
   Bell, Document, User, Star, Setting, Edit, Message
 } from '@element-plus/icons-vue'
 import api from '../../api'
+import { mockNotifications, mockNotificationApiResponses, calculateUnreadCount } from '../../mock/notificationData'
+import { mockApiRequest } from '../../mock/config'
 
-const props = defineProps({
-  notifications: {
-    type: Object,
-    default: () => ({})
-  },
-  totalUnread: {
-    type: Number,
-    default: 0
-  }
-})
-
-const emit = defineEmits(['mark-read'])
+// 移除props，直接使用内部状态管理
+const notifications = ref({})
+const totalUnread = ref(0)
+const isLoading = ref(true)
 
 const router = useRouter()
 const store = useStore()
@@ -230,7 +228,7 @@ const ACTIVE_TAB_KEY = 'student-notification-active-tab'
 
 // 计算属性
 const allMessages = computed(() => {
-  return Object.values(props.notifications).flat().sort((a, b) => 
+  return Object.values(notifications.value).flat().sort((a, b) => 
     new Date(b.create_time) - new Date(a.create_time)
   )
 })
@@ -242,17 +240,17 @@ const getCurrentMessages = computed(() => {
     // 小组通知：如果选择了子分类，显示子分类内容；否则显示所有小组通知
     if (activeGroupSubTab.value === 'all') {
       // 返回所有小组相关通知（任务、作业、请假）
-      const taskMsgs = props.notifications.task || []
-      const homeworkMsgs = props.notifications.homework || []
-      const leaveMsgs = props.notifications.leave || []
+      const taskMsgs = notifications.value.task || []
+      const homeworkMsgs = notifications.value.homework || []
+      const leaveMsgs = notifications.value.leave || []
       return [...taskMsgs, ...homeworkMsgs, ...leaveMsgs].sort((a, b) => 
         new Date(b.create_time) - new Date(a.create_time)
       )
     } else {
-      return props.notifications[activeGroupSubTab.value] || []
+      return notifications.value[activeGroupSubTab.value] || []
     }
   } else {
-    return props.notifications[activeTab.value] || []
+    return notifications.value[activeTab.value] || []
   }
 })
 
@@ -274,14 +272,14 @@ const paginatedMessages = computed(() => {
 const totalMessages = computed(() => allMessages.value.length)
 
 const groupMessages = computed(() => {
-  const taskMsgs = props.notifications.task || []
-  const homeworkMsgs = props.notifications.homework || []
-  const leaveMsgs = props.notifications.leave || []
+  const taskMsgs = notifications.value.task || []
+  const homeworkMsgs = notifications.value.homework || []
+  const leaveMsgs = notifications.value.leave || []
   return taskMsgs.length + homeworkMsgs.length + leaveMsgs.length
 })
 
 const systemMessages = computed(() => {
-  return (props.notifications.system || []).length
+  return (notifications.value.system || []).length
 })
 
 // 方法
@@ -311,23 +309,23 @@ const restoreActiveTab = () => {
 
 const getUnreadCount = (type) => {
   if (type === 'all') {
-    return props.totalUnread
+    return totalUnread.value
   } else if (type === 'group') {
     // 小组通知未读数 = 任务 + 作业 + 请假未读数
-    const taskUnread = (props.notifications.task || []).filter(msg => !msg.is_read).length
-    const homeworkUnread = (props.notifications.homework || []).filter(msg => !msg.is_read).length
-    const leaveUnread = (props.notifications.leave || []).filter(msg => !msg.is_read).length
+    const taskUnread = (notifications.value.task || []).filter(msg => !msg.is_read).length
+    const homeworkUnread = (notifications.value.homework || []).filter(msg => !msg.is_read).length
+    const leaveUnread = (notifications.value.leave || []).filter(msg => !msg.is_read).length
     return taskUnread + homeworkUnread + leaveUnread
   }
-  return props.notifications[type]?.filter(msg => !msg.is_read).length || 0
+  return notifications.value[type]?.filter(msg => !msg.is_read).length || 0
 }
 
 const getGroupSubUnreadCount = (subType) => {
-  return props.notifications[subType]?.filter(msg => !msg.is_read).length || 0
+  return notifications.value[subType]?.filter(msg => !msg.is_read).length || 0
 }
 
 const getMessageType = (message) => {
-  for (const [type, messages] of Object.entries(props.notifications)) {
+  for (const [type, messages] of Object.entries(notifications.value)) {
     if (messages.some(msg => msg.id === message.id)) {
       return type
     }
@@ -376,73 +374,186 @@ const getMessageTypeLabel = (type) => {
 }
 
 const handleMessageClick = async (message) => {
-  await markAsRead(message.id)
-  handleMessageNavigation(message)
+  // 点击消息时自动标记为已读
+  if (!message.is_read) {
+    await markAsRead(message.id)
+  }
+  
+  // 添加视觉反馈
+  ElMessage.info('正在跳转...')
+  
+  // 延迟跳转，让用户看到反馈
+  setTimeout(() => {
+    handleMessageNavigation(message)
+  }, 300)
 }
 
 const markAsRead = async (messageId) => {
-  emit('mark-read', messageId)
+  try {
+    await mockApiRequest(
+      // 真实API调用
+      () => api.post(`/notification/mark-read`, { messageId }),
+      // Mock响应
+      () => mockNotificationApiResponses.markAsRead(messageId)
+    )
+    
+    // 更新本地状态
+    Object.values(notifications.value).forEach(typeMessages => {
+      if (Array.isArray(typeMessages)) {
+        const message = typeMessages.find(msg => msg.id === messageId)
+        if (message) {
+          message.is_read = true
+        }
+      }
+    })
+    
+    // 重新计算未读数
+    totalUnread.value = calculateUnreadCount(notifications.value)
+    
+    ElMessage.success('标记已读成功')
+  } catch (error) {
+    console.error('标记已读失败:', error)
+    ElMessage.error('标记已读失败')
+  }
 }
 
 const handleMessageNavigation = async (message) => {
-  const { source_type, related_info_id } = message
+  const { source_type, related_info_id, group_id, task_id, group_name } = message
   
-  if (source_type === '2') { // 任务发布
-    try {
-      const taskResponse = await api.get(`/task/detail?id=${related_info_id}`)
-      if (taskResponse.data.code === 200) {
-        const groupId = taskResponse.data.data.group_id
-        const groupName = taskResponse.data.data.group_name || '未知小组'
-        
+  try {
+    if (source_type === '2') { // 任务发布
+      // 优先使用消息中的 group_id，如果没有则通过 API 获取
+      if (group_id && group_id !== '0') {
         router.push({
-          name: 'StudyGroupDetails',
-          params: { id: groupId },
+          name: 'study-group-details',
+          params: { groupId: group_id },
           query: { 
-            group_name: groupName,
+            group_name: group_name || '未知小组',
             taskId: related_info_id,
             tab: 'tasks'
           }
         })
-      } else {
-        ElMessage.error('无法获取任务详情')
-        router.push('/user-center/study-groups')
+        ElMessage.success('正在跳转到小组任务页面...')
+        return
       }
-    } catch (error) {
-      console.error('获取任务详情失败:', error)
-      router.push('/user-center/study-groups')
-    }
-  } else if (source_type === '1') { // 作业批改
-    try {
-      const homeworkResponse = await api.get(`/homework/detail?id=${related_info_id}`)
-      if (homeworkResponse.data.code === 200) {
-        const taskId = homeworkResponse.data.data.task_id
-        const groupId = homeworkResponse.data.data.group_id
-        const groupName = homeworkResponse.data.data.group_name || '未知小组'
+      
+      // 如果消息中没有 group_id，则通过 API 获取任务详情
+      const taskResponse = await mockApiRequest(
+        () => api.get(`/task/detail?id=${related_info_id}`),
+        () => mockNotificationApiResponses.getTaskDetail(related_info_id)
+      )
+      
+      if (taskResponse.code === 200 && taskResponse.data) {
+        const taskGroupId = taskResponse.data.group_id
+        const taskGroupName = taskResponse.data.group_name || '未知小组'
         
         router.push({
-          name: 'StudyGroupDetails',
-          params: { id: groupId },
+          name: 'study-group-details',
+          params: { groupId: taskGroupId },
           query: { 
-            group_name: groupName,
-            taskId: taskId,
+            group_name: taskGroupName,
+            taskId: related_info_id,
+            tab: 'tasks'
+          }
+        })
+        ElMessage.success('正在跳转到小组任务页面...')
+      } else {
+        ElMessage.error('无法获取任务详情，跳转到小组列表')
+        router.push({ name: 'study-groups' })
+      }
+    } else if (source_type === '1') { // 作业批改
+      // 优先使用消息中的信息
+      if (group_id && group_id !== '0' && task_id) {
+        router.push({
+          name: 'study-group-details',
+          params: { groupId: group_id },
+          query: { 
+            group_name: group_name || '未知小组',
+            taskId: task_id,
             homeworkId: related_info_id,
             tab: 'tasks'
           }
         })
-      } else {
-        ElMessage.error('无法获取作业详情')
-        router.push('/user-center/study-groups')
+        ElMessage.success('正在跳转到作业详情页面...')
+        return
       }
-    } catch (error) {
-      console.error('获取作业详情失败:', error)
-      router.push('/user-center/study-groups')
+      
+      // 如果消息中缺少信息，则通过 API 获取作业详情
+      const homeworkResponse = await mockApiRequest(
+        () => api.get(`/homework/detail?id=${related_info_id}`),
+        () => mockNotificationApiResponses.getHomeworkDetail(related_info_id)
+      )
+      
+      if (homeworkResponse.code === 200 && homeworkResponse.data) {
+        const homeworkTaskId = homeworkResponse.data.task_id
+        const homeworkGroupId = homeworkResponse.data.group_id
+        const homeworkGroupName = homeworkResponse.data.group_name || '未知小组'
+        
+        router.push({
+          name: 'study-group-details',
+          params: { groupId: homeworkGroupId },
+          query: { 
+            group_name: homeworkGroupName,
+            taskId: homeworkTaskId,
+            homeworkId: related_info_id,
+            tab: 'tasks'
+          }
+        })
+        ElMessage.success('正在跳转到作业详情页面...')
+      } else {
+        ElMessage.error('无法获取作业详情，跳转到小组列表')
+        router.push({ name: 'study-groups' })
+      }
+    } else if (source_type === '8') { // 请假反馈
+      // 请假反馈：如果有小组信息，跳转到对应小组的请假管理页面
+      if (group_id && group_id !== '0') {
+        router.push({
+          name: 'study-group-details',
+          params: { groupId: group_id },
+          query: { 
+            group_name: group_name || '未知小组',
+            tab: 'leave'
+          }
+        })
+        ElMessage.success('正在跳转到小组请假管理页面...')
+      } else {
+        // 如果没有特定小组信息，跳转到小组列表并高亮请假相关内容
+        router.push({ 
+          name: 'study-groups',
+          query: { highlight: 'leave' }
+        })
+        ElMessage.success('正在跳转到学习小组页面...')
+      }
+    } else if (source_type === '9') { // 系统通知
+      router.push({ name: 'user-info' })
+      ElMessage.success('正在跳转到个人信息页面...')
+    } else {
+      // 其他类型消息，默认跳转到用户中心
+      router.push({ name: 'user-center' })
+      ElMessage.info('正在跳转到用户中心...')
     }
-  } else if (source_type === '8') { // 请假反馈
-    router.push('/user-center/study-groups?tab=leave')
-  } else if (source_type === '9') { // 系统通知
-    router.push('/user-center/user-info')
-  } else {
-    router.push('/user-center')
+  } catch (error) {
+    console.error('消息跳转失败:', error)
+    ElMessage.error('跳转失败，请稍后重试')
+    // 出现错误时跳转到小组列表页面
+    router.push({ name: 'study-groups' })
+  }
+}
+
+const getNavigationButtonText = (message) => {
+  const { source_type } = message
+  
+  switch (source_type) {
+    case '2': // 任务发布
+      return '查看任务'
+    case '1': // 作业批改
+      return '查看作业'
+    case '8': // 请假反馈
+      return '查看请假'
+    case '9': // 系统通知
+      return '查看详情'
+    default:
+      return '查看详情'
   }
 }
 
@@ -464,8 +575,42 @@ const handlePageChange = (page) => {
   currentPage.value = page
 }
 
-onMounted(() => {
+// 加载通知数据
+const loadNotifications = async () => {
+  try {
+    isLoading.value = true
+    
+    const response = await mockApiRequest(
+      // 真实API调用
+      async () => {
+        const res = await api.get('/notifications')
+        return res.data
+      },
+      // Mock响应
+      () => mockNotificationApiResponses.getAllNotifications()
+    )
+    
+    if (response.code === 200) {
+      notifications.value = response.data.notifications
+      totalUnread.value = response.data.total_unread
+      ElMessage.success('通知数据加载成功')
+    } else {
+      throw new Error('API返回错误')
+    }
+  } catch (error) {
+    console.error('加载通知数据失败:', error)
+    ElMessage.error('加载通知数据失败')
+    // 出错时使用默认mock数据
+    notifications.value = mockNotifications
+    totalUnread.value = calculateUnreadCount(mockNotifications)
+  } finally {
+    isLoading.value = false
+  }
+}
+
+onMounted(async () => {
   restoreActiveTab()
+  await loadNotifications()
 })
 </script>
 
@@ -704,6 +849,14 @@ onMounted(() => {
 }
 
 .empty-state {
+  padding: 60px 0;
+  min-height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loading-state {
   padding: 60px 0;
   min-height: 200px;
   display: flex;

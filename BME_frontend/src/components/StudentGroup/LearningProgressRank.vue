@@ -20,37 +20,6 @@
         </div>
       </div>
       
-      <!-- <div class="personal-cards">
-        <div class="personal-card">
-          <div class="card-icon">📚</div>
-          <div class="card-content">
-            <div class="card-value">{{ currentUserStats.completedTasks || 0 }}</div>
-            <div class="card-label">已完成任务</div>
-          </div>
-        </div>
-        <div class="personal-card">
-          <div class="card-icon">📈</div>
-          <div class="card-content">
-            <div class="card-value">{{ currentUserStats.progress || 0 }}%</div>
-            <div class="card-label">学习进度</div>
-          </div>
-        </div>
-        <div class="personal-card">
-          <div class="card-icon">⏱️</div>
-          <div class="card-content">
-            <div class="card-value">{{ currentUserStats.studyHours || 0 }}h</div>
-            <div class="card-label">学习时长</div>
-          </div>
-        </div>
-        <div class="personal-card">
-          <div class="card-icon">�</div>
-          <div class="card-content">
-            <div class="card-value">{{ currentUserStats.streak || 0 }}天</div>
-            <div class="card-label">连续学习</div>
-          </div>
-        </div>
-      </div> -->
-      
       <!-- 学习进度仪表盘 -->
       <div class="progress-dashboard">
         <div class="dashboard-header">

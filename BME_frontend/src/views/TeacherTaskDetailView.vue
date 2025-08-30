@@ -3,8 +3,16 @@
     <!-- 面包屑导航 -->
     <div class="breadcrumb-nav">
       <el-breadcrumb separator="/">
-        <el-breadcrumb-item :to="{ path: '/user-center/teaching-management' }">小组管理</el-breadcrumb-item>
-        <el-breadcrumb-item @click="goBack" class="breadcrumb-link">{{ groupName }}</el-breadcrumb-item>
+        <el-breadcrumb-item :to="{ name: 'teaching-management' }">教学管理</el-breadcrumb-item>
+        <el-breadcrumb-item 
+          :to="{ 
+            name: 'teaching-group-details', 
+            params: { groupId: route.params.groupId },
+            query: { group_name: groupName }
+          }"
+        >
+          {{ groupName || '小组详情' }}
+        </el-breadcrumb-item>
         <el-breadcrumb-item>任务详情</el-breadcrumb-item>
       </el-breadcrumb>
     </div>
@@ -356,8 +364,33 @@ import { useRouter, useRoute } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Document, Download, Search, View, Upload } from '@element-plus/icons-vue'
 
+// 定义props
+const props = defineProps({
+  groupId: {
+    type: Number,
+    default: null
+  },
+  taskId: {
+    type: Number,
+    default: null
+  },
+  groupName: {
+    type: String,
+    default: ''
+  },
+  userRole: {
+    type: String,
+    default: 'teacher'
+  }
+})
+
 const router = useRouter()
 const route = useRoute()
+
+// 获取参数 - 优先使用props，回退到route params
+const groupId = computed(() => props.groupId || parseInt(route.params.groupId))
+const taskId = computed(() => props.taskId || parseInt(route.params.taskId))
+const groupName = ref(props.groupName || route.query.group_name || '')
 
 // 响应式数据
 const loading = ref(false)
@@ -372,7 +405,6 @@ const pageSize = ref(20)
 const showSubmissionDialog = ref(false)
 const currentStudent = ref(null)
 const currentSubmission = ref(null)
-const groupName = ref('')
 const showEditDialog = ref(false)
 const editing = ref(false)
 const editTaskFormRef = ref()
@@ -506,21 +538,6 @@ const getUnsubmittedCount = () => {
 const getCompletionRate = () => {
   if (!taskDetail.value.participants || taskDetail.value.participants === 0) return 0
   return Math.round(((taskDetail.value.completed_count || 0) / taskDetail.value.participants) * 100)
-}
-
-const goBack = () => {
-  const groupId = route.query.groupId
-  if (groupId) {
-    router.push({
-      path: '/user-center/teaching-group-details',
-      query: { 
-        groupId: groupId,
-        tab: 'tasks'
-      }
-    })
-  } else {
-    router.go(-1)
-  }
 }
 
 const editTask = () => {
@@ -734,18 +751,18 @@ const fetchTaskDetail = async () => {
   loading.value = true
   
   try {
-    const taskId = route.query.taskId
-    const groupId = route.query.groupId
-    groupName.value = route.query.groupName || '教学小组'
+    // 使用computed值获取参数
+    const currentTaskId = taskId.value
+    const currentGroupId = groupId.value
     
-    console.log('获取任务详情，taskId:', taskId, 'groupId:', groupId)
+    console.log('获取任务详情，taskId:', currentTaskId, 'groupId:', currentGroupId)
     
     // 模拟API调用
     await new Promise(resolve => setTimeout(resolve, 1000))
     
     // 模拟任务详情数据
     taskDetail.value = {
-      id: taskId,
+      id: currentTaskId,
       title: '数学作业第一章',
       priority: 'medium',
       description: '完成教材第一章的所有练习题，包括课后习题1-10题。要求：1. 写出详细解题过程；2. 标明每题的解题思路；3. 如有疑问及时提问。请认真完成，这是基础知识的重要练习。',
@@ -818,9 +835,11 @@ onMounted(() => {
 
 <style scoped>
 .teacher-task-detail {
-  padding: 20px;
+  /* padding: 20px; */
   max-width: 1200px;
   margin: 0 auto;
+  margin-top: 10px;
+
 }
 
 .breadcrumb-nav {

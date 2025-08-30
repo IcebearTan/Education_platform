@@ -409,11 +409,13 @@ const handleTaskAction = async (action, task) => {
     case 'view':
       // 跳转到教师任务详情页
       router.push({
-        path: '/teacher-task-detail',
-        query: {
-          taskId: task.id,
+        name: 'teacher-task-detail',
+        params: {
           groupId: props.groupId,
-          groupName: props.groupData?.group_name || '教学小组'
+          taskId: task.id
+        },
+        query: {
+          group_name: props.groupData?.group_name || '教学小组'
         }
       })
       break

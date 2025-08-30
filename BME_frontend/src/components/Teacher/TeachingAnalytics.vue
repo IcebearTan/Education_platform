@@ -65,15 +65,15 @@
             <div class="stat-value">{{ attendanceStats.totalDays }}</div>
             <div class="stat-label">统计天数</div>
           </div>
-          <div class="stat-item">
+          <div class="stat-item rate">
             <div class="stat-value">{{ attendanceStats.avgAttendance }}%</div>
             <div class="stat-label">平均出勤率</div>
           </div>
-          <div class="stat-item">
+          <div class="stat-item pending">
             <div class="stat-value">{{ attendanceStats.totalMembers }}</div>
             <div class="stat-label">小组成员</div>
           </div>
-          <div class="stat-item">
+          <div class="stat-item submitted">
             <div class="stat-value">{{ attendanceStats.currentOnline }}</div>
             <div class="stat-label">当前在线</div>
           </div>
@@ -459,9 +459,23 @@ onUnmounted(() => {
 .stat-item {
   text-align: center;
   padding: 16px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 12px;
-  color: white;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+}
+
+.stat-item.submitted {
+  background-color: #f0f9ec;
+  color: #67c23a;
+}
+
+.stat-item.pending {
+  background-color: #fdf6ec;
+  color: #e6a23c;
+}
+
+.stat-item.rate {
+  background-color: #ecf5ff;
+  color: #409eff;
 }
 
 .stat-value {

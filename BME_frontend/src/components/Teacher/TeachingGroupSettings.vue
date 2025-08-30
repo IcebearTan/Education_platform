@@ -398,7 +398,7 @@ const deleteGroup = async () => {
     showDeleteConfirm.value = false
     
     // 跳转到小组列表页
-    router.push('/user-center/teaching-management')
+    router.push({ name: 'teaching-management' })
   } catch (error) {
     console.error('解散小组失败:', error)
     ElMessage.error('解散小组失败')
