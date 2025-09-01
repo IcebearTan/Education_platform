@@ -1,17 +1,17 @@
 <template>
-  <div class="student-group-container">
-    <div class="student-group-card">
+  <div class="study-groups-container">
+    <div class="study-groups-card">
       <div class="title">
         <div class="title-text">我的小组</div>
         <div class="title-select">
           <el-select
-            v-model="value"
-            placeholder="Select"
+            v-model="selectedType"
+            placeholder="选择类型"
             size="large"
             style="width: 160px"
           >
             <el-option
-              v-for="item in options"
+              v-for="item in studyGroupOptions"
               :key="item.value"
               :label="item.label"
               :value="item.value"
@@ -21,17 +21,26 @@
       </div>
       <div class="groups-container">
         <el-form :model="form" ref="formRef" class="transparent-form">
-          <div v-if="isLoading" class="scroll-container" @scroll="handleScroll"> 加载中…… </div>
+          <div v-if="isLoading" class="scroll-container" @scroll="handleScroll"> 
+            <el-loading text="加载中..." />
+          </div>
           <div v-else class="scroll-container" @scroll="handleScroll">
-            <template v-if="Groups.length > 0">
-              <GroupCard
-                v-for="(group, index) in Groups"
+            <template v-if="filteredGroups.length > 0">
+              <StudyGroupCard
+                v-for="(group, index) in filteredGroups"
                 :key="index"
                 :group="group"
               />
             </template>
             <template v-else>
-              <div class="no-group">暂时没有加入小组</div>
+              <div class="no-group">
+                <el-empty 
+                  :image-size="120"
+                  description="还没有加入任何学习小组"
+                >
+                  <el-button type="primary" @click="requestJoinGroup">申请加入小组</el-button>
+                </el-empty>
+              </div>
             </template>
           </div>
         </el-form>
@@ -42,186 +51,193 @@
 
 
 <script setup>
-import { ref } from 'vue'
-import GroupCard from './GroupCard.vue'
-import { onBeforeMount, watch } from 'vue'
-import api from '../../api';
-    
-const form = ref({});
+import { ref, computed, onBeforeMount, watch, nextTick } from 'vue'
+import { useRoute } from 'vue-router'
+import { ElMessage } from 'element-plus'
+import StudyGroupCard from './StudyGroupCard.vue'
+import api from '../../api'
+import { mockGroupList, mockApiResponses } from '../../mock/studyGroupData'
+import { mockApiRequest } from '../../mock/config'
 
-const isLoading = ref(true);
+const route = useRoute()
+const form = ref({})
+const isLoading = ref(true)
 
-const options = [
-  {
-    value: '全部小组',
-    label: '全部小组',
-  },
-  {
-    value: '学习小组',
-    label: '学习小组',
-  },
-  {
-    value: '项目小组',
-    label: '项目小组',
-  }
+// 学习小组类型选项
+const studyGroupOptions = [
+  { value: 'all', label: '全部小组' },
+  { value: 'study', label: '学习小组' },
+  { value: 'project', label: '项目小组' }
 ]
 
-const value = ref('全部小组')
+const selectedType = ref('all')
+const studyGroups = ref([])
 
-let Groups = ref([]);
+// 处理从消息中心跳转过来的高亮
+const highlightType = ref('')
 
-const getGroupList = async () => {
+// 筛选后的小组
+const filteredGroups = computed(() => {
+  if (selectedType.value === 'all') {
+    return studyGroups.value
+  } else {
+    // 根据小组类型筛选
+    return studyGroups.value.filter(group => group.group_type === selectedType.value)
+  }
+})
+
+const getStudyGroups = async () => {
   try {
-    Groups.value.length = 0; // 清空之前的组数据
+    isLoading.value = true
+    studyGroups.value = []
 
-    const res = await api.get(`/user/group`);
-
-    // 检查 project_groups 是否存在并且是数组
-    if (Array.isArray(res.data.project_group)) {
-      res.data.project_group.forEach(group => {
-        group.group_type = 'project'; // 给 group 加上类型标签
-        // 确保group_name字段存在，如果API没有提供则使用title作为备选
-        if (!group.group_name) {
-          group.group_name = group.title;
+    const response = await mockApiRequest(
+      // 真实API调用
+      async () => {
+        const res = await api.get('/user/group')
+        if (res.data.code === 200) {
+          return processRealApiData(res.data)
         }
-        if (group.students.length > 0) {
-          group.student = ''; // 初始化组员字符串
-          for (let i = 0; i < group.students.length; i++) {
-            group.student += group.students[i].Student_Id + ':' + group.students[i].Student + ','; // 拼接组员的姓名和 ID
-          }
-          group.student = group.student.slice(0, -1); // 去掉最后一个逗号
-        } else {
-          group.student = '无'; // 如果没有组员，则显示无
-        }
-      });
-      Groups.value.push(...res.data.project_group);
-    } else {
-      console.warn("project_groups is not an array or is undefined");
-    }
-
-    // 检查 study_groups 是否存在并且是数组
-    if (Array.isArray(res.data.study_group)) {
-      res.data.study_group.forEach(group => {
-        group.group_type = 'study'; // 给 group 加上类型标签
-        // 确保group_name字段存在，如果API没有提供则使用title作为备选
-        if (!group.group_name) {
-          group.group_name = group.title;
-        }
-        if (group.students.length > 0) {
-          group.student = ''; // 初始化组员字符串
-          for (let i = 0; i < group.students.length; i++) {
-            group.student += group.students[i].Student_Id + ':' + group.students[i].Student + ','; // 拼接组员的姓名和 ID
-          }
-          group.student = group.student.slice(0, -1); // 去掉最后一个逗号
-        } else {
-          group.student = '无'; // 如果没有组员，则显示无
-        }
-      });
-      Groups.value.push(...res.data.study_group);
-    } else {
-      console.warn("study_groups is not an array or is undefined");
-    }
-
-  } catch (error) {
-    // 只做console，不弹窗不跳转
-    console.error("Error fetching data:", error);
-  } finally {
+        throw new Error('API返回错误')
+      },
+      // Mock响应
+      async () => {
+        const mockResponse = await mockApiResponses.getGroupList()
+        return mockResponse.data.map(group => ({
+          ...group,
+          role: 'student',
+          role_label: '学生',
+          student_names: group.students ? group.students.map(s => s.Student).join('、') : '暂无学生'
+        }))
       }
+    )
+
+    studyGroups.value = response
+    ElMessage.success('小组数据加载成功')
+  } catch (error) {
+    console.error('获取学习小组失败:', error)
+    ElMessage.error('获取小组数据失败')
+  } finally {
+    isLoading.value = false
+  }
 }
+
+// 处理真实API数据的函数
+const processRealApiData = (apiData) => {
+  const currentUserId = getCurrentUserId()
+  if (!currentUserId) return []
+
+  const allGroups = [
+    ...(apiData.project_group || []),
+    ...(apiData.study_group || [])
+  ]
+
+  const processedGroups = []
+
+  allGroups.forEach(group => {
+    // 确保group_name字段存在
+    if (!group.group_name && group.title) {
+      group.group_name = group.title
+    }
+
+    // 判断用户在这个小组中的角色 - 只显示作为学生参与的小组
+    const isStudent = group.students && group.students.some(student => student.Student_Id === currentUserId)
+
+    if (isStudent) {
+      // 添加角色标识 - 在学习小组界面都显示为学生
+      group.role = 'student'
+      group.role_label = '学生'
+      
+      // 设置小组类型
+      if (!group.group_type) {
+        // 根据API数据来源判断类型
+        if (apiData.project_group?.includes(group)) {
+          group.group_type = 'project'
+        } else {
+          group.group_type = 'study'
+        }
+      }
+
+      // 处理学生信息显示
+      if (group.students && group.students.length > 0) {
+        group.student_count = group.students.length
+        group.student_names = group.students.map(s => s.Student).join('、')
+      } else {
+        group.student_count = 0
+        group.student_names = '暂无学生'
+      }
+
+      processedGroups.push(group)
+    }
+  })
+
+  return processedGroups
+}
+
+const getCurrentUserId = () => {
+  const myAppDataString = localStorage.getItem('my-app')
+  if (!myAppDataString) return null
+  
+  try {
+    const myAppData = JSON.parse(myAppDataString)
+    return parseInt(myAppData.user?.User_Id, 10)
+  } catch (error) {
+    console.error('解析用户数据失败:', error)
+    return null
+  }
+}
+
+const handleScroll = () => {
+  // 滚动处理逻辑
+}
+
+const requestJoinGroup = () => {
+  ElMessage.info('申请加入小组功能开发中')
+}
+
+// 监听筛选变化
+watch(selectedType, () => {
+  // 可以在这里添加筛选变化的处理逻辑
+})
 
 onBeforeMount(async () => {
-  isLoading.value = true; // 设置加载状态为 true
-  await getGroupList();
-  foreFilter(); // 调用搜索函数
-  isLoading.value = false; // 设置加载状态为 false
-});
-
-watch(value, () => {
-  search();
-});
-
-const search = async () => {
-  // console.log(`Searching for groups of type: ${value.value}`);
-  // 根据 value 的值筛选 Groups
-  if (value.value === '全部小组') {
-    isLoading.value = true; // 设置加载状态为 true
-    await getGroupList(); // 加载所有小组
-    foreFilter();
-    isLoading.value = false; // 设置加载状态为 false
-  } 
-  else {
-    isLoading.value = true; // 设置加载状态为 true
-    await getGroupList(); // 先加载所有小组
-    foreFilter();
-
-    const searchValue = ref(''); // 定义一个变量来存储搜索值
-
-    switch(value.value) {
-      case '学习小组':
-        searchValue.value = "study";
-        break;
-      case '项目小组':
-        searchValue.value = 'project';
-        break;
+  // 检查是否从消息中心跳转过来，处理高亮
+  if (route.query.highlight) {
+    highlightType.value = route.query.highlight
+    if (route.query.highlight === 'leave') {
+      ElMessage.success('已为您定位到请假相关小组，您可以点击进入具体小组查看请假管理')
     }
-    Groups.value = Groups.value.filter(group => group.group_type === searchValue.value);
-    // console.log(Groups.value);
-    isLoading.value = false; // 设置加载状态为 false
   }
-}
-
-
-const filterObjectsByMatchingValues = (groups, validUserId) => {
-  // 筛选符合条件的组
-  return groups.filter(group => {
-    // 检查 teacher_id 是否匹配
-    if (group.teacher_id === validUserId) {
-      return true;
-    }
-
-    // 检查 group.Student_Id 是否匹配
-    if (group.students.some(student => student.Student_Id === validUserId)) {
-      return true;
-    }
-
-    // 如果都不匹配，则过滤掉
-    return false;
-  });
-}
-
-const foreFilter = () => {
-  // 从 localStorage 获取数据
-  const myAppDataString = localStorage.getItem('my-app');
   
-  // 检查数据是否存在
-  if (!myAppDataString) {
-    console.error("No data found in localStorage for 'my-app'");
-    return;
+  await getStudyGroups()
+  
+  // 如果有高亮需求，在数据加载完成后进行高亮处理
+  if (highlightType.value) {
+    await nextTick()
+    handleHighlight()
   }
+})
 
-  // 解析 JSON 数据
-  let myAppData;
-  try {
-    myAppData = JSON.parse(myAppDataString); // 将字符串解析为对象
-  } catch (error) {
-    console.error("Failed to parse 'my-app' data:", error);
-    return;
+// 处理高亮功能
+const handleHighlight = () => {
+  if (highlightType.value === 'leave') {
+    // 为与请假相关的小组卡片添加高亮效果
+    const groupCards = document.querySelectorAll('.group-card')
+    groupCards.forEach(card => {
+      card.style.animation = 'highlightPulse 2s ease-in-out'
+      card.style.border = '2px solid #E6A23C'
+    })
+    
+    // 2秒后移除高亮效果
+    setTimeout(() => {
+      groupCards.forEach(card => {
+        card.style.animation = ''
+        card.style.border = ''
+      })
+      highlightType.value = ''
+    }, 3000)
   }
-
-  // 检查数据结构是否正确
-  if (!myAppData.user || !myAppData.user.User_Id) {
-    console.error("Invalid data structure in 'my-app':", myAppData);
-    return;
-  }
-
-  // 解构并移除 User_Id 的前导零
-  const { User_Id } = myAppData.user;
-  const validUserId = parseInt(User_Id, 10); // 转换为整数，自动去掉前导零
-
-  Groups.value = filterObjectsByMatchingValues(Groups.value, validUserId);
 }
-console.log("有问题请找谭谭");
-
 </script>
 
 <style scoped>
@@ -369,5 +385,21 @@ console.log("有问题请找谭谭");
   color: #999;
   font-size: 16px;
   margin-top: 50px;
+}
+
+/* 高亮动画效果 */
+@keyframes highlightPulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(230, 162, 60, 0.7);
+  }
+  50% {
+    transform: scale(1.02);
+    box-shadow: 0 0 0 10px rgba(230, 162, 60, 0.3);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(230, 162, 60, 0);
+  }
 }
 </style>

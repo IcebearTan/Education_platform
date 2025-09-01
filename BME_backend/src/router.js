@@ -4,6 +4,7 @@ import HomeView from './views/HomeView.vue'
 import LoginView from './views/LoginView.vue'
 import RegisterView from './views/RegisterView.vue'
 
+import DashboardComponent from './components/DashboardComponent.vue'
 import UserManage from './components/UserManage.vue'
 import UserAttendence from './components/UserAttendence.vue'
 import ArticleManage from './components/ArticleManage.vue'
@@ -40,7 +41,12 @@ const router = createRouter({
                 {
                     path: '',
                     name: 'home_default',
-                    component: ArticleManage
+                    component: DashboardComponent
+                },
+                {
+                    path: '/dashboard',
+                    name: 'dashboard',
+                    component: DashboardComponent
                 },
                 {
                     path: '/article/manage',

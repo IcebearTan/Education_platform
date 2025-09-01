@@ -214,7 +214,7 @@ export default {
 </script>
 
 <template>
-  <div class="selectable" style="width: 100%; height: 100%; position: relative; overflow: hidden;">
+  <div class="selectable" style="width: 100%;">
     <div class="header-container">
       <div class="l-container">文章列表
         <el-button type="warning" @click="handleAdd" size="large" style="margin-left: 10px;">添加文章</el-button>
@@ -240,19 +240,35 @@ export default {
       </div>
     </div>
 
-    <div class="selectable" style="margin: 20px;">
+    <div class="selectable" style="box-shadow: 0px 5px 10px 1px#e3e3e3; margin: 20px;">
       <div class="table">
-        <el-table :data="articles" style="width: 100%; max-height: 500px; overflow-y: auto;">
-          <el-table-column v-for="item in tableLabel" :key="item.prop" :prop="item.prop" :label="item.label"
-            :width="item.width ? item.width : 125" />
-          <el-table-column fixed="right" label="Operations" min-width="120">
-            <template #="scoped">
-              <el-button type="primary" size="small" @click="handleEdit(scoped.row)">编辑</el-button>
-              <el-button type="danger" size="small" @click="handleDelete(scoped.row)">删除</el-button>
-            </template>
-          </el-table-column>
+        <el-table 
+          :data="articles"
+            style="width: 100%; overflow: auto; height: calc(100% - 40px); border-radius: 10px;"
+            :row-style="{ height: '40px' }"
+            
+          >
+        <el-table-column v-for="item in tableLabel" :key="item.prop" :prop="item.prop" :label="item.label"
+          :width="item.width ? item.width : 125" />
+        <el-table-column fixed="right" label="Operations" min-width="120">
+          <template #="scoped">
+            <el-button type="primary" size="small" @click="handleEdit(scoped.row)">编辑</el-button>
+            <el-button type="danger" size="small" @click="handleDelete(scoped.row)">删除</el-button>
+          </template>
+        </el-table-column>
         </el-table>
+        <div class="pagination-wrapper">
+          <el-pagination class="selectable" 
+          @current-change="handlePageChange" 
+          :current-page="currentPage" 
+          :page-size="pageSize"
+          :total="totalItems" 
+          layout="prev, pager, next"
+          >
+          </el-pagination>
+        </div>
       </div>
+
     </div>
 
     
@@ -275,16 +291,7 @@ export default {
     </el-dialog> -->
   </div>
 
-  <div class="pagination-wrapper">
-    <el-pagination class="selectable" 
-    @current-change="handlePageChange" 
-    :current-page="currentPage" 
-    :page-size="pageSize"
-    :total="totalItems" 
-    layout="prev, pager, next"
-    >
-    </el-pagination>
-  </div>
+
 </template>
 
 <style scoped>
@@ -331,6 +338,8 @@ export default {
   }
 }
 
+
+
 .default-card {
   display: inline-block;
   width: 350px;
@@ -369,14 +378,27 @@ export default {
 }
 
 .pagination-wrapper {
-    position: absolute;
-    left: 0;
-    bottom: 0;
+    position: relative;
     width: 100%;
+    background-color: white;
+    height: 40px;
     display: flex;
     justify-content: center;
     align-items: center;
-    padding-bottom: 20px;
+    border-radius: 0 0 10px 10px;
+    
+}
+
+.table {
+  width: 100%;
+  height: calc(100vh - 220px);
+  max-height: 600px;
+  border-radius: 10px;
+  border-width: 1px;
+  border-style: solid;
+  border-color: #C4C4C4;
+  box-shadow: 0px 5px 10px 1px#f7f7f7;
+  overflow: visible;
 }
 
 </style>

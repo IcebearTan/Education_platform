@@ -130,6 +130,8 @@ import { ref, onMounted, computed, watch } from 'vue'
 import api from '../../api'
 import { ElMessage } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
+import { mockApiRequest } from '../../mock/config'
+import { mockApiResponses } from '../../mock/studyGroupData'
 
 const props = defineProps({
   userRole: {
@@ -200,39 +202,73 @@ async function fetchTasks() {
   loading.value = true;
   error.value = '';
   try {
-    const res = await api({
-      url: '/information/task/query',
-      method: 'get',
-      params: { group_id: props.groupId }
-    });
-    // 适配后端新结构，合并五类优先级任务
-    let list = [];
-    if (res.data && res.data.data) {
-      const urgent = Array.isArray(res.data.data.urgent_priority) ? res.data.data.urgent_priority : [];
-      const high = Array.isArray(res.data.data.high_priority) ? res.data.data.high_priority : [];
-      const medium = Array.isArray(res.data.data.medium_priority) ? res.data.data.medium_priority : [];
-      const low = Array.isArray(res.data.data.low_priority) ? res.data.data.low_priority : [];
-      const unimportant = Array.isArray(res.data.data.unimportant_priority) ? res.data.data.unimportant_priority : [];
-      list = [
-        ...urgent.map(t => ({ ...t, _priority: '紧急' })),
-        ...high.map(t => ({ ...t, _priority: '高' })),
-        ...medium.map(t => ({ ...t, _priority: '中' })),
-        ...low.map(t => ({ ...t, _priority: '低' })),
-        ...unimportant.map(t => ({ ...t, _priority: '不重要' })),
-      ];
-    }
-    if (list.length > 0) {
+    const response = await mockApiRequest(
+      // 真实API调用
+      async () => {
+        const res = await api({
+          url: '/information/task/query',
+          method: 'get',
+          params: { group_id: props.groupId }
+        });
+        
+        if (res.data && res.data.data) {
+          // 适配后端新结构，合并五类优先级任务
+          const urgent = Array.isArray(res.data.data.urgent_priority) ? res.data.data.urgent_priority : [];
+          const high = Array.isArray(res.data.data.high_priority) ? res.data.data.high_priority : [];
+          const medium = Array.isArray(res.data.data.medium_priority) ? res.data.data.medium_priority : [];
+          const low = Array.isArray(res.data.data.low_priority) ? res.data.data.low_priority : [];
+          const unimportant = Array.isArray(res.data.data.unimportant_priority) ? res.data.data.unimportant_priority : [];
+          
+          const list = [
+            ...urgent.map(t => ({ ...t, _priority: '紧急' })),
+            ...high.map(t => ({ ...t, _priority: '高' })),
+            ...medium.map(t => ({ ...t, _priority: '中' })),
+            ...low.map(t => ({ ...t, _priority: '低' })),
+            ...unimportant.map(t => ({ ...t, _priority: '不重要' })),
+          ];
+          
+          return list;
+        }
+        throw new Error('API返回错误');
+      },
+      // Mock响应
+      async () => {
+        const response = await mockApiResponses.getGroupTasks(props.groupId);
+        return response.data.map(task => ({
+          ...task,
+          _priority: getPriorityLabel(task.priority),
+          end_time: task.deadline || task.end_time,
+          create_time: task.created_at || task.create_time
+        }));
+      }
+    );
+    
+    if (response.length > 0) {
       // 按优先级排序（紧急→高→中→低→不重要）
       const priorityOrder = { '紧急': 0, '高': 1, '中': 2, '低': 3, '不重要': 4 };
-      tasks.value = list.sort((a, b) => priorityOrder[a._priority] - priorityOrder[b._priority]);
+      tasks.value = response.sort((a, b) => priorityOrder[a._priority] - priorityOrder[b._priority]);
     } else {
       error.value = '暂无任务数据';
     }
   } catch (e) {
+    console.error('获取任务失败:', e);
     error.value = '获取任务失败，请稍后重试';
   } finally {
     loading.value = false;
   }
+}
+
+// 优先级标签转换
+function getPriorityLabel(priority) {
+  const priorityMap = {
+    'urgent': '紧急',
+    'high': '高',
+    'medium': '中',
+    'normal': '中', 
+    'low': '低',
+    'unimportant': '不重要'
+  };
+  return priorityMap[priority] || '中';
 }
 
 // 发布任务
@@ -331,22 +367,17 @@ function onEditTask(task) {
 // 跳转到任务详情
 function goToTaskDetail(task) {
   emit('goToTaskDetail', {
-    taskId: task.id,
-    groupId: props.groupId,
-    userRole: props.userRole,
-    taskDetail: {
-      id: task.id,
-      title: task.title,
-      content: task.content,
-      create_time: task.create_time,
-      end_time: task.end_time,
-      priority: task.priority,
-      _priority: task._priority,
-      group_id: task.group_id,
-      group_name: task.group_name,
-      submitted_students: task.submitted_students || [],
-      not_submitted_students: task.not_submitted_students || []
-    }
+    id: task.id,
+    title: task.title,
+    content: task.content,
+    create_time: task.create_time,
+    end_time: task.end_time,
+    priority: task.priority,
+    _priority: task._priority,
+    group_id: task.group_id,
+    group_name: task.group_name,
+    submitted_students: task.submitted_students || [],
+    not_submitted_students: task.not_submitted_students || []
   })
 }
 

@@ -11,7 +11,7 @@ const users = ref([]);
 const allUsers = ref([]);
 const filteredUsers = ref([]); // 新增：用于存储当前筛选后的用户列表
 const currentPage = ref(1);//当前页面
-const pageSize = ref(10);//每页显示的条数
+const pageSize = ref(16);//每页显示的条数
 const action = ref('edit');
 const totalItems = ref(0);//总条数
 
@@ -66,7 +66,7 @@ const tableLabel = ref([
   {
     prop: 'User_Name',
     label: '用户名',
-    width: 250
+    width: 200
   },
   {
     prop: 'User_Mode',
@@ -152,7 +152,12 @@ onMounted(() => {
 
     <div style="margin: 20px;">
       <div class="table">
-         <el-table :data="users" style="width: 100%; max-height: 800px; overflow-y: auto;">
+          <el-table 
+            :data="users" 
+            style="width: 100%; overflow-y: auto; height: calc(100% - 40px);"
+            :row-style="{ height: '40px' }"
+            
+          >
           
           <el-table-column v-for="item in tableLabel" :key="item.prop" :prop="item.prop" :label="item.label" 
             :width="item.width ? item.width : 125" />   
@@ -166,6 +171,17 @@ onMounted(() => {
           
           </el-table-column>
         </el-table>
+        <div class="pagination-wrapper">
+          <el-pagination
+          @current-change="handlePageChange"
+          :page-size="pageSize"
+          :pager-count="11"
+          layout="prev, pager, next"
+          :total="totalItems"
+          :current-page="currentPage"
+          
+        />
+        </div>
       </div>
 
       <!-- <el-pagination @current-change="handlePageChange" :current-page="currentPage" :page-size="pageSize"
@@ -189,34 +205,35 @@ onMounted(() => {
         </div>
       </template>
     </el-dialog>
+    
   </div>
 
-  <div class="pagination-wrapper">
-    <el-pagination
-    @current-change="handlePageChange"
-    :page-size="pageSize"
-    :pager-count="11"
-    layout="prev, pager, next"
-    :total="totalItems"
-   
-    :current-page="currentPage"
-    
-   />
-  </div>
+
    
 </template>
 
 <style scoped>
 .pagination-wrapper {
-    position: absolute;
-    left: 0;
-    bottom: 0;
+    position: static;
     width: 100%;
+    background-color: white;
+    height: 40px;
     display: flex;
     justify-content: center;
     align-items: center;
-    padding-bottom: 100px;
     
+}
+
+.table {
+  width: 100%;
+  height: calc(100vh - 220px);
+  max-height: 600px;
+  border-radius: 10px;
+  border-width: 1px;
+  border-style: solid;
+  border-color: #C4C4C4;
+  box-shadow: 0px 5px 10px 1px#f7f7f7;
+  overflow: hidden;
 }
 
 .header-container {
@@ -252,7 +269,7 @@ onMounted(() => {
 
       margin: 0;
     }
-
+    
     /* font-size: 30px;
     font-weight: 900;
 
@@ -260,6 +277,7 @@ onMounted(() => {
 
     color: #08e397; */
   }
+
 }
 
 .default-card {
@@ -294,6 +312,8 @@ onMounted(() => {
 
   margin-left: 10px;
 }
+
+
 </style>
 
 <!-- <script>

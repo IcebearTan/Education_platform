@@ -20,10 +20,11 @@ import FindPasswordView from './views/FindPasswordView.vue'
 import MedalWallComponent from './components/User/MedalWallComponent.vue';
 
 import MedalView from './views/MedalView.vue';
+import NotificationView from './views/NotificationView.vue';
 import StudentGroupsComponent from './components/StudentGroup/StudentGroupsComponent.vue';
-import StudentGroupsDetails from './components/StudentGroup/StudentGroupsDetails.vue';
-import StudentGroupRank from './components/StudentGroup/StudentGroupRank.vue';
+import StudyGroupDetails from './components/StudentGroup/StudyGroupDetails.vue';
 import StudentGroupTask from './components/StudentGroup/StudentGroupTask.vue';
+import TaskDetailView from './views/TaskDetailView.vue';
 import MyFeedbacksComponent from './components/User/MyFeedbacksComponent.vue';
 
 const router = createRouter({
@@ -79,20 +80,106 @@ const router = createRouter({
                     name: 'user-info',
                     component: UserInfoComponent,
                 },
+                // 学习小组：学生视角查看参与的小组
                 {
-                    path: '/user-center/my-groups',
-                    name: 'my-groups',
+                    path: '/user-center/study-groups',
+                    name: 'study-groups',
                     component: StudentGroupsComponent,
+                    meta: { role: 'student', title: '学习小组' }
+                },
+                // 教学管理：导师视角管理小组
+                {
+                    path: '/user-center/teaching-management',
+                    name: 'teaching-management',
+                    component: () => import('./components/Teacher/TeachingManagementComponent.vue'),
+                    meta: { role: 'teacher', title: '教学管理' }
                 },
                 {
                     path: '/user-center/my-feedbacks',
                     name: 'my-feedbacks',
                     component: MyFeedbacksComponent,
                 },
+                // 学习小组详情页面
+                {
+                    path: '/user-center/study-group/:groupId',
+                    name: 'study-group-details',
+                    component: StudyGroupDetails,
+                    props: route => ({
+                        groupId: route.params.groupId,
+                        groupName: route.query.group_name,
+                        taskId: route.query.taskId,
+                        homeworkId: route.query.homeworkId,
+                        tab: route.query.tab || 'tasks',  // 默认显示任务页面
+                        viewMode: 'student'
+                    }),
+                    meta: { role: 'student' }
+                },
+                // 任务详情页面（学生视角）
+                {
+                    path: '/user-center/study-group/:groupId/task/:taskId',
+                    name: 'task-detail',
+                    component: TaskDetailView,
+                    props: route => ({
+                        groupId: parseInt(route.params.groupId),
+                        taskId: parseInt(route.params.taskId),
+                        userRole: route.query.role || 'student'
+                    }),
+                    meta: { role: 'student', title: '任务详情' }
+                },
+                // 教师任务详情页面（教师视角）
+                {
+                    path: '/user-center/teaching-group/:groupId/task/:taskId',
+                    name: 'teacher-task-detail',
+                    component: () => import('./views/TeacherTaskDetailView.vue'),
+                    props: route => ({
+                        groupId: parseInt(route.params.groupId),
+                        taskId: parseInt(route.params.taskId),
+                        groupName: route.query.group_name,
+                        userRole: 'teacher'
+                    }),
+                    meta: { role: 'teacher', title: '任务详情' }
+                },
+                // 教学小组详情页面（统一路由）
+                {
+                    path: '/user-center/teaching-group/:groupId',
+                    name: 'teaching-group-details',
+                    component: () => import('./components/Teacher/TeachingGroupDetails.vue'),
+                    props: route => ({
+                        groupId: route.params.groupId,
+                        groupName: route.query.group_name,
+                        taskId: route.query.taskId,
+                        homeworkId: route.query.homeworkId,
+                        tab: route.query.tab || 'tasks',
+                        viewMode: 'teacher'
+                    }),
+                    meta: { role: 'teacher', title: '小组管理' }
+                },
+                // 向后兼容的重定向
+                {
+                    path: '/user-center/my-groups',
+                    name: 'my-groups-redirect',
+                    redirect: '/user-center/study-groups'
+                },
+                {
+                    path: '/user-center/teaching-groups',
+                    name: 'teaching-groups-redirect',
+                    redirect: '/user-center/teaching-management'
+                },
+                // 保持向后兼容的旧路由
                 {
                     path: '/user-center/student-group-details',
-                    name: 'student-group-details',
-                    component: StudentGroupsDetails,
+                    name: 'student-group-details-legacy',
+                    redirect: to => {
+                        return {
+                            name: 'study-group-details',
+                            params: { groupId: to.query.group_id },
+                            query: {
+                                group_name: to.query.group_name,
+                                taskId: to.query.taskId,
+                                homeworkId: to.query.homeworkId
+                            }
+                        }
+                    }
                 }
             ]
         },
@@ -157,6 +244,25 @@ const router = createRouter({
                     component: MedalWallComponent,
                 }
             ]
+        },
+        {
+            path: '/notifications',
+            name: 'notifications',
+            component: NotificationView,
+        },
+        // 任务详情页面（通用路由，支持query参数）
+        {
+            path: '/task-detail',
+            name: 'task-detail-general',
+            component: TaskDetailView,
+            meta: { title: '任务详情' }
+        },
+        // 教师任务详情页面（通用路由，支持query参数）
+        {
+            path: '/teacher-task-detail',
+            name: 'teacher-task-detail-general',
+            component: () => import('./views/TeacherTaskDetailView.vue'),
+            meta: { role: 'teacher', title: '任务详情' }
         },
     ]
 })

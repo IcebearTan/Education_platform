@@ -107,7 +107,7 @@
 
     <div class="header-container selectable">
       <div class="l-container">小组列表
-      <el-button class="config" size="large" @click="appendGruopDialogVisible = true" >新建小组</el-button>
+      <el-button class="config" size="large" type="warning" @click="appendGruopDialogVisible = true" >新建小组</el-button>
      </div>
       <div class="r-container">
         <el-form :inline="true" class="form-inline" @submit.prevent>

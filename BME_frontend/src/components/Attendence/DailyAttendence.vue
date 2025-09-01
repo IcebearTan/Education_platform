@@ -489,45 +489,58 @@ const calculateThisDayDuration = () => {
 // 提交签到函数
 const submitCheckCode = async (code) => {
   try {
-      const res = await api({
-        url: '/check',
-        method: 'post',
-        data: {
-          "check_code": code
-        }
-      });
-      if (res.status === 200) {
-        ElMessage({
-          type: 'success',
-          message: '签到成功！请在6小时内签退！',
-        })
-        
-        // 重新获取打卡状态以获得服务器最新时间
-        await fetchCheckStatus();
-        
-        // 获取最新的今日打卡状态
-        todayRecord.value = await fetchLatestCheckTime();
-        
-        if (todayRecord.value && todayRecord.value.check_in_time) {
-          const serverCheckTime = new Date(todayRecord.value.check_in_time);
-          checkTime.value = serverCheckTime;
-        } else {
-          // 如果服务器没有返回时间，使用当前时间作为备用
-          checkTime.value = new Date();
-        }
-        
-        isVisible.value = true;
-      } else {
-        ElMessage({
-          type: 'error',
-          message: res
-        })
+    const res = await api({
+      url: '/check',
+      method: 'post',
+      data: {
+        "check_code": code
       }
+    });
+    if (res.status === 200) {
+      ElMessage({
+        type: 'success',
+        message: '签到成功！请在6小时内签退！',
+      })
+
+      // 重新获取打卡状态以获得服务器最新时间
+      await fetchCheckStatus();
+
+      // 获取最新的今日打卡状态
+      todayRecord.value = await fetchLatestCheckTime();
+
+      if (todayRecord.value && todayRecord.value.check_in_time) {
+        const serverCheckTime = new Date(todayRecord.value.check_in_time);
+        checkTime.value = serverCheckTime;
+      } else {
+        // 如果服务器没有返回时间，使用当前时间作为备用
+        checkTime.value = new Date();
+      }
+
+      isVisible.value = true;
+    } else {
+      ElMessage({
+        type: 'error',
+        message: res
+      })
+    }
   } catch (error) {
-    ElMessage({
-      type: 'error',
-      message: error
-    })
+    if (error?.response?.status === 409) {
+      ElMessage({
+        type: 'error',
+        message: '签到码已被使用',
+      })
+    } else if (error?.response?.status === 403) {
+      ElMessage({
+        type: 'error',
+        message: 'IP不在106或110网段，请连接正确的网络后重试',
+      })
+    }
+    else {
+      ElMessage({
+        type: 'error',
+        message: error?.response?.data?.message || error,
+      })
+    }
   }
 }
 const submitCheckOutCode = async (code) => {
@@ -565,7 +578,13 @@ const submitCheckOutCode = async (code) => {
         type: 'error',
         message: '签退码已被使用',
       })
-    } else {
+    } else if (error?.response?.status === 403) {
+      ElMessage({
+        type: 'error',
+        message: 'IP不在106或110网段，请连接正确的网络后重试',
+      })
+    }
+    else {
       ElMessage({
         type: 'error',
         message: error?.response?.data?.message || error,
@@ -605,27 +624,6 @@ const openCheckOut = () => {
         message: '取消签退',
       })
     })
-  
-//   else{
-//     ElMessageBox.confirm(
-//   `本次登录为不同浏览器，请返回上次签到的浏览器进行签退
-//    若要强制签退请选择确定（当前签到的时长都会清零）`, // 弹窗内容
-//   '警告', // 弹窗标题
-//   {
-//     confirmButtonText: '确定',
-//     cancelButtonText: '取消',
-//     type: 'warning', // 弹窗类型：success, warning, info, error
-//     showClose: true, // 是否显示关闭按钮
-//   }
-// )
-//   .then(() => {
-//     // 用户点击“确定”后的逻辑
-//     localStorage.setItem('isChecked', false);
-//     isVisible.value = false;
-//   })
-//   .catch(() => {
-//   });
-//   }
 }
 
 const todayIndex = ref(0);
@@ -732,8 +730,6 @@ onMounted(async () => {
 onUnmounted(() => {
   // saveDataToLocalStorage(); // 保存数据
 });
-
-// 移除原来的 watch(isloading) 逻辑，因为现在在 onMounted 中直接并行获取数据
 
 </script>
 
