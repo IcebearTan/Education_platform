@@ -63,6 +63,7 @@ onMounted(() => {
     form.major = props.User_Info.Major
     form.introduction = props.User_Info.Introduction
     form.GithubId = props.User_Info.Github_Id
+    form.Student_Id = props.User_Info.Student_Id || ''
     form.tags = splitStringBySpace(props.User_Info.Skill_Tags)
   }, 200)
 
@@ -83,6 +84,7 @@ const form = reactive({
   major: '',
   introduction: '',
   GithubId: '',
+  Student_Id: '',
   tags: [],
 })
 
@@ -131,6 +133,7 @@ const onSubmit = () => {
         method: 'post',
         data: {
           Github_Id: form.GithubId,
+          Student_Id: form.Student_Id,
           College: form.college,
           Introduction: form.introduction,
           Major: form.major,
@@ -204,6 +207,18 @@ const onSubmit = () => {
               </el-form-item>
             </el-col>
           </el-row>
+          <el-row :gutter="20">
+            <el-col :span="12">
+              <el-form-item label="GitHub ID">
+                <el-input v-model="form.GithubId" placeholder="你的Github用户名" clearable/>
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item label="学号">
+                <el-input v-model="form.Student_Id" placeholder="你的学号" clearable/>
+              </el-form-item>
+            </el-col>
+          </el-row>
           <el-form-item label="个人简介">
             <el-input v-model="form.introduction" 
             type="textarea" 
@@ -213,9 +228,6 @@ const onSubmit = () => {
             show-word-limit 
             clearable
             />
-          </el-form-item>
-          <el-form-item label="GithubID">
-            <el-input v-model="form.GithubId" placeholder="你的Github用户名" clearable/>
           </el-form-item>
           <el-form-item label="技能标签">
             <el-input-tag v-model="form.tags" placeholder="你所拥有的技能" trigger="Enter" clearable :max="10" show-word-limit>
