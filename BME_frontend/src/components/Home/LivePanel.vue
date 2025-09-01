@@ -4,8 +4,8 @@
     class="live-checkin-panel"
     :class="{ 
       expanded: isExpanded,
-      'theme-dark': !isDarkMode,
-      'theme-light': isDarkMode
+      'theme-dark': isDarkMode,
+      'theme-light': !isDarkMode
     }"
     :style="{ height: isExpanded ? dynamicHeight : '380px' }"
     @click="togglePanel"
