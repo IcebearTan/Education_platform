@@ -8,6 +8,7 @@ import HeroSection from './HeroSection.vue';
 import MainContent from './MainContent.vue';
 import SidebarContent from './SidebarContent.vue';
 import DailyAttendence from '../Attendence/DailyAttendence.vue';
+import LivePanel from './LivePanel.vue';
 
 // 定义响应式数据
 const articles = ref([]);
@@ -79,12 +80,12 @@ onMounted(() => {
 
 <template>
   <UpdateAnnouncement />
-  
+  <LivePanel />
   <!-- Hero 区域使用独立组件 -->
-  <HeroSection 
+  <!-- <HeroSection 
     :announcement-text="'！！由于线上打卡制作完成，请大家把自己的昵称改成真实姓名！！ 如在使用网站时发现问题，可以将问题发送至「caozhx8@mail2.sysu.edu.cn」或「wujj258@mail2.sysu.edu.cn」'"
     @logo-click="handleLogoClick"
-  />
+  /> -->
   
   <div class="content-container">
     <!-- 移动端专用签到模块 -->
