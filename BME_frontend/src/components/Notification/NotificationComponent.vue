@@ -1,5 +1,9 @@
 <template>
-  <div class="notification-container">
+  <div 
+    class="notification-container"
+    @mouseenter="handleMouseEnter"
+    @mouseleave="handleMouseLeave"
+  >
     <!-- 消息图标和未读数量徽章 -->
     <div class="notification-trigger">
       <el-icon :size="20" class="notification-icon">
@@ -12,29 +16,23 @@
       />
     </div>
 
-    <!-- 悬停时显示的简化消息面板 -->
-    <div v-if="showHover" class="notification-hover-panel">
-      <!-- <div class="panel-header">
-        <h4>消息通知</h4>
-        <span class="total-count">{{ totalUnread }} 条未读</span>
-      </div> -->
-
-      <!-- 消息分类统计 -->
+    <!-- 悬停时显示的消息面板 -->
+    <div v-if="isHoverVisible" class="notification-hover-panel">
+      <!-- 消息分类 -->
       <div class="message-categories">
         <div 
-          v-for="tab in messageTabs.slice(1)" 
+          v-for="tab in messageTabs" 
           :key="tab.key"
           class="category-item"
           @click="handleCategoryClick(tab.key)"
         >
           <div class="category-icon">
-            <el-icon :color="getCategoryColor(tab.key)" :size="16">
+            <el-icon :color="tab.color" :size="14">
               <component :is="tab.icon" />
             </el-icon>
           </div>
           <div class="category-info">
             <span class="category-label">{{ tab.label }}</span>
-            <!-- 小气泡放在同一行内 -->
             <el-badge 
               v-if="getUnreadCount(tab.key) > 0" 
               :value="getUnreadCount(tab.key)" 
@@ -44,19 +42,14 @@
           </div>
         </div>
       </div>
-
-      <!-- 查看更多 -->
-      <!-- <div class="panel-footer">
-        <span class="view-all-text">点击查看全部消息</span>
-      </div> -->
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, computed, defineProps } from 'vue'
+import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { Bell, Document, User, Warning, InfoFilled, Notification } from '@element-plus/icons-vue'
+import { Bell, User, Tools, Setting } from '@element-plus/icons-vue'
 import api from '../../api'
 
 const router = useRouter()
@@ -71,73 +64,157 @@ const props = defineProps({
 
 // 响应式数据
 const notifications = ref({
-  task: [],
-  homework: [],
-  leave: [],
-  notice: [],
-  error: [],
-  other: []
+  'group-notification': [
+    { id: 1, title: '小组任务更新', is_read: false },
+    { id: 2, title: '新的作业发布', is_read: false },
+    { id: 3, title: '小组讨论回复', is_read: true }
+  ],
+  'group-management': [
+    { id: 4, title: '学生提交申请', is_read: false }
+  ],
+  'system-notification': [
+    { id: 5, title: '系统维护通知', is_read: false },
+    { id: 6, title: '功能更新', is_read: true }
+  ]
 })
+
 const totalUnread = ref(0)
 
-// 消息分类配置
-const messageTabs = [
-  { key: 'all', label: '全部', icon: Bell },
-  { key: 'task', label: '任务', icon: Document },
-  { key: 'homework', label: '作业', icon: Document },
-  { key: 'notice', label: '通知', icon: Notification },
-  { key: 'leave', label: '请假', icon: User },
-  { key: 'error', label: '错误', icon: Warning },
-  { key: 'other', label: '其他', icon: InfoFilled }
-]
+// 内部悬停状态管理
+const internalHover = ref(false)
+
+// 获取当前用户角色
+const getCurrentUserRole = () => {
+  try {
+    const myAppDataString = localStorage.getItem('my-app')
+    if (!myAppDataString) return 'student'
+    
+    const myAppData = JSON.parse(myAppDataString)
+    const user = myAppData.user
+    
+    // 检查用户角色 - 扩展检查逻辑以适应不同的数据结构
+    if (user && (
+      user.role === 'teacher' || 
+      user.user_type === 'teacher' || 
+      user.isTeacher || 
+      user.User_Mode === 'admin'
+    )) {
+      return 'teacher'
+    }
+    
+    return 'student'
+  } catch (error) {
+    console.error('获取用户角色失败:', error)
+    return 'student'
+  }
+}
+
+const userRole = ref(getCurrentUserRole())
+
+// 根据用户角色动态生成消息分类配置
+const messageTabs = computed(() => {
+  const baseTabs = [
+    { 
+      key: 'group-notification', 
+      label: '小组通知', 
+      icon: User, 
+      route: '/notifications?category=group',
+      color: '#409EFF'
+    },
+    { 
+      key: 'system-notification', 
+      label: '系统通知', 
+      icon: Setting, 
+      route: '/notifications?category=system',
+      color: '#E6A23C'
+    }
+  ]
+
+  // 如果是教师，添加小组管理选项
+  if (userRole.value === 'teacher') {
+    baseTabs.splice(1, 0, {
+      key: 'group-management',
+      label: '小组管理',
+      icon: Tools,
+      route: '/user-center/teaching-management',
+      color: '#67C23A'
+    })
+  }
+
+  return baseTabs
+})
 
 // 计算属性
 const showHover = computed(() => props.showHover)
 
+// 综合悬停状态：外部传入的状态或内部悬停状态
+const isHoverVisible = computed(() => props.showHover || internalHover.value)
+
+// 鼠标事件处理
+const handleMouseEnter = () => {
+  internalHover.value = true
+}
+
+const handleMouseLeave = () => {
+  internalHover.value = false
+}
+
 // 方法
 const fetchNotifications = async () => {
   try {
-    const response = await api.get('/information/reminder/query')
-    if (response.data.code === 200) {
-      notifications.value = response.data.data.reminders
-      totalUnread.value = response.data.data.total_unread
-    }
+    // 计算总未读数
+    let unreadCount = 0
+    Object.values(notifications.value).forEach(msgList => {
+      unreadCount += msgList.filter(msg => !msg.is_read).length
+    })
+    totalUnread.value = unreadCount
+
+    // 实际项目中这里调用真实的API
+    // const response = await api.get('/information/reminder/query')
+    // if (response.data.code === 200) {
+    //   notifications.value = response.data.data.reminders
+    //   totalUnread.value = response.data.data.total_unread
+    // }
   } catch (error) {
     console.error('获取消息失败:', error)
   }
 }
 
 const getUnreadCount = (type) => {
-  if (type === 'all') {
-    return totalUnread.value
-  }
   return notifications.value[type]?.filter(msg => !msg.is_read).length || 0
 }
 
-const getCategoryColor = (type) => {
-  const colors = {
-    task: '#409EFF',
-    homework: '#67C23A',
-    notice: '#E6A23C',
-    leave: '#F56C6C',
-    error: '#F56C6C',
-    other: '#909399'
+// 点击分类跳转到对应页面
+const handleCategoryClick = (categoryKey) => {
+  console.log('点击分类:', categoryKey)
+  const tab = messageTabs.value.find(tab => tab.key === categoryKey)
+  
+  if (tab && tab.route) {
+    router.push(tab.route)
+  } else {
+    localStorage.setItem('notification-active-tab', categoryKey)
+    router.push('/notifications')
   }
-  return colors[type] || '#909399'
 }
 
-// 点击分类跳转到消息页面并设置对应分类
-const handleCategoryClick = (categoryKey) => {
-  // 先保存分类到本地存储
-  localStorage.setItem('notification-active-tab', categoryKey)
-  // 跳转到消息页面
+// 查看全部消息
+const handleViewAll = () => {
   router.push('/notifications')
 }
+
+// 监听showHover变化，用于调试
+watch(() => props.showHover, (newVal) => {
+  console.log('showHover changed:', newVal)
+}, { immediate: true })
 
 // 定时刷新消息
 let refreshTimer = null
 
 onMounted(() => {
+  console.log('NotificationComponent mounted')
+  console.log('用户角色:', userRole.value)
+  console.log('消息分类:', messageTabs.value)
+  
   fetchNotifications()
   // 每30秒刷新一次消息
   refreshTimer = setInterval(fetchNotifications, 30000)
@@ -165,7 +242,7 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 40px; /* 设置固定高度确保垂直对齐 */
+  height: 40px;
 }
 
 .notification-trigger:hover {
@@ -200,15 +277,27 @@ onUnmounted(() => {
   top: 100%;
   left: 50%;
   transform: translateX(-50%);
-  width: 200px;
+  width: 180px;
   background: white;
   border: 1px solid #e4e7ed;
-  border-radius: 8px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  border-radius: 6px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
   z-index: 2000;
   overflow: hidden;
-  margin-top: 4px;
+  margin-top: 6px;
   animation: slideDown 0.2s ease-out;
+  /* 添加一些padding-top来创建无缝的悬停区域 */
+}
+
+/* 在悬停面板和触发器之间创建一个无形的连接区域 */
+.notification-hover-panel::before {
+  content: '';
+  position: absolute;
+  top: -6px;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background: transparent;
 }
 
 @keyframes slideDown {
@@ -249,125 +338,105 @@ onUnmounted(() => {
 }
 
 .message-categories {
-  padding: 8px 12px;
+  padding: 8px;
   background: white;
 }
 
 .category-item {
+  height: 32px;
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 4px 6px;
-  transition: all 0.25s ease;
-  border-radius: 6px;
-  position: relative;
-  margin-bottom: 1px;
-  cursor: pointer; /* 添加手型光标 */
+  padding: 0 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: 4px;
+  border: 1px solid transparent;
+}
+
+.category-item:last-child {
+  margin-bottom: 0;
 }
 
 .category-item:hover {
-  background: linear-gradient(135deg, #f5f7fa 0%, #ecf5ff 100%);
-  transform: translateX(1px);
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  background: linear-gradient(135deg, #f8f9fa 0%, #f0f2f5 100%);
+  border-color: #d0d0d0;
+  transform: translateX(2px);
 }
 
 .category-icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
-  position: relative;
-  background: rgba(255, 255, 255, 0.7);
-  border-radius: 4px;
-  transition: all 0.25s ease;
   flex-shrink: 0;
-}
-
-.category-item:hover .category-icon {
-  background: white;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
 }
 
 .category-info {
   flex: 1;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  min-height: 24px;
+  justify-content: space-between;
 }
 
 .category-label {
-  font-size: 14px;
-  color: #606266;
+  font-size: 13px;
+  color: #303133;
   font-weight: 500;
-  transition: color 0.25s ease;
-  line-height: 1;
-}
-
-.category-item:hover .category-label {
-  color: #409EFF;
 }
 
 .category-badge {
-  transform: scale(0.8);
-  flex-shrink: 0;
   display: flex;
   align-items: center;
+  margin-left: auto;
+}
+
+.category-badge :deep(.el-badge__content) {
+  background: #f56c6c;
+  border: none;
+  font-size: 11px;
+  min-width: 14px;
+  height: 14px;
+  line-height: 14px;
+  padding: 0;
+  border-radius: 50%;
 }
 
 .panel-footer {
-  text-align: center;
-  padding: 14px 20px;
+  padding: 12px 20px;
   border-top: 1px solid #e4e7ed;
-  background: linear-gradient(135deg, #fafafa 0%, #f5f7fa 100%);
+  background: #fafafa;
+  text-align: center;
 }
 
 .view-all-text {
-  font-size: 12px;
-  color: #909399;
-  font-style: italic;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  transition: color 0.3s ease;
-}
-
-.view-all-text:before {
-  content: "👆";
-  font-size: 14px;
-}
-
-.panel-footer:hover .view-all-text {
+  font-size: 13px;
   color: #409EFF;
+  cursor: pointer;
+  font-weight: 500;
+  transition: color 0.2s ease;
 }
 
-/* 移动端适配 */
+.view-all-text:hover {
+  color: #337ecc;
+  text-decoration: underline;
+}
+
+/* 响应式设计 */
 @media (max-width: 768px) {
   .notification-hover-panel {
-    width: 180px;
-    max-width: 85vw;
-    left: 50%;
-    transform: translateX(-50%);
-  }
-  
-  .message-categories {
-    padding: 6px 10px;
+    width: 160px;
+    left: auto;
+    right: 0;
+    transform: none;
   }
   
   .category-item {
-    gap: 6px;
-    padding: 3px 4px;
+    padding: 6px 8px;
   }
   
   .category-label {
-    font-size: 13px;
-  }
-  
-  .category-icon {
-    width: 20px;
-    height: 20px;
+    font-size: 12px;
   }
 }
 </style>

@@ -1,5 +1,36 @@
 <template>
   <div class="task-detail-view">
+    <!-- 调试工具栏 -->
+    <div v-if="showDebugTools" class="debug-toolbar">
+      <div class="debug-title">🛠️ 调试工具</div>
+      <div class="debug-buttons">
+        <el-button size="small" @click="setDebugMode('normal')">正常状态</el-button>
+        <el-button size="small" type="warning" @click="setDebugMode('not_submitted')">未提交</el-button>
+        <el-button size="small" type="danger" @click="setDebugMode('overdue')">已过期</el-button>
+        <el-button size="small" type="info" @click="setDebugMode('late_submission')">逾期提交</el-button>
+        <el-button size="small" type="warning" @click="setDebugMode('urgent')">紧急(1小时)</el-button>
+        <el-button size="small" type="primary" @click="setDebugMode('warning')">警告(2天)</el-button>
+        <el-button size="small" @click="toggleDebugTools">隐藏</el-button>
+      </div>
+      <div class="debug-info">
+        当前模式: <el-tag size="small">{{ currentDebugMode }}</el-tag>
+        | 任务状态: <el-tag size="small" :type="isTaskOverdue() ? 'danger' : 'success'">
+          {{ isTaskOverdue() ? '已过期' : '进行中' }}
+        </el-tag>
+        | 提交状态: <el-tag size="small" :type="mySubmission ? 'success' : 'warning'">
+          {{ mySubmission ? '已提交' : '未提交' }}
+        </el-tag>
+      </div>
+    </div>
+    
+    <!-- 显示调试工具按钮 -->
+    <div v-else class="debug-toggle">
+      <el-button size="small" text @click="toggleDebugTools">
+        <el-icon><Tools /></el-icon>
+        显示调试工具
+      </el-button>
+    </div>
+
     <!-- 面包屑导航 -->
     <div class="breadcrumb-container">
       <el-breadcrumb separator="/">
@@ -207,39 +238,286 @@
             <div class="card-header">
               <el-icon class="header-icon"><Upload /></el-icon>
               <span>我的提交</span>
+              <el-tag 
+                v-if="getSubmissionStatusTag()" 
+                :type="getSubmissionStatusTag().type" 
+                size="small"
+                class="submission-status-tag"
+              >
+                {{ getSubmissionStatusTag().text }}
+              </el-tag>
             </div>
           </template>
           
+          <!-- 已提交状态 -->
           <div v-if="mySubmission" class="submission-status submitted">
-            <el-result
-              icon="success"
-              title="已提交"
-              :sub-title="`提交时间：${formatDateTime(mySubmission.submitted_at)}`"
-            >
-              <template #extra>
-                <el-button type="primary" @click="viewMySubmission">查看我的提交</el-button>
-                <el-button @click="editSubmission">修改提交</el-button>
-              </template>
-            </el-result>
+            <div class="submission-header">
+              <el-icon class="status-icon success"><SuccessFilled /></el-icon>
+              <div class="status-info">
+                <h3 class="status-title">已成功提交</h3>
+                <p class="status-desc">提交时间：{{ formatDateTime(mySubmission.submitted_at) }}</p>
+                <p v-if="isLateSubmission(mySubmission.submitted_at)" class="late-warning">
+                  <el-icon><WarningFilled /></el-icon>
+                  逾期提交
+                </p>
+              </div>
+            </div>
+            
+            <div class="submission-content">
+              <div class="submission-files" v-if="mySubmission.files && mySubmission.files.length > 0">
+                <h4>提交的文件：</h4>
+                <div class="file-list">
+                  <div v-for="file in mySubmission.files" :key="file.id" class="file-item">
+                    <el-icon class="file-icon"><Document /></el-icon>
+                    <span class="file-name">{{ file.name }}</span>
+                    <span class="file-size">{{ formatFileSize(file.size) }}</span>
+                    <div class="file-actions">
+                      <el-button type="text" size="small" @click="previewFile(file)">
+                        <el-icon><View /></el-icon>
+                        预览
+                      </el-button>
+                      <el-button type="text" size="small" @click="downloadFile(file)">
+                        <el-icon><Download /></el-icon>
+                        下载
+                      </el-button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="submission-text" v-if="mySubmission.content">
+                <h4>提交内容：</h4>
+                <div class="text-content">{{ mySubmission.content }}</div>
+              </div>
+            </div>
+            
+            <div class="submission-actions">
+              <el-button 
+                v-if="!isTaskOverdue()" 
+                type="primary"
+                @click="resubmitTask"
+                :disabled="isTaskOverdue()"
+              >
+                <el-icon><Upload /></el-icon>
+                重新提交
+              </el-button>
+              <el-button 
+                v-else
+                type="info"
+                disabled
+              >
+                <el-icon><CircleCloseFilled /></el-icon>
+                任务已过期
+              </el-button>
+            </div>
           </div>
           
+          <!-- 未提交状态 -->
           <div v-else class="submission-status not-submitted">
-            <el-result
-              icon="warning"
-              title="尚未提交"
-              sub-title="请及时完成任务并提交"
-            >
-              <template #extra>
-                <el-button type="primary" size="large" @click="submitTask">
-                  <el-icon><Upload /></el-icon>
-                  提交任务
-                </el-button>
-              </template>
-            </el-result>
+            <!-- 任务已过期 -->
+            <div v-if="isTaskOverdue()" class="overdue-status">
+              <el-icon class="status-icon danger"><CircleCloseFilled /></el-icon>
+              <div class="status-info">
+                <h3 class="status-title">任务已过期</h3>
+                <p class="status-desc">截止时间：{{ formatDateTime(taskDetail.end_time) }}</p>
+                <p class="overdue-time">已过期 {{ getOverdueTime() }}</p>
+              </div>
+            </div>
+            
+            <!-- 任务未过期 -->
+            <div v-else class="pending-status">
+              <el-icon class="status-icon warning"><WarningFilled /></el-icon>
+              <div class="status-info">
+                <h3 class="status-title">尚未提交</h3>
+                <p class="status-desc">请及时完成任务并提交</p>
+                <p class="time-reminder" :class="getUrgencyClass()">
+                  剩余时间：{{ getTimeLeft(taskDetail.end_time) }}
+                </p>
+              </div>
+            </div>
+            
+            <div class="upload-area">
+              <el-upload
+                ref="uploadRef"
+                :auto-upload="false"
+                :show-file-list="true"
+                :on-change="handleFileChange"
+                :on-remove="handleFileRemove"
+                multiple
+                drag
+                class="submission-upload"
+                :disabled="isTaskOverdue()"
+              >
+                <el-icon class="el-icon--upload"><UploadFilled /></el-icon>
+                <div class="el-upload__text">
+                  将文件拖到此处，或<em>点击上传</em>
+                </div>
+                <template #tip>
+                  <div class="el-upload__tip">
+                    支持多个文件上传，单个文件不超过10MB
+                  </div>
+                </template>
+              </el-upload>
+              
+              <el-input
+                v-model="submissionText"
+                type="textarea"
+                :rows="6"
+                placeholder="请输入作业说明或心得体会..."
+                class="submission-textarea"
+                :disabled="isTaskOverdue()"
+              />
+            </div>
+            
+            <div class="submission-actions">
+              <el-button 
+                type="primary" 
+                @click="submitTask"
+                :disabled="isTaskOverdue() || (!uploadedFiles.length && !submissionText.trim())"
+                :loading="submitting"
+              >
+                <el-icon><Upload /></el-icon>
+                {{ isTaskOverdue() ? '任务已过期' : '提交任务' }}
+              </el-button>
+              <el-button @click="saveDraft" v-if="!isTaskOverdue()">
+                <el-icon><DocumentCopy /></el-icon>
+                保存草稿
+              </el-button>
+            </div>
           </div>
         </el-card>
       </div>
     </div>
+
+    <!-- 提交详情弹窗 -->
+    <el-dialog
+      v-model="submissionDialogVisible"
+      :title="submissionDialogTitle"
+      width="800px"
+      :close-on-click-modal="false"
+    >
+      <div v-if="currentViewingSubmission" class="submission-detail">
+        <div class="submission-info-header">
+          <div class="student-info-large">
+            <el-avatar :size="60" :src="currentViewingSubmission.student?.avatar">
+              {{ currentViewingSubmission.student?.name?.charAt(0) }}
+            </el-avatar>
+            <div class="student-details-large">
+              <h3>{{ currentViewingSubmission.student?.name }}</h3>
+              <p class="submission-meta">
+                提交时间：{{ formatDateTime(currentViewingSubmission.submitted_at) }}
+                <el-tag 
+                  v-if="isLateSubmission(currentViewingSubmission.submitted_at)" 
+                  type="warning" 
+                  size="small"
+                  class="late-tag"
+                >
+                  逾期提交
+                </el-tag>
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <el-divider />
+
+        <div class="submission-content-detail">
+          <div v-if="currentViewingSubmission.files && currentViewingSubmission.files.length > 0" class="files-section">
+            <h4><el-icon><Folder /></el-icon> 提交文件 ({{ currentViewingSubmission.files.length }})</h4>
+            <div class="file-grid">
+              <div v-for="file in currentViewingSubmission.files" :key="file.id" class="file-card">
+                <div class="file-preview">
+                  <el-icon class="file-type-icon" :class="getFileTypeClass(file.type)">
+                    <component :is="getFileIcon(file.type)" />
+                  </el-icon>
+                </div>
+                <div class="file-info">
+                  <div class="file-name" :title="file.name">{{ file.name }}</div>
+                  <div class="file-meta">
+                    <span class="file-size">{{ formatFileSize(file.size) }}</span>
+                    <span class="file-type">{{ file.type }}</span>
+                  </div>
+                </div>
+                <div class="file-actions">
+                  <el-button type="text" size="small" @click="previewFile(file)">
+                    <el-icon><View /></el-icon>
+                    预览
+                  </el-button>
+                  <el-button type="text" size="small" @click="downloadFile(file)">
+                    <el-icon><Download /></el-icon>
+                    下载
+                  </el-button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div v-if="currentViewingSubmission.content" class="text-section">
+            <h4><el-icon><Document /></el-icon> 提交说明</h4>
+            <div class="content-display">
+              {{ currentViewingSubmission.content }}
+            </div>
+          </div>
+
+          <div v-if="props.userRole === 'teacher'" class="grading-section">
+            <h4><el-icon><Star /></el-icon> 评分与反馈</h4>
+            <div class="grading-form">
+              <el-form :model="gradingForm" label-width="80px">
+                <el-form-item label="评分">
+                  <el-rate
+                    v-model="gradingForm.score"
+                    :max="5"
+                    show-score
+                    text-color="#ff9900"
+                    score-template="{value} 分"
+                  />
+                </el-form-item>
+                <el-form-item label="评语">
+                  <el-input
+                    v-model="gradingForm.feedback"
+                    type="textarea"
+                    :rows="4"
+                    placeholder="请输入评语和建议..."
+                  />
+                </el-form-item>
+                <el-form-item>
+                  <el-button type="primary" @click="submitGrading">提交评分</el-button>
+                  <el-button @click="resetGrading">重置</el-button>
+                </el-form-item>
+              </el-form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="submissionDialogVisible = false">关闭</el-button>
+        </div>
+      </template>
+    </el-dialog>
+
+    <!-- 文件预览弹窗 -->
+    <el-dialog
+      v-model="previewDialogVisible"
+      title="文件预览"
+      width="70%"
+      :close-on-click-modal="false"
+    >
+      <div class="file-preview-container">
+        <div v-if="currentPreviewFile.type?.includes('image')" class="image-preview">
+          <img :src="currentPreviewFile.url" :alt="currentPreviewFile.name" class="preview-image" />
+        </div>
+        <div v-else-if="currentPreviewFile.type?.includes('text')" class="text-preview">
+          <pre>{{ currentPreviewFile.content }}</pre>
+        </div>
+        <div v-else class="unsupported-preview">
+          <el-icon class="large-icon"><Document /></el-icon>
+          <p>此文件类型不支持预览，请下载后查看</p>
+          <el-button type="primary" @click="downloadFile(currentPreviewFile)">下载文件</el-button>
+        </div>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -255,7 +533,17 @@ import {
   DataAnalysis, 
   Document, 
   List, 
-  Upload 
+  Upload,
+  SuccessFilled,
+  WarningFilled,
+  CircleCloseFilled,
+  UploadFilled,
+  View,
+  Download,
+  DocumentCopy,
+  Folder,
+  Star,
+  Tools
 } from '@element-plus/icons-vue'
 import api from '../api'
 
@@ -286,6 +574,29 @@ const groupInfo = ref({})
 const activeSubmissionTab = ref('submitted')
 const mySubmission = ref(null)
 
+// 提交相关
+const submissionText = ref('')
+const uploadedFiles = ref([])
+const submitting = ref(false)
+const uploadRef = ref()
+
+// 弹窗相关
+const submissionDialogVisible = ref(false)
+const submissionDialogTitle = ref('')
+const currentViewingSubmission = ref(null)
+const previewDialogVisible = ref(false)
+const currentPreviewFile = ref({})
+
+// 评分相关
+const gradingForm = ref({
+  score: 0,
+  feedback: ''
+})
+
+// 调试相关
+const showDebugTools = ref(false)
+const currentDebugMode = ref('normal')
+
 // 计算属性
 const getCompletionRate = () => {
   if (!taskDetail.value) return 0
@@ -313,29 +624,93 @@ const fetchTaskDetail = async () => {
     await new Promise(resolve => setTimeout(resolve, 1000))
     
     // 这里应该调用真实的API
+    // 为了便于调试，添加一些调试模式
+    const debugMode = route.query.debug || currentDebugMode.value || 'normal' // normal, overdue, not_submitted, late_submission
+    
+    let endTime = '2026-01-25 23:59:59' // 默认未过期
+    let submittedStudents = [
+      { 
+        id: 1, 
+        name: '张三', 
+        avatar: '', 
+        submitted_at: '2024-01-20 14:30:00',
+        files: [
+          { id: 1, name: 'vue-demo.zip', size: 1024000, type: 'application/zip' },
+          { id: 2, name: '学习心得.docx', size: 51200, type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' }
+        ],
+        content: '通过本次学习，我深入了解了Vue.js的核心概念，包括响应式数据、组件化开发等...'
+      },
+      { 
+        id: 2, 
+        name: '李四', 
+        avatar: '', 
+        submitted_at: '2024-01-26 10:15:00', // 逾期提交
+        files: [
+          { id: 3, name: 'project.js', size: 2048, type: 'application/javascript' }
+        ],
+        content: '完成了基础的Vue.js项目，但时间有点紧张，希望老师多给点建议。'
+      }
+    ]
+    
+    // 根据调试模式调整数据
+    switch (debugMode) {
+      case 'overdue':
+        // 设置任务已过期
+        endTime = '2024-01-20 23:59:59'
+        break
+      case 'not_submitted':
+        // 当前用户未提交
+        submittedStudents = submittedStudents.filter(s => s.id !== 1)
+        break
+      case 'late_submission':
+        // 当前用户逾期提交
+        endTime = '2024-01-19 23:59:59'
+        submittedStudents[0].submitted_at = '2024-01-20 14:30:00'
+        break
+      case 'urgent':
+        // 紧急状态 - 1小时后过期
+        const urgentDate = new Date()
+        urgentDate.setHours(urgentDate.getHours() + 1)
+        endTime = urgentDate.toISOString().replace('T', ' ').substring(0, 19)
+        submittedStudents = submittedStudents.filter(s => s.id !== 1)
+        break
+      case 'warning':
+        // 警告状态 - 2天后过期
+        const warningDate = new Date()
+        warningDate.setDate(warningDate.getDate() + 2)
+        endTime = warningDate.toISOString().replace('T', ' ').substring(0, 19)
+        submittedStudents = submittedStudents.filter(s => s.id !== 1)
+        break
+    }
+    
     taskDetail.value = {
       id: taskId,
       title: '前端框架学习任务',
-      content: '请学习Vue.js框架的基础知识，包括组件化开发、路由管理、状态管理等核心概念。完成后提交学习心得和代码示例。',
+      content: '请学习Vue.js框架的基础知识，包括组件化开发、路由管理、状态管理等核心概念。完成后提交学习心得和代码示例。\n\n要求：\n1. 完成Vue.js基础教程\n2. 提交代码示例\n3. 写一份学习心得（不少于500字）',
       priority: 'high',
       status: 'in_progress',
       created_at: '2024-01-15 09:00:00',
-      end_time: '2024-01-25 23:59:59',
+      end_time: endTime,
       group_name: '前端开发小组',
       creator_name: '张老师',
-      submitted_students: [
-        { id: 1, name: '张三', avatar: '', submitted_at: '2024-01-20 14:30:00' },
-        { id: 2, name: '李四', avatar: '', submitted_at: '2024-01-21 10:15:00' }
-      ],
+      submitted_students: submittedStudents,
       not_submitted_students: [
         { id: 3, name: '王五', avatar: '' },
         { id: 4, name: '赵六', avatar: '' }
       ]
     }
     
-    // 如果是学生，检查是否已提交
+    // 如果是学生，模拟检查是否已提交
     if (props.userRole === 'student') {
-      checkMySubmission()
+      const currentUserId = 1 // 从全局状态获取当前用户ID
+      mySubmission.value = taskDetail.value.submitted_students?.find(
+        student => student.id === currentUserId
+      )
+      
+      // 如果没有提交记录，加载草稿
+      if (!mySubmission.value) {
+        loadDraft()
+      }
     }
     
   } catch (err) {
@@ -358,12 +733,33 @@ const fetchGroupInfo = async () => {
   }
 }
 
-const checkMySubmission = () => {
-  // 检查当前学生是否已提交
-  const currentUserId = 1 // 从全局状态获取当前用户ID
-  mySubmission.value = taskDetail.value.submitted_students?.find(
-    student => student.id === currentUserId
-  )
+// 文件上传处理
+const handleFileChange = (file, fileList) => {
+  uploadedFiles.value = fileList
+}
+
+const handleFileRemove = (file, fileList) => {
+  uploadedFiles.value = fileList
+}
+
+// 加载草稿
+const loadDraft = () => {
+  const draft = localStorage.getItem(`task_draft_${props.taskId || route.params.taskId}`)
+  if (draft) {
+    const draftData = JSON.parse(draft)
+    submissionText.value = draftData.content || ''
+    // 注意：文件需要重新选择，无法从localStorage恢复
+  }
+}
+
+// 保存草稿
+const saveDraft = () => {
+  const draftData = {
+    content: submissionText.value,
+    savedAt: new Date().toISOString()
+  }
+  localStorage.setItem(`task_draft_${props.taskId || route.params.taskId}`, JSON.stringify(draftData))
+  ElMessage.success('草稿已保存')
 }
 
 const goBack = () => {
@@ -376,7 +772,15 @@ const editTask = () => {
 }
 
 const viewSubmission = (student) => {
-  ElMessage.info(`查看 ${student.name} 的提交内容`)
+  const submission = taskDetail.value.submitted_students.find(s => s.id === student.id)
+  if (submission) {
+    currentViewingSubmission.value = {
+      ...submission,
+      student: student
+    }
+    submissionDialogTitle.value = `${student.name} 的提交内容`
+    submissionDialogVisible.value = true
+  }
 }
 
 const remindStudent = (student) => {
@@ -394,15 +798,97 @@ const remindStudent = (student) => {
 }
 
 const viewMySubmission = () => {
-  ElMessage.info('查看我的提交详情')
+  if (mySubmission.value) {
+    currentViewingSubmission.value = {
+      ...mySubmission.value,
+      student: { name: '我', id: 'current' }
+    }
+    submissionDialogTitle.value = '我的提交内容'
+    submissionDialogVisible.value = true
+  }
 }
 
 const editSubmission = () => {
-  ElMessage.info('修改提交内容')
+  if (isTaskOverdue()) {
+    ElMessage.warning('任务已过期，无法修改提交')
+    return
+  }
+  ElMessage.info('进入修改模式...')
+  // 这里可以实现修改逻辑
 }
 
-const submitTask = () => {
-  ElMessage.info('跳转到任务提交页面')
+const resubmitTask = () => {
+  if (isTaskOverdue()) {
+    ElMessage.warning('任务已过期，无法重新提交')
+    return
+  }
+  
+  ElMessageBox.confirm(
+    '重新提交将覆盖之前的提交内容，确定要继续吗？',
+    '重新提交确认',
+    {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning',
+    }
+  ).then(() => {
+    // 清除当前提交记录，回到未提交状态
+    mySubmission.value = null
+    // 清空表单
+    submissionText.value = ''
+    uploadedFiles.value = []
+    // 清空上传组件
+    if (uploadRef.value) {
+      uploadRef.value.clearFiles()
+    }
+    ElMessage.success('已清除提交记录，可以重新提交')
+  }).catch(() => {
+    ElMessage.info('已取消重新提交')
+  })
+}
+
+const submitTask = async () => {
+  if (isTaskOverdue()) {
+    ElMessage.warning('任务已过期，无法提交')
+    return
+  }
+  
+  if (!uploadedFiles.value.length && !submissionText.value.trim()) {
+    ElMessage.warning('请上传文件或填写提交内容')
+    return
+  }
+  
+  try {
+    submitting.value = true
+    
+    // 模拟上传过程
+    await new Promise(resolve => setTimeout(resolve, 2000))
+    
+    // 创建提交记录
+    const newSubmission = {
+      id: Date.now(),
+      submitted_at: new Date().toISOString(),
+      files: uploadedFiles.value.map((file, index) => ({
+        id: Date.now() + index,
+        name: file.name,
+        size: file.size,
+        type: file.type || 'application/octet-stream'
+      })),
+      content: submissionText.value
+    }
+    
+    mySubmission.value = newSubmission
+    
+    // 清除草稿
+    localStorage.removeItem(`task_draft_${props.taskId || route.params.taskId}`)
+    
+    ElMessage.success('提交成功！')
+    
+  } catch (error) {
+    ElMessage.error('提交失败，请重试')
+  } finally {
+    submitting.value = false
+  }
 }
 
 // 工具方法
@@ -504,9 +990,199 @@ const getTimeLeftClass = (endTime) => {
   }
   return 'normal'
 }
+
+// 检查任务是否过期
+const isTaskOverdue = () => {
+  if (!taskDetail.value?.end_time) return false
+  return new Date() > new Date(taskDetail.value.end_time)
+}
+
+// 检查是否逾期提交
+const isLateSubmission = (submittedAt) => {
+  if (!taskDetail.value?.end_time || !submittedAt) return false
+  return new Date(submittedAt) > new Date(taskDetail.value.end_time)
+}
+
+// 获取过期时间
+const getOverdueTime = () => {
+  if (!taskDetail.value?.end_time) return ''
+  
+  const now = new Date()
+  const end = new Date(taskDetail.value.end_time)
+  const diff = now.getTime() - end.getTime()
+  
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24))
+  const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
+  
+  if (days > 0) {
+    return `${days}天${hours}小时`
+  } else if (hours > 0) {
+    return `${hours}小时`
+  } else {
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
+    return `${minutes}分钟`
+  }
+}
+
+// 获取紧急程度样式
+const getUrgencyClass = () => {
+  const timeLeft = getTimeLeftClass(taskDetail.value?.end_time)
+  return {
+    'urgent-reminder': timeLeft === 'urgent',
+    'warning-reminder': timeLeft === 'warning',
+    'normal-reminder': timeLeft === 'normal'
+  }
+}
+
+// 获取提交状态标签
+const getSubmissionStatusTag = () => {
+  if (mySubmission.value) {
+    const isLate = isLateSubmission(mySubmission.value.submitted_at)
+    return {
+      type: isLate ? 'warning' : 'success',
+      text: isLate ? '逾期提交' : '已提交'
+    }
+  } else if (isTaskOverdue()) {
+    return {
+      type: 'danger',
+      text: '已过期'
+    }
+  } else {
+    return {
+      type: 'warning',
+      text: '未提交'
+    }
+  }
+}
+
+// 文件相关方法
+const formatFileSize = (bytes) => {
+  if (bytes === 0) return '0 Bytes'
+  const k = 1024
+  const sizes = ['Bytes', 'KB', 'MB', 'GB']
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+}
+
+const getFileTypeClass = (type) => {
+  if (type?.includes('image')) return 'file-image'
+  if (type?.includes('video')) return 'file-video'
+  if (type?.includes('audio')) return 'file-audio'
+  if (type?.includes('pdf')) return 'file-pdf'
+  if (type?.includes('word')) return 'file-word'
+  if (type?.includes('excel')) return 'file-excel'
+  if (type?.includes('zip') || type?.includes('rar')) return 'file-archive'
+  return 'file-default'
+}
+
+const getFileIcon = (type) => {
+  if (type?.includes('image')) return 'Picture'
+  if (type?.includes('video')) return 'VideoPlay'
+  if (type?.includes('audio')) return 'Headphones'
+  if (type?.includes('pdf')) return 'Document'
+  if (type?.includes('word')) return 'Document'
+  if (type?.includes('excel')) return 'Grid'
+  if (type?.includes('zip') || type?.includes('rar')) return 'Box'
+  return 'Document'
+}
+
+const downloadFile = (file) => {
+  ElMessage.success(`开始下载 ${file.name}`)
+  // 实现文件下载逻辑
+}
+
+const downloadAllFiles = () => {
+  if (currentViewingSubmission.value?.files) {
+    ElMessage.success('开始下载全部文件')
+    // 实现批量下载逻辑
+  }
+}
+
+const downloadSubmission = () => {
+  if (mySubmission.value) {
+    ElMessage.success('开始下载我的提交')
+    // 实现下载逻辑
+  }
+}
+
+const previewFile = (file) => {
+  currentPreviewFile.value = file
+  previewDialogVisible.value = true
+  // 这里可以实现文件预览逻辑
+}
+
+// 评分相关方法
+const submitGrading = async () => {
+  try {
+    // 模拟提交评分
+    await new Promise(resolve => setTimeout(resolve, 1000))
+    ElMessage.success('评分提交成功')
+    submissionDialogVisible.value = false
+  } catch (error) {
+    ElMessage.error('评分提交失败')
+  }
+}
+
+const resetGrading = () => {
+  gradingForm.value = {
+    score: 0,
+    feedback: ''
+  }
+}
+
+// 调试方法
+const toggleDebugTools = () => {
+  showDebugTools.value = !showDebugTools.value
+}
+
+const setDebugMode = (mode) => {
+  currentDebugMode.value = mode
+  // 重新加载数据
+  fetchTaskDetail()
+  ElMessage.success(`已切换到调试模式: ${mode}`)
+}
 </script>
 
 <style scoped>
+/* 调试工具栏 */
+.debug-toolbar {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 12px 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  border: 2px solid #5a67d8;
+}
+
+.debug-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.debug-buttons {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.debug-info {
+  font-size: 12px;
+  opacity: 0.9;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.debug-toggle {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+}
+
 .task-detail-view {
   min-height: 100vh;
   background: #f8fafc;
@@ -698,6 +1374,336 @@ const getTimeLeftClass = (endTime) => {
   border-radius: 12px;
   border: none;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.submission-status-tag {
+  margin-left: auto;
+}
+
+.submission-status {
+  padding: 20px 0;
+}
+
+.submission-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.status-icon {
+  font-size: 48px;
+}
+
+.status-icon.success {
+  color: #52c41a;
+}
+
+.status-icon.warning {
+  color: #faad14;
+}
+
+.status-icon.danger {
+  color: #ff4d4f;
+}
+
+.status-info h3 {
+  margin: 0 0 8px 0;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.status-desc {
+  color: #666;
+  margin: 4px 0;
+}
+
+.late-warning {
+  color: #fa8c16;
+  font-weight: 500;
+  margin: 4px 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.overdue-time {
+  color: #ff4d4f;
+  font-weight: 600;
+}
+
+.time-reminder {
+  font-weight: 600;
+}
+
+.urgent-reminder {
+  color: #ff4d4f;
+  animation: pulse 2s infinite;
+}
+
+.warning-reminder {
+  color: #fa8c16;
+}
+
+.normal-reminder {
+  color: #52c41a;
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+
+.submission-content {
+  margin: 24px 0;
+}
+
+.submission-content h4 {
+  margin: 16px 0 12px 0;
+  color: #333;
+  font-size: 16px;
+}
+
+.file-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.file-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: #f8f9fa;
+  border-radius: 6px;
+  border: 1px solid #e9ecef;
+}
+
+.file-icon {
+  font-size: 20px;
+  color: #666;
+}
+
+.file-name {
+  flex: 1;
+  font-weight: 500;
+}
+
+.file-size {
+  color: #999;
+  font-size: 12px;
+  min-width: 60px;
+}
+
+.file-actions {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.file-actions .el-button {
+  padding: 4px 8px;
+  font-size: 12px;
+}
+
+.file-actions .el-button .el-icon {
+  margin-right: 2px;
+}
+
+.text-content {
+  background: #f8f9fa;
+  padding: 16px;
+  border-radius: 6px;
+  border: 1px solid #e9ecef;
+  white-space: pre-wrap;
+  line-height: 1.6;
+}
+
+.upload-area {
+  margin: 24px 0;
+}
+
+.submission-upload {
+  margin-bottom: 16px;
+}
+
+.submission-textarea {
+  margin-top: 16px;
+}
+
+.submission-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 24px;
+}
+
+.submission-actions .el-button {
+  min-width: 120px;
+}
+
+.overdue-status,
+.pending-status {
+  text-align: center;
+  padding: 20px;
+}
+
+/* 弹窗样式 */
+.submission-detail {
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.submission-info-header {
+  margin-bottom: 20px;
+}
+
+.student-info-large {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.student-details-large h3 {
+  margin: 0 0 8px 0;
+  font-size: 18px;
+}
+
+.submission-meta {
+  color: #666;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.late-tag {
+  margin-left: 8px;
+}
+
+.submission-content-detail {
+  padding: 0;
+}
+
+.files-section,
+.text-section,
+.grading-section {
+  margin-bottom: 32px;
+}
+
+.files-section h4,
+.text-section h4,
+.grading-section h4 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 16px 0;
+  font-size: 16px;
+  color: #333;
+}
+
+.file-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.file-card {
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 16px;
+  background: #fafafa;
+  transition: all 0.2s ease;
+}
+
+.file-card:hover {
+  border-color: #409eff;
+  background: #f0f7ff;
+}
+
+.file-preview {
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+.file-type-icon {
+  font-size: 32px;
+  color: #666;
+}
+
+.file-info .file-name {
+  font-weight: 500;
+  margin-bottom: 4px;
+  word-break: break-all;
+}
+
+.file-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #999;
+  margin-bottom: 8px;
+}
+
+.file-actions {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+}
+
+.content-display {
+  background: #f8f9fa;
+  padding: 16px;
+  border-radius: 6px;
+  border: 1px solid #e9ecef;
+  white-space: pre-wrap;
+  line-height: 1.6;
+  min-height: 100px;
+}
+
+.grading-form {
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+/* 文件预览 */
+.file-preview-container {
+  text-align: center;
+  padding: 20px;
+}
+
+.preview-image {
+  max-width: 100%;
+  max-height: 500px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.text-preview {
+  text-align: left;
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 8px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.unsupported-preview {
+  padding: 40px;
+}
+
+.large-icon {
+  font-size: 64px;
+  color: #ccc;
+  margin-bottom: 16px;
+}
+
+.dialog-footer {
+  text-align: right;
 }
 
 .submission-tabs {

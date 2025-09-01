@@ -1,23 +1,27 @@
 <template>
   <div class="teaching-student-management">
-    <!-- 学生统计卡片 -->
-    <div class="stats-section">
-      <div class="stat-card">
-        <div class="stat-number">{{ studentStats.total }}</div>
-        <div class="stat-label">总学生数</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-number">{{ studentStats.active }}</div>
-        <div class="stat-label">活跃学生</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-number">{{ studentStats.avgScore }}</div>
-        <div class="stat-label">平均成绩</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-number">{{ studentStats.attendance }}%</div>
-        <div class="stat-label">出勤率</div>
-      </div>
+    <!-- 学生统计 -->
+    <div class="stats-overview">
+      <el-row :gutter="20">
+        <el-col :span="12">
+          <el-card class="stats-card">
+            <div class="stats-content">
+              <div class="stats-number">{{ studentStats.total }}</div>
+              <div class="stats-label">学生总数</div>
+              <el-icon class="stats-icon"><User /></el-icon>
+            </div>
+          </el-card>
+        </el-col>
+        <el-col :span="12">
+          <el-card class="stats-card pending">
+            <div class="stats-content">
+              <div class="stats-number">{{ pendingApplications.length }}</div>
+              <div class="stats-label">待审核申请</div>
+              <el-icon class="stats-icon"><UserFilled /></el-icon>
+            </div>
+          </el-card>
+        </el-col>
+      </el-row>
     </div>
 
     <!-- 工具栏 -->
@@ -26,6 +30,19 @@
         <el-button type="primary" @click="showInviteDialog = true">
           <el-icon><Plus /></el-icon>
           邀请学生
+        </el-button>
+        <el-button 
+          type="warning" 
+          @click="showApplicationsDialog = true"
+          :badge="pendingApplications.length > 0 ? pendingApplications.length : null"
+        >
+          <el-icon><User /></el-icon>
+          加入申请
+          <el-badge 
+            v-if="pendingApplications.length > 0" 
+            :value="pendingApplications.length" 
+            class="application-badge"
+          />
         </el-button>
         <el-button @click="refreshStudents">
           <el-icon><Refresh /></el-icon>
@@ -37,11 +54,6 @@
         </el-button>
       </div>
       <div class="toolbar-right">
-        <el-select v-model="filterStatus" placeholder="学生状态" style="width: 120px" @change="handleFilterChange">
-          <el-option label="全部" value="" />
-          <el-option label="活跃" value="active" />
-          <el-option label="不活跃" value="inactive" />
-        </el-select>
         <el-input
           v-model="searchKeyword"
           placeholder="搜索学生"
@@ -60,90 +72,90 @@
       <div v-if="loading" class="loading">
         <el-skeleton :rows="5" animated />
       </div>
-      <div v-else-if="filteredStudents.length === 0" class="empty-state">
+      <div v-else-if="totalCount === 0" class="empty-state">
         <el-empty description="暂无学生" />
       </div>
-      <div v-else class="students-grid">
-        <div v-for="student in filteredStudents" :key="student.id" class="student-card">
-          <div class="student-header">
-            <el-avatar :size="60" :src="getStudentAvatar(student)">
-              {{ student.name.charAt(0) }}
-            </el-avatar>
-            <div class="student-info">
-              <div class="student-name">{{ student.name }}</div>
-              <div class="student-id">学号：{{ student.student_id }}</div>
-              <el-tag :type="getStatusType(student.status)" size="small">
-                {{ getStatusText(student.status) }}
-              </el-tag>
-            </div>
-            <div class="student-actions">
-              <el-dropdown @command="(cmd) => handleStudentAction(cmd, student)">
-                <el-button text>
-                  <el-icon><MoreFilled /></el-icon>
-                </el-button>
-                <template #dropdown>
-                  <el-dropdown-menu>
-                    <el-dropdown-item command="view">查看详情</el-dropdown-item>
-                    <el-dropdown-item command="message">发送消息</el-dropdown-item>
-                    <el-dropdown-item command="progress">学习进度</el-dropdown-item>
-                    <el-dropdown-item command="remove" divided>移除学生</el-dropdown-item>
-                  </el-dropdown-menu>
-                </template>
-              </el-dropdown>
-            </div>
-          </div>
+      <div v-else class="table-container">
+        <el-table 
+          :data="filteredStudents" 
+          style="width: 100%; height: 100%"
+          :height="400"
+        >
+          <el-table-column label="头像" width="80">
+            <template #default="{ row }">
+              <el-avatar :size="40" :src="getStudentAvatar(row)">
+                {{ row.name.charAt(0) }}
+              </el-avatar>
+            </template>
+          </el-table-column>
           
-          <div class="student-stats">
-            <div class="stat-item">
-              <div class="stat-value">{{ student.completed_tasks || 0 }}</div>
-              <div class="stat-name">完成任务</div>
-            </div>
-            <div class="stat-item">
-              <div class="stat-value">{{ student.score || 0 }}</div>
-              <div class="stat-name">平均分</div>
-            </div>
-            <div class="stat-item">
-              <div class="stat-value">{{ student.attendance || 0 }}%</div>
-              <div class="stat-name">出勤率</div>
-            </div>
-          </div>
+          <el-table-column prop="name" label="姓名" min-width="150" />
           
-          <div class="student-footer">
-            <span class="join-time">加入时间：{{ formatDate(student.join_time) }}</span>
-            <span class="last-active">最后活跃：{{ formatDate(student.last_active) }}</span>
-          </div>
+          <el-table-column prop="student_id" label="学号" min-width="150" />
+          
+          <el-table-column label="操作" width="100" fixed="right">
+            <template #default="{ row }">
+              <el-button 
+                type="danger" 
+                size="small" 
+                @click="handleRemoveStudent(row)"
+              >
+                移除
+              </el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+
+        <!-- 分页 -->
+        <div class="pagination-container">
+          <el-pagination
+            v-model:current-page="currentPage"
+            v-model:page-size="pageSize"
+            :page-sizes="[10, 20, 50, 100]"
+            :total="totalCount"
+            layout="total, sizes, prev, pager, next, jumper"
+            @current-change="handlePageChange"
+            @size-change="handleSizeChange"
+          />
         </div>
       </div>
     </div>
 
     <!-- 邀请学生对话框 -->
-    <el-dialog v-model="showInviteDialog" title="邀请学生" width="500px">
+    <el-dialog v-model="showInviteDialog" title="邀请学生" width="600px">
       <el-form :model="inviteForm" :rules="inviteRules" ref="inviteFormRef" label-width="100px">
-        <el-form-item label="邀请方式">
-          <el-radio-group v-model="inviteForm.method">
-            <el-radio label="email">邮箱邀请</el-radio>
-            <el-radio label="code">邀请码</el-radio>
-          </el-radio-group>
-        </el-form-item>
-        
-        <el-form-item v-if="inviteForm.method === 'email'" label="邮箱地址" prop="emails">
-          <el-input
-            v-model="inviteForm.emails"
-            type="textarea"
-            :rows="4"
-            placeholder="请输入邮箱地址，多个邮箱用换行或逗号分隔"
-          />
-        </el-form-item>
-        
-        <el-form-item v-if="inviteForm.method === 'code'" label="邀请码">
-          <el-input v-model="inviteCode" readonly>
-            <template #append>
-              <el-button @click="generateInviteCode">生成</el-button>
-            </template>
-          </el-input>
-          <div class="invite-code-info">
-            <p>邀请码有效期：7天</p>
-            <p>分享此邀请码给学生，他们可以通过此码加入小组</p>
+        <el-form-item label="选择学生" prop="selectedStudents">
+          <el-select
+            v-model="inviteForm.selectedStudents"
+            multiple
+            filterable
+            remote
+            reserve-keyword
+            placeholder="搜索学生姓名或学号"
+            :remote-method="searchStudents"
+            :loading="searchLoading"
+            style="width: 100%"
+            size="large"
+          >
+            <el-option
+              v-for="student in availableStudents"
+              :key="student.id"
+              :label="`${student.name} (${student.student_id})`"
+              :value="student.id"
+            >
+              <div class="student-option">
+                <el-avatar :size="30" :src="student.avatar">
+                  {{ student.name.charAt(0) }}
+                </el-avatar>
+                <div class="student-info">
+                  <div class="student-name">{{ student.name }}</div>
+                  <div class="student-details">{{ student.student_id }} • {{ student.major || '未知专业' }}</div>
+                </div>
+              </div>
+            </el-option>
+          </el-select>
+          <div class="invite-help-text">
+            <p>💡 提示：输入学生姓名或学号进行搜索，可以选择多个学生进行批量邀请</p>
           </div>
         </el-form-item>
         
@@ -155,12 +167,98 @@
             placeholder="可选：添加邀请消息"
           />
         </el-form-item>
+        
+        <el-form-item label="邀请方式">
+          <el-radio-group v-model="inviteForm.method">
+            <el-radio label="direct">直接添加</el-radio>
+            <el-radio label="email">邮件通知</el-radio>
+          </el-radio-group>
+        </el-form-item>
       </el-form>
       <template #footer>
         <el-button @click="showInviteDialog = false">取消</el-button>
-        <el-button type="primary" @click="handleInvite" :loading="inviting">
-          {{ inviteForm.method === 'email' ? '发送邀请' : '生成邀请码' }}
+        <el-button 
+          type="primary" 
+          @click="handleInvite" 
+          :loading="inviting"
+          :disabled="inviteForm.selectedStudents.length === 0"
+        >
+          邀请 {{ inviteForm.selectedStudents.length }} 个学生
         </el-button>
+      </template>
+    </el-dialog>
+
+    <!-- 加入申请管理对话框 -->
+    <el-dialog v-model="showApplicationsDialog" title="学生加入申请" width="800px" top="5vh">
+      <div class="applications-content">
+        <div v-if="pendingApplications.length === 0" class="empty-applications">
+          <el-empty description="暂无待审核的加入申请" />
+        </div>
+        <div v-else class="applications-list">
+          <div 
+            v-for="application in pendingApplications" 
+            :key="application.id"
+            :class="['application-item', { highlighted: highlightedApplicationId === application.id }]"
+          >
+            <div class="application-header">
+              <div class="student-info">
+                <el-avatar :size="50" :src="application.avatar">
+                  {{ application.student_name.charAt(0) }}
+                </el-avatar>
+                <div class="info-details">
+                  <h4>{{ application.student_name }}</h4>
+                  <p>专业：{{ application.student_major || '未提供' }}</p>
+                  <p>年级：{{ application.student_grade || '未提供' }}</p>
+                  <p>邮箱：{{ application.student_email || '未提供' }}</p>
+                </div>
+              </div>
+              <div class="application-meta">
+                <el-tag size="small" type="info">{{ formatDate(application.apply_time) }}</el-tag>
+              </div>
+            </div>
+            
+            <div class="application-content">
+              <div class="application-reason">
+                <label>申请理由：</label>
+                <p>{{ application.application_reason || '无特别说明' }}</p>
+              </div>
+            </div>
+            
+            <div class="application-actions">
+              <el-button 
+                type="success" 
+                size="small" 
+                @click="approveApplication(application)"
+                :loading="application.processing"
+              >
+                <el-icon><Check /></el-icon>
+                同意
+              </el-button>
+              <el-button 
+                type="danger" 
+                size="small" 
+                @click="rejectApplication(application)"
+                :loading="application.processing"
+              >
+                <el-icon><Close /></el-icon>
+                拒绝
+              </el-button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="showApplicationsDialog = false">关闭</el-button>
+          <el-button 
+            v-if="pendingApplications.length > 0" 
+            type="primary" 
+            @click="batchApproveApplications"
+            :disabled="selectedApplications.length === 0"
+          >
+            批量同意 ({{ selectedApplications.length }})
+          </el-button>
+        </div>
       </template>
     </el-dialog>
 
@@ -212,8 +310,10 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
-  Plus, Refresh, Download, Search, MoreFilled
+  Plus, Refresh, Download, Search, User, Check, Close, View, UserFilled
 } from '@element-plus/icons-vue'
+// 导入mock数据
+import { mockNotificationApiResponses } from '../../mock/notificationData.js'
 
 const props = defineProps({
   groupId: {
@@ -223,6 +323,11 @@ const props = defineProps({
   groupData: {
     type: Object,
     default: () => ({})
+  },
+  // 用于高亮显示特定的加入申请
+  highlightApplicationId: {
+    type: String,
+    default: null
   }
 })
 
@@ -232,49 +337,52 @@ const emit = defineEmits(['students-updated'])
 const loading = ref(false)
 const inviting = ref(false)
 const students = ref([])
-const filterStatus = ref('')
 const searchKeyword = ref('')
 const showInviteDialog = ref(false)
+const showApplicationsDialog = ref(false)
 const showStudentDetail = ref(false)
 const selectedStudent = ref(null)
 const inviteFormRef = ref()
-const inviteCode = ref('')
+const currentPage = ref(1)
+const pageSize = ref(10)
+const totalCount = ref(0)
+const highlightedApplicationId = ref(props.highlightApplicationId)
+
+// 新增变量
+const selectedStudentsForInvitation = ref([])
+const studentSearchText = ref('')
+const mockStudentOptions = ref([])
+
+// 加入申请相关数据
+const pendingApplications = ref([])
+const selectedApplications = ref([])
+
+// 学生搜索相关数据
+const availableStudents = ref([])
+const searchLoading = ref(false)
 
 // 邀请表单
 const inviteForm = ref({
-  method: 'email',
-  emails: '',
-  message: ''
+  selectedStudents: [],
+  message: '',
+  method: 'direct'
 })
 
 // 表单验证规则
 const inviteRules = {
-  emails: [
-    { required: true, message: '请输入邮箱地址', trigger: 'blur' }
+  selectedStudents: [
+    { required: true, message: '请选择要邀请的学生', trigger: 'change' }
   ]
 }
 
 // 计算属性
 const studentStats = computed(() => {
   const total = students.value.length
-  const active = students.value.filter(s => s.status === 'active').length
-  const avgScore = total > 0 
-    ? Math.round(students.value.reduce((sum, s) => sum + (s.score || 0), 0) / total)
-    : 0
-  const attendance = total > 0
-    ? Math.round(students.value.reduce((sum, s) => sum + (s.attendance || 0), 0) / total)
-    : 0
-  
-  return { total, active, avgScore, attendance }
+  return { total }
 })
 
 const filteredStudents = computed(() => {
   let result = students.value
-
-  // 状态筛选
-  if (filterStatus.value) {
-    result = result.filter(student => student.status === filterStatus.value)
-  }
 
   // 关键词搜索
   if (searchKeyword.value) {
@@ -286,7 +394,13 @@ const filteredStudents = computed(() => {
     )
   }
 
-  return result
+  // 更新总数
+  totalCount.value = result.length
+
+  // 分页
+  const start = (currentPage.value - 1) * pageSize.value
+  const end = start + pageSize.value
+  return result.slice(start, end)
 })
 
 // 方法
@@ -294,51 +408,23 @@ const getStudentAvatar = (student) => {
   return student.avatar || ''
 }
 
-const getStatusType = (status) => {
-  const typeMap = {
-    'active': 'success',
-    'inactive': 'warning'
-  }
-  return typeMap[status] || 'info'
-}
-
-const getStatusText = (status) => {
-  const textMap = {
-    'active': '活跃',
-    'inactive': '不活跃'
-  }
-  return textMap[status] || '未知'
-}
-
 const formatDate = (dateStr) => {
   if (!dateStr) return '未知'
   return new Date(dateStr).toLocaleString()
 }
 
-const handleFilterChange = () => {
-  // 筛选逻辑已在计算属性中处理
-}
-
 const handleSearch = () => {
-  // 搜索逻辑已在计算属性中处理
+  // 搜索时重置到第一页
+  currentPage.value = 1
 }
 
-const handleStudentAction = async (action, student) => {
-  switch (action) {
-    case 'view':
-      selectedStudent.value = student
-      showStudentDetail.value = true
-      break
-    case 'message':
-      ElMessage.info('发送消息功能开发中')
-      break
-    case 'progress':
-      ElMessage.info('学习进度功能开发中')
-      break
-    case 'remove':
-      await handleRemoveStudent(student)
-      break
-  }
+const handlePageChange = (page) => {
+  currentPage.value = page
+}
+
+const handleSizeChange = (size) => {
+  pageSize.value = size
+  currentPage.value = 1
 }
 
 const handleRemoveStudent = async (student) => {
@@ -355,6 +441,13 @@ const handleRemoveStudent = async (student) => {
     
     // 这里应该调用删除API
     students.value = students.value.filter(s => s.id !== student.id)
+    
+    // 检查当前页是否还有数据，如果没有则回到上一页
+    const maxPage = Math.ceil(totalCount.value / pageSize.value)
+    if (currentPage.value > maxPage && maxPage > 0) {
+      currentPage.value = maxPage
+    }
+    
     ElMessage.success('学生移除成功')
     emit('students-updated')
   } catch {
@@ -362,46 +455,61 @@ const handleRemoveStudent = async (student) => {
   }
 }
 
-const generateInviteCode = () => {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
-  let result = ''
-  for (let i = 0; i < 8; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length))
-  }
-  inviteCode.value = result
-}
-
 const handleInvite = async () => {
-  if (inviteForm.value.method === 'email') {
-    if (!inviteFormRef.value) return
+  if (!inviteFormRef.value) return
+  
+  try {
+    await inviteFormRef.value.validate()
+    inviting.value = true
     
-    try {
-      await inviteFormRef.value.validate()
-      inviting.value = true
+    // 获取选中的学生信息
+    const selectedStudentInfos = availableStudents.value.filter(student => 
+      inviteForm.value.selectedStudents.includes(student.id)
+    )
+    
+    // 模拟API调用
+    await new Promise(resolve => setTimeout(resolve, 1000))
+    
+    if (inviteForm.value.method === 'direct') {
+      // 直接添加学生到小组
+      selectedStudentInfos.forEach(studentInfo => {
+        const newStudent = {
+          id: Date.now() + Math.random(),
+          name: studentInfo.name,
+          student_id: studentInfo.student_id,
+          email: studentInfo.email,
+          status: 'active',
+          completed_tasks: 0,
+          score: 0,
+          attendance: 0,
+          join_time: new Date().toISOString(),
+          last_active: new Date().toISOString()
+        }
+        students.value.unshift(newStudent)
+      })
       
-      // 模拟API调用
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      showInviteDialog.value = false
-      ElMessage.success('邀请邮件发送成功')
-      
-      // 重置表单
-      inviteForm.value = {
-        method: 'email',
-        emails: '',
-        message: ''
-      }
-      
-    } catch (error) {
-      console.error('发送邀请失败:', error)
-    } finally {
-      inviting.value = false
+      ElMessage.success(`成功添加 ${selectedStudentInfos.length} 个学生到小组`)
+    } else {
+      // 发送邮件邀请
+      ElMessage.success(`邀请邮件已发送给 ${selectedStudentInfos.length} 个学生`)
     }
-  } else {
-    if (!inviteCode.value) {
-      generateInviteCode()
+    
+    showInviteDialog.value = false
+    emit('students-updated')
+    
+    // 重置表单
+    inviteForm.value = {
+      selectedStudents: [],
+      message: '',
+      method: 'direct'
     }
-    ElMessage.success('邀请码已生成，可以分享给学生了')
+    availableStudents.value = []
+    
+  } catch (error) {
+    console.error('邀请学生失败:', error)
+    ElMessage.error('邀请学生失败')
+  } finally {
+    inviting.value = false
   }
 }
 
@@ -412,6 +520,265 @@ const refreshStudents = async () => {
 
 const exportData = () => {
   ElMessage.info('导出功能开发中')
+}
+
+// 学生搜索方法
+const searchStudents = async (query) => {
+  if (!query) {
+    availableStudents.value = []
+    return
+  }
+
+  searchLoading.value = true
+  
+  try {
+    // 模拟远程搜索API调用
+    await new Promise(resolve => setTimeout(resolve, 300))
+    
+    // 模拟可邀请的学生数据
+    const mockStudents = [
+      {
+        id: 'stu_001',
+        name: '张小明',
+        student_id: '2025013',
+        email: 'zhangxiaoming@example.com',
+        major: '计算机科学与技术',
+        grade: '大三',
+        avatar: ''
+      },
+      {
+        id: 'stu_002', 
+        name: '李小红',
+        student_id: '2025014',
+        email: 'lixiaohong@example.com',
+        major: '软件工程',
+        grade: '大二',
+        avatar: ''
+      },
+      {
+        id: 'stu_003',
+        name: '王小刚',
+        student_id: '2025015', 
+        email: 'wangxiaogang@example.com',
+        major: '人工智能',
+        grade: '大三',
+        avatar: ''
+      },
+      {
+        id: 'stu_004',
+        name: '赵小美',
+        student_id: '2025016',
+        email: 'zhaoxiaomei@example.com', 
+        major: '数据科学与大数据技术',
+        grade: '大一',
+        avatar: ''
+      },
+      {
+        id: 'stu_005',
+        name: '刘小强',
+        student_id: '2025017',
+        email: 'liuxiaoqiang@example.com',
+        major: '网络工程',
+        grade: '大二',
+        avatar: ''
+      }
+    ]
+    
+    // 过滤已经在小组中的学生
+    const currentStudentIds = students.value.map(s => s.student_id)
+    const filteredStudents = mockStudents.filter(student => 
+      !currentStudentIds.includes(student.student_id) &&
+      (student.name.toLowerCase().includes(query.toLowerCase()) ||
+       student.student_id.toLowerCase().includes(query.toLowerCase()))
+    )
+    
+    availableStudents.value = filteredStudents
+    
+  } catch (error) {
+    console.error('搜索学生失败:', error)
+    ElMessage.error('搜索学生失败')
+  } finally {
+    searchLoading.value = false
+  }
+}
+
+// 加入申请相关方法
+const fetchApplications = async () => {
+  try {
+    // 模拟获取当前小组的待审核申请
+    // 实际项目中应该根据groupId从API获取
+    const mockApplications = [
+      {
+        id: 'join_apply_001',
+        student_id: 'stu_007',
+        student_name: '周九',
+        student_major: '生物医学工程',
+        student_grade: '大三',
+        student_email: 'zhoujiu@example.com',
+        student_phone: '13800138007',
+        application_reason: '对生物医学工程有浓厚兴趣，希望能参与创新项目',
+        application_status: 'pending',
+        apply_time: '2025-08-29T15:45:00Z',
+        processing: false
+      },
+      {
+        id: 'join_apply_002',
+        student_id: 'stu_008',
+        student_name: '吴十',
+        student_major: '计算机科学与技术',
+        student_grade: '大二',
+        student_email: 'wushi@example.com',
+        student_phone: '13800138008',
+        application_reason: '有一定的编程基础，希望提升算法能力',
+        application_status: 'pending',
+        apply_time: '2025-08-29T10:20:00Z',
+        processing: false
+      }
+    ]
+
+    // 只显示当前小组相关的申请，根据groupId过滤
+    pendingApplications.value = mockApplications.filter(app => {
+      // 这里应该根据实际的数据结构来过滤
+      // 暂时返回所有申请作为演示
+      return app.application_status === 'pending'
+    })
+
+  } catch (error) {
+    console.error('获取加入申请失败:', error)
+    ElMessage.error('获取加入申请失败')
+  }
+}
+
+const approveApplication = async (application) => {
+  try {
+    application.processing = true
+    
+    await ElMessageBox.confirm(
+      `确定同意"${application.student_name}"的加入申请吗？`,
+      '确认同意申请',
+      {
+        confirmButtonText: '同意',
+        cancelButtonText: '取消',
+        type: 'success'
+      }
+    )
+
+    // 模拟API调用
+    await new Promise(resolve => setTimeout(resolve, 1000))
+    
+    // 更新申请状态
+    application.application_status = 'approved'
+    
+    // 从待审核列表中移除
+    pendingApplications.value = pendingApplications.value.filter(app => app.id !== application.id)
+    
+    // 将学生添加到学生列表
+    const newStudent = {
+      id: Date.now(),
+      name: application.student_name,
+      student_id: application.student_id,
+      email: application.student_email,
+      status: 'active',
+      completed_tasks: 0,
+      score: 0,
+      attendance: 0,
+      join_time: new Date().toISOString(),
+      last_active: new Date().toISOString()
+    }
+    students.value.unshift(newStudent)
+    
+    ElMessage.success(`已同意"${application.student_name}"的加入申请`)
+    emit('students-updated')
+    
+  } catch (error) {
+    if (error !== 'cancel') {
+      console.error('同意申请失败:', error)
+      ElMessage.error('同意申请失败')
+    }
+  } finally {
+    application.processing = false
+  }
+}
+
+const rejectApplication = async (application) => {
+  try {
+    application.processing = true
+    
+    await ElMessageBox.confirm(
+      `确定拒绝"${application.student_name}"的加入申请吗？`,
+      '确认拒绝申请',
+      {
+        confirmButtonText: '拒绝',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }
+    )
+
+    // 模拟API调用
+    await new Promise(resolve => setTimeout(resolve, 1000))
+    
+    // 更新申请状态
+    application.application_status = 'rejected'
+    
+    // 从待审核列表中移除
+    pendingApplications.value = pendingApplications.value.filter(app => app.id !== application.id)
+    
+    ElMessage.success(`已拒绝"${application.student_name}"的加入申请`)
+    
+  } catch (error) {
+    if (error !== 'cancel') {
+      console.error('拒绝申请失败:', error)
+      ElMessage.error('拒绝申请失败')
+    }
+  } finally {
+    application.processing = false
+  }
+}
+
+const batchApproveApplications = async () => {
+  if (selectedApplications.value.length === 0) {
+    ElMessage.warning('请先选择要批准的申请')
+    return
+  }
+
+  try {
+    await ElMessageBox.confirm(
+      `确定批量同意 ${selectedApplications.value.length} 个加入申请吗？`,
+      '批量同意申请',
+      {
+        confirmButtonText: '同意',
+        cancelButtonText: '取消',
+        type: 'success'
+      }
+    )
+
+    // 模拟批量处理
+    for (const application of selectedApplications.value) {
+      await approveApplication(application)
+    }
+
+    selectedApplications.value = []
+    ElMessage.success('批量处理完成')
+
+  } catch (error) {
+    if (error !== 'cancel') {
+      console.error('批量同意失败:', error)
+      ElMessage.error('批量同意失败')
+    }
+  }
+}
+
+// 检查是否需要自动显示申请对话框
+const checkAutoShowApplications = () => {
+  if (props.highlightApplicationId) {
+    showApplicationsDialog.value = true
+    highlightedApplicationId.value = props.highlightApplicationId
+    
+    // 3秒后移除高亮
+    setTimeout(() => {
+      highlightedApplicationId.value = null
+    }, 3000)
+  }
 }
 
 const fetchStudents = async () => {
@@ -570,6 +937,13 @@ const fetchStudents = async () => {
         last_active: '2025-08-24T15:30:00'
       }
     ]
+    
+    // 初始化总数
+    totalCount.value = students.value.length
+    
+    // 同时获取加入申请
+    await fetchApplications()
+    
   } catch (error) {
     console.error('获取学生列表失败:', error)
     ElMessage.error('获取学生列表失败')
@@ -583,44 +957,34 @@ watch(() => props.groupId, () => {
   fetchStudents()
 })
 
+watch(() => props.highlightApplicationId, (newId) => {
+  if (newId) {
+    highlightedApplicationId.value = newId
+    showApplicationsDialog.value = true
+    
+    // 3秒后移除高亮
+    setTimeout(() => {
+      highlightedApplicationId.value = null
+    }, 3000)
+  }
+})
+
 // 生命周期
 onMounted(() => {
   fetchStudents()
+  checkAutoShowApplications()
 })
 </script>
 
 <style scoped>
 .teaching-student-management {
-  max-width: 100%;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
-.stats-section {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 16px;
-  margin-bottom: 24px;
-}
-
-.stat-card {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  border-radius: 12px;
-  padding: 20px;
-  text-align: center;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.stat-number {
-  font-size: 32px;
-  font-weight: bold;
-  margin-bottom: 8px;
-}
-
-.stat-label {
-  font-size: 14px;
-  opacity: 0.9;
-}
-
+/* 工具栏样式 */
 .student-toolbar {
   display: flex;
   justify-content: space-between;
@@ -645,6 +1009,24 @@ onMounted(() => {
   background: white;
   border-radius: 8px;
   overflow: hidden;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.table-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.pagination-container {
+  display: flex;
+  justify-content: center;
+  padding: 20px;
+  border-top: 1px solid #e4e7ed;
+  background: #fafafa;
 }
 
 .loading {
@@ -656,92 +1038,23 @@ onMounted(() => {
   text-align: center;
 }
 
-.students-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-  gap: 20px;
-  padding: 20px;
-}
-
-.student-card {
-  background: white;
-  border: 1px solid #e4e7ed;
-  border-radius: 12px;
-  padding: 20px;
-  transition: all 0.3s ease;
-}
-
-.student-card:hover {
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  transform: translateY(-2px);
-}
-
-.student-header {
-  display: flex;
-  align-items: center;
-  margin-bottom: 16px;
-}
-
-.student-info {
-  flex: 1;
-  margin-left: 16px;
-}
-
-.student-name {
-  font-size: 18px;
-  font-weight: 600;
-  color: #303133;
-  margin-bottom: 4px;
-}
-
-.student-id {
-  font-size: 14px;
-  color: #909399;
-  margin-bottom: 8px;
-}
-
-.student-stats {
-  display: flex;
-  justify-content: space-around;
-  margin-bottom: 16px;
-  padding: 16px;
-  background: #f8f9fa;
-  border-radius: 8px;
-}
-
-.stat-item {
-  text-align: center;
-}
-
-.stat-value {
-  font-size: 20px;
-  font-weight: bold;
-  color: #409EFF;
-  margin-bottom: 4px;
-}
-
-.stat-name {
-  font-size: 12px;
-  color: #909399;
-}
-
-.student-footer {
-  display: flex;
-  justify-content: space-between;
-  font-size: 12px;
-  color: #c0c4cc;
-}
-
-.invite-code-info {
+/* 邀请表单样式 */
+.invite-help-text {
   margin-top: 8px;
   font-size: 12px;
   color: #909399;
+  background: #f8f9fa;
+  padding: 8px 12px;
+  border-radius: 4px;
+  border-left: 3px solid #409EFF;
 }
 
-.invite-code-info p {
-  margin: 4px 0;
+.invite-help-text p {
+  margin: 0;
+  line-height: 1.4;
 }
 
+/* 学生详情样式 */
 .student-detail {
   max-width: 100%;
 }
@@ -785,11 +1098,165 @@ onMounted(() => {
   margin-right: 8px;
 }
 
+/* 统计概览样式 - 与任务管理统一 */
+.stats-overview {
+  margin-bottom: 24px;
+}
+
+.stats-card {
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s;
+  position: relative;
+  overflow: hidden;
+}
+
+.stats-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.stats-card.pending {
+  border-left: 4px solid #E6A23C;
+}
+
+.stats-content {
+  padding: 20px;
+  position: relative;
+}
+
+.stats-number {
+  font-size: 32px;
+  font-weight: bold;
+  color: #303133;
+  margin-bottom: 8px;
+}
+
+.stats-label {
+  color: #606266;
+  font-size: 14px;
+}
+
+.stats-icon {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  font-size: 24px;
+  color: #C0C4CC;
+}
+
+/* 加入申请相关样式 */
+.application-badge {
+  position: relative;
+  margin-left: 8px;
+}
+
+.applications-content {
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.empty-applications {
+  padding: 40px 0;
+  text-align: center;
+}
+
+.applications-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.application-item {
+  border: 1px solid #e4e7ed;
+  border-radius: 8px;
+  padding: 20px;
+  background: white;
+  transition: all 0.3s;
+}
+
+.application-item:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.application-item.highlighted {
+  border-color: #409EFF;
+  background: linear-gradient(90deg, #f0f9ff 0%, #ffffff 100%);
+  animation: highlight-pulse 2s ease-in-out;
+}
+
+@keyframes highlight-pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+  100% { transform: scale(1); }
+}
+
+.application-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.student-info {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.info-details h4 {
+  margin: 0 0 8px 0;
+  color: #303133;
+  font-size: 16px;
+}
+
+.info-details p {
+  margin: 4px 0;
+  color: #606266;
+  font-size: 13px;
+}
+
+.application-meta {
+  flex-shrink: 0;
+}
+
+.application-content {
+  margin-bottom: 16px;
+}
+
+.application-reason {
+  background: #f8f9fa;
+  padding: 12px;
+  border-radius: 6px;
+  border-left: 4px solid #409EFF;
+}
+
+.application-reason label {
+  font-weight: 500;
+  color: #303133;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.application-reason p {
+  margin: 0;
+  color: #606266;
+  line-height: 1.5;
+}
+
+.application-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.dialog-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
 @media (max-width: 768px) {
-  .stats-section {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  
   .student-toolbar {
     flex-direction: column;
     gap: 16px;
@@ -801,13 +1268,18 @@ onMounted(() => {
     justify-content: center;
   }
   
-  .students-grid {
-    grid-template-columns: 1fr;
+  .stats-overview .el-col {
+    margin-bottom: 12px;
   }
   
-  .student-footer {
+  .application-header {
     flex-direction: column;
-    gap: 4px;
+    gap: 12px;
+  }
+  
+  .application-actions {
+    justify-content: center;
+    flex-wrap: wrap;
   }
 }
 </style>

@@ -2,7 +2,7 @@
   <div class="study-groups-container">
     <div class="study-groups-card">
       <div class="title">
-        <div class="title-text">学习小组</div>
+        <div class="title-text">我的小组</div>
         <div class="title-select">
           <el-select
             v-model="selectedType"
@@ -51,13 +51,15 @@
 
 
 <script setup>
-import { ref, computed, onBeforeMount, watch } from 'vue'
+import { ref, computed, onBeforeMount, watch, nextTick } from 'vue'
+import { useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import StudyGroupCard from './StudyGroupCard.vue'
 import api from '../../api'
 import { mockGroupList, mockApiResponses } from '../../mock/studyGroupData'
 import { mockApiRequest } from '../../mock/config'
-    
+
+const route = useRoute()
 const form = ref({})
 const isLoading = ref(true)
 
@@ -70,6 +72,9 @@ const studyGroupOptions = [
 
 const selectedType = ref('all')
 const studyGroups = ref([])
+
+// 处理从消息中心跳转过来的高亮
+const highlightType = ref('')
 
 // 筛选后的小组
 const filteredGroups = computed(() => {
@@ -196,8 +201,43 @@ watch(selectedType, () => {
 })
 
 onBeforeMount(async () => {
+  // 检查是否从消息中心跳转过来，处理高亮
+  if (route.query.highlight) {
+    highlightType.value = route.query.highlight
+    if (route.query.highlight === 'leave') {
+      ElMessage.success('已为您定位到请假相关小组，您可以点击进入具体小组查看请假管理')
+    }
+  }
+  
   await getStudyGroups()
+  
+  // 如果有高亮需求，在数据加载完成后进行高亮处理
+  if (highlightType.value) {
+    await nextTick()
+    handleHighlight()
+  }
 })
+
+// 处理高亮功能
+const handleHighlight = () => {
+  if (highlightType.value === 'leave') {
+    // 为与请假相关的小组卡片添加高亮效果
+    const groupCards = document.querySelectorAll('.group-card')
+    groupCards.forEach(card => {
+      card.style.animation = 'highlightPulse 2s ease-in-out'
+      card.style.border = '2px solid #E6A23C'
+    })
+    
+    // 2秒后移除高亮效果
+    setTimeout(() => {
+      groupCards.forEach(card => {
+        card.style.animation = ''
+        card.style.border = ''
+      })
+      highlightType.value = ''
+    }, 3000)
+  }
+}
 </script>
 
 <style scoped>
@@ -345,5 +385,21 @@ onBeforeMount(async () => {
   color: #999;
   font-size: 16px;
   margin-top: 50px;
+}
+
+/* 高亮动画效果 */
+@keyframes highlightPulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(230, 162, 60, 0.7);
+  }
+  50% {
+    transform: scale(1.02);
+    box-shadow: 0 0 0 10px rgba(230, 162, 60, 0.3);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(230, 162, 60, 0);
+  }
 }
 </style>

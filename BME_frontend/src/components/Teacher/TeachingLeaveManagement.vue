@@ -47,7 +47,7 @@
       <div class="section-header">
         <h3>请假申请管理</h3>
         <div class="filter-controls">
-          <el-select v-model="statusFilter" placeholder="请假状态" clearable @change="handleFilterChange">
+          <el-select v-model="statusFilter" placeholder="请假状态" clearable @change="handleFilterChange" style="width: 120px;">
             <el-option label="全部状态" value="" />
             <el-option label="待审批" value="pending" />
             <el-option label="已批准" value="approved" />
@@ -59,9 +59,11 @@
             range-separator="至"
             start-placeholder="开始日期"
             end-placeholder="结束日期"
-            format="YYYY-MM-DD"
+            format="MM-DD"
             value-format="YYYY-MM-DD"
             @change="handleFilterChange"
+            style="width: 200px;"
+            size="default"
           />
           <el-button type="primary" @click="exportLeaveData">
             <el-icon><Download /></el-icon>
@@ -76,23 +78,15 @@
           style="width: 100%"
           v-loading="loading"
           row-key="id"
+          :show-overflow-tooltip="true"
         >
           <el-table-column prop="student_name" label="学生姓名" width="120">
             <template #default="{ row }">
-              <div class="student-info">
-                <el-avatar 
-                  :size="32" 
-                  :src="row.student_avatar"
-                  :alt="row.student_name"
-                >
-                  {{ row.student_name?.charAt(0) }}
-                </el-avatar>
-                <span class="student-name">{{ row.student_name }}</span>
-              </div>
+              <span class="student-name">{{ row.student_name }}</span>
             </template>
           </el-table-column>
 
-          <el-table-column prop="leave_type" label="请假类型" width="100">
+          <el-table-column prop="leave_type" label="类型" width="80">
             <template #default="{ row }">
               <el-tag :type="getLeaveTypeTag(row.leave_type)" size="small">
                 {{ getLeaveTypeLabel(row.leave_type) }}
@@ -100,37 +94,19 @@
             </template>
           </el-table-column>
 
-          <el-table-column prop="start_date" label="开始时间" width="110">
-            <template #default="{ row }">
-              {{ formatDate(row.start_date) }}
-            </template>
-          </el-table-column>
-
-          <el-table-column prop="end_date" label="结束时间" width="110">
-            <template #default="{ row }">
-              {{ formatDate(row.end_date) }}
-            </template>
-          </el-table-column>
-
-          <el-table-column prop="duration" label="请假时长" width="100">
+          <el-table-column prop="duration" label="时长" width="80">
             <template #default="{ row }">
               <span class="duration-text">{{ calculateDuration(row.start_date, row.end_date) }}</span>
             </template>
           </el-table-column>
 
-          <el-table-column prop="reason" label="请假原因" min-width="200">
+          <el-table-column label="请假时间" min-width="180">
             <template #default="{ row }">
-              <div class="reason-content">
-                <p class="reason-text">{{ row.reason }}</p>
-                <div v-if="row.attachments && row.attachments.length > 0" class="attachments">
-                  <el-icon><Paperclip /></el-icon>
-                  <span>{{ row.attachments.length }}个附件</span>
-                </div>
-              </div>
+              <span class="date-range">{{ formatDate(row.start_date) }} 至 {{ formatDate(row.end_date) }}</span>
             </template>
           </el-table-column>
 
-          <el-table-column prop="status" label="状态" width="100">
+          <el-table-column prop="status" label="状态" width="80">
             <template #default="{ row }">
               <el-tag 
                 :type="getStatusTag(row.status)" 
@@ -142,13 +118,7 @@
             </template>
           </el-table-column>
 
-          <el-table-column prop="submit_time" label="申请时间" width="120">
-            <template #default="{ row }">
-              {{ formatDateTime(row.submit_time) }}
-            </template>
-          </el-table-column>
-
-          <el-table-column label="操作" width="180" fixed="right">
+          <el-table-column label="操作" width="140" fixed="right">
             <template #default="{ row }">
               <div class="action-buttons">
                 <el-button 
@@ -156,7 +126,7 @@
                   size="small" 
                   @click="viewLeaveDetail(row)"
                 >
-                  查看详情
+                  详情
                 </el-button>
                 <el-button 
                   v-if="row.status === 'pending'"
@@ -165,14 +135,6 @@
                   @click="approveLeave(row)"
                 >
                   批准
-                </el-button>
-                <el-button 
-                  v-if="row.status === 'pending'"
-                  type="danger" 
-                  size="small" 
-                  @click="rejectLeave(row)"
-                >
-                  拒绝
                 </el-button>
               </div>
             </template>
@@ -201,13 +163,95 @@
       width="600px"
       :before-close="handleCloseDetail"
     >
-      <LeaveDetailView
-        v-if="selectedLeave"
-        :leave-data="selectedLeave"
-        @approve="handleApproveLeave"
-        @reject="handleRejectLeave"
-        @close="showLeaveDetail = false"
-      />
+      <div v-if="selectedLeave" class="leave-detail">
+        <div class="detail-header">
+          <div class="student-info">
+            <el-avatar 
+              :size="60" 
+              :src="selectedLeave.student_avatar"
+              :alt="selectedLeave.student_name"
+            >
+              {{ selectedLeave.student_name?.charAt(0) }}
+            </el-avatar>
+            <div class="student-details">
+              <h3>{{ selectedLeave.student_name }}</h3>
+              <p>学号：{{ selectedLeave.student_id }}</p>
+            </div>
+          </div>
+          <el-tag 
+            :type="getStatusTag(selectedLeave.status)" 
+            size="large"
+          >
+            {{ getStatusLabel(selectedLeave.status) }}
+          </el-tag>
+        </div>
+        
+        <div class="leave-type-info">
+          <div class="type-duration-row">
+            <div class="type-item">
+              <label>请假类型：</label>
+              <el-tag :type="getLeaveTypeTag(selectedLeave.leave_type)" size="small">
+                {{ getLeaveTypeLabel(selectedLeave.leave_type) }}
+              </el-tag>
+            </div>
+            <div class="duration-item">
+              <label>请假时长：</label>
+              <span class="duration-text">{{ calculateDuration(selectedLeave.start_date, selectedLeave.end_date) }}</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="detail-content">
+          <div class="info-item">
+            <label>请假时间：</label>
+            <span>{{ formatDate(selectedLeave.start_date) }} 至 {{ formatDate(selectedLeave.end_date) }}</span>
+          </div>
+          <div class="info-item">
+            <label>申请时间：</label>
+            <span>{{ formatDateTime(selectedLeave.submit_time) }}</span>
+          </div>
+          <div class="info-item">
+            <label>请假原因：</label>
+            <p class="reason-detail">{{ selectedLeave.reason }}</p>
+          </div>
+          <div v-if="selectedLeave.attachments && selectedLeave.attachments.length > 0" class="info-item">
+            <label>附件：</label>
+            <div class="attachments-list">
+              <div v-for="file in selectedLeave.attachments" :key="file.name" class="attachment-item">
+                <el-icon><Paperclip /></el-icon>
+                <span class="attachment-name" @click="previewAttachment(file)">{{ file.name }}</span>
+                <el-button 
+                  type="primary" 
+                  link 
+                  size="small" 
+                  @click="downloadAttachment(file)"
+                >
+                  下载
+                </el-button>
+              </div>
+            </div>
+          </div>
+          <div v-if="selectedLeave.approve_comment" class="info-item">
+            <label>审批意见：</label>
+            <p class="approval-comment">{{ selectedLeave.approve_comment }}</p>
+          </div>
+        </div>
+
+        <div v-if="selectedLeave.status === 'pending'" class="approval-actions">
+          <el-button 
+            type="success" 
+            @click="approveLeave(selectedLeave)"
+          >
+            批准请假
+          </el-button>
+          <el-button 
+            type="danger" 
+            @click="rejectLeave(selectedLeave)"
+          >
+            拒绝请假
+          </el-button>
+        </div>
+      </div>
     </el-dialog>
 
     <!-- 审批操作弹窗 -->
@@ -258,7 +302,6 @@ import {
   Document, Clock, Check, Close, Download, Paperclip 
 } from '@element-plus/icons-vue'
 import api from '../../api'
-import LeaveDetailView from './LeaveDetailView.vue'
 
 const props = defineProps({
   groupId: {
@@ -354,6 +397,7 @@ const generateMockLeaves = () => {
     {
       id: 1,
       student_name: '张三',
+      student_id: '2025001',
       student_avatar: '',
       leave_type: 'sick',
       start_date: '2024-01-15',
@@ -361,11 +405,15 @@ const generateMockLeaves = () => {
       reason: '感冒发烧，需要在家休息治疗',
       status: 'pending',
       submit_time: '2024-01-14 10:30:00',
-      attachments: [{ name: '病假单.jpg' }]
+      attachments: [
+        { name: '病假单.jpg', url: '/files/medical_certificate.jpg' },
+        { name: '体温记录表.pdf', url: '/files/temperature_record.pdf' }
+      ]
     },
     {
       id: 2,
       student_name: '李四',
+      student_id: '2025002',
       student_avatar: '',
       leave_type: 'personal',
       start_date: '2024-01-20',
@@ -373,12 +421,13 @@ const generateMockLeaves = () => {
       reason: '家里有事需要处理',
       status: 'approved',
       submit_time: '2024-01-18 14:20:00',
-      approve_comment: '同意请假，注意安全',
+      approve_comment: '同意请假，注意安全，及时返校',
       attachments: []
     },
     {
       id: 3,
       student_name: '王五',
+      student_id: '2025003',
       student_avatar: '',
       leave_type: 'official',
       start_date: '2024-01-25',
@@ -386,8 +435,26 @@ const generateMockLeaves = () => {
       reason: '参加学科竞赛',
       status: 'approved',
       submit_time: '2024-01-22 09:15:00',
-      approve_comment: '参加竞赛，加油！',
-      attachments: [{ name: '竞赛通知.pdf' }]
+      approve_comment: '参加竞赛，为学校争光！注意安全，预祝取得好成绩',
+      attachments: [
+        { name: '竞赛通知.pdf', url: '/files/competition_notice.pdf' }
+      ]
+    },
+    {
+      id: 4,
+      student_name: '赵六',
+      student_id: '2025004',
+      student_avatar: '',
+      leave_type: 'personal',
+      start_date: '2024-01-28',
+      end_date: '2024-01-29',
+      reason: '参加亲戚婚礼',
+      status: 'rejected',
+      submit_time: '2024-01-26 16:45:00',
+      approve_comment: '考试周期间，建议调整时间或请短期假',
+      attachments: [
+        { name: '邀请函.jpg', url: '/files/invitation.jpg' }
+      ]
     }
   ]
 }
@@ -524,6 +591,26 @@ const handleCloseDetail = () => {
   selectedLeave.value = null
 }
 
+const previewAttachment = (file) => {
+  // 根据文件类型进行预览
+  const fileExtension = file.name.split('.').pop().toLowerCase()
+  if (['jpg', 'jpeg', 'png', 'gif', 'bmp'].includes(fileExtension)) {
+    // 图片预览
+    ElMessage.info('图片预览功能开发中...')
+  } else if (['pdf'].includes(fileExtension)) {
+    // PDF预览
+    ElMessage.info('PDF预览功能开发中...')
+  } else {
+    ElMessage.info('该文件类型暂不支持预览')
+  }
+}
+
+const downloadAttachment = (file) => {
+  // 模拟下载
+  ElMessage.success(`正在下载：${file.name}`)
+  // TODO: 实现真实的下载功能
+}
+
 const exportLeaveData = async () => {
   try {
     ElMessage.info('导出功能开发中...')
@@ -549,10 +636,14 @@ onMounted(() => {
 <style scoped>
 .teaching-leave-management {
   width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .stats-overview {
   margin-bottom: 24px;
+  flex-shrink: 0;
 }
 
 .stats-card {
@@ -608,8 +699,11 @@ onMounted(() => {
 .leave-management-section {
   background: white;
   border-radius: 8px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  /* box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1); */
   overflow: hidden;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .section-header {
@@ -619,6 +713,7 @@ onMounted(() => {
   padding: 20px 24px;
   border-bottom: 1px solid #e4e7ed;
   background: #fafafa;
+  flex-shrink: 0;
 }
 
 .section-header h3 {
@@ -635,7 +730,11 @@ onMounted(() => {
 }
 
 .leave-table-container {
-  padding: 24px;
+  /* padding: 24px; */
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .student-info {
@@ -649,38 +748,21 @@ onMounted(() => {
   color: #303133;
 }
 
-.reason-content {
-  max-width: 200px;
-}
-
-.reason-text {
-  margin: 0 0 4px 0;
-  line-height: 1.4;
+.date-range {
   color: #606266;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.attachments {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  color: #909399;
-  font-size: 12px;
+  font-size: 13px;
+  white-space: nowrap;
 }
 
 .duration-text {
   font-weight: 500;
   color: #409EFF;
+  font-size: 13px;
 }
 
 .action-buttons {
   display: flex;
-  gap: 4px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
 }
 
 .pagination-container {
@@ -688,6 +770,126 @@ onMounted(() => {
   justify-content: center;
   margin-top: 20px;
   padding-top: 20px;
+  border-top: 1px solid #e4e7ed;
+  flex-shrink: 0;
+}
+
+/* 请假详情弹窗样式 */
+.leave-detail {
+  padding: 0;
+}
+
+.detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e4e7ed;
+}
+
+.leave-type-info {
+  margin-bottom: 24px;
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.type-duration-row {
+  display: flex;
+  gap: 32px;
+  align-items: center;
+}
+
+.type-item,
+.duration-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.type-item label,
+.duration-item label {
+  font-weight: 500;
+  color: #606266;
+  white-space: nowrap;
+}
+
+.student-details h3 {
+  margin: 0 0 8px 0;
+  color: #303133;
+  font-size: 18px;
+}
+
+.student-details p {
+  margin: 0;
+  color: #606266;
+  font-size: 14px;
+}
+
+.detail-content {
+  margin-bottom: 24px;
+}
+
+.info-item {
+  margin-bottom: 16px;
+}
+
+.info-item label {
+  font-weight: 500;
+  color: #606266;
+  margin-right: 8px;
+}
+
+.reason-detail {
+  margin: 8px 0;
+  color: #303133;
+  line-height: 1.6;
+  background: #f8f9fa;
+  padding: 12px;
+  border-radius: 4px;
+}
+
+.attachments-list {
+  margin-top: 8px;
+}
+
+.attachment-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: #f8f9fa;
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+
+.attachment-name {
+  color: #409EFF;
+  font-size: 14px;
+  cursor: pointer;
+  flex: 1;
+}
+
+.attachment-name:hover {
+  text-decoration: underline;
+}
+
+.approval-comment {
+  margin: 8px 0;
+  color: #303133;
+  line-height: 1.6;
+  background: #e8f4fd;
+  padding: 12px;
+  border-radius: 4px;
+  border-left: 4px solid #409EFF;
+}
+
+.approval-actions {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  padding-top: 16px;
   border-top: 1px solid #e4e7ed;
 }
 

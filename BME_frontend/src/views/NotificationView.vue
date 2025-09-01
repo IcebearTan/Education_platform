@@ -35,10 +35,6 @@
       
       <StudentNotificationComponent 
         v-else
-        :notifications="notifications"
-        :total-unread="totalUnread"
-        @mark-read="markAsRead"
-        @mark-all-read="markAllAsRead"
         @refresh="refreshMessages"
       />
     </div>
@@ -57,6 +53,8 @@ import api from '../api'
 import MenuComponent from '../components/MenuComponent.vue'
 import TeacherNotificationComponent from '../components/Notification/TeacherNotificationComponent.vue'
 import StudentNotificationComponent from '../components/Notification/StudentNotificationComponent.vue'
+// 导入mock数据用于测试
+import { mockNotifications, calculateUnreadCount } from '../mock/notificationData.js'
 
 const router = useRouter()
 const store = useStore()
@@ -88,69 +86,26 @@ const isTeacher = computed(() => {
 const fetchNotifications = async () => {
   loading.value = true
   try {
-    const response = await api.get('/information/reminder/query')
-    if (response.data.code === 200) {
-      // 基础消息类型
-      const baseNotifications = response.data.data.reminders
+    // 如果是教师，直接使用mock数据进行测试
+    if (isTeacher.value) {
+      // 使用mock数据
+      notifications.value = mockNotifications
+      totalUnread.value = calculateUnreadCount(mockNotifications)
       
-      // 如果是导师，添加额外的教学相关消息
-      if (isTeacher.value) {
-        // 模拟获取教学相关消息（实际项目中应该从API获取）
-        const teachingNotifications = await fetchTeachingNotifications()
-        notifications.value = {
-          ...baseNotifications,
-          ...teachingNotifications
-        }
-      } else {
-        notifications.value = baseNotifications
+      ElMessage.success('已加载小组管理测试数据')
+    } else {
+      // 学生端仍然使用API
+      const response = await api.get('/information/reminder/query')
+      if (response.data.code === 200) {
+        notifications.value = response.data.data.reminders
+        totalUnread.value = response.data.data.total_unread
       }
-      
-      totalUnread.value = response.data.data.total_unread
     }
   } catch (error) {
     console.error('获取消息失败:', error)
     ElMessage.error('获取消息失败')
   } finally {
     loading.value = false
-  }
-}
-
-const fetchTeachingNotifications = async () => {
-  try {
-    // 模拟教学相关消息数据
-    return {
-      teaching: [
-        {
-          id: Date.now() + 1,
-          title: '小组1有新的任务提交',
-          content: '学生张三提交了"数据结构练习"作业，等待批阅',
-          create_time: new Date().toISOString(),
-          is_read: false,
-          is_important: true,
-          source_type: '4',
-          related_info_id: '123',
-          group_name: '数据结构学习小组',
-          student_count: 25
-        }
-      ],
-      student_management: [
-        {
-          id: Date.now() + 2,
-          title: '学生请假申请',
-          content: '学生李四申请请假3天，原因：生病',
-          create_time: new Date().toISOString(),
-          is_read: false,
-          is_important: false,
-          source_type: '5',
-          related_info_id: '456'
-        }
-      ],
-      analytics: [],
-      system: []
-    }
-  } catch (error) {
-    console.error('获取教学消息失败:', error)
-    return { teaching: [], student_management: [], analytics: [], system: [] }
   }
 }
 

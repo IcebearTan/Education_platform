@@ -104,48 +104,6 @@
         </div>
       </div>
     </div>
-
-    <!-- 我的每日出勤时间 -->
-    <div class="daily-attendance">
-      <h4>我的每日出勤时间</h4>
-      <div class="attendance-chart">
-        <div class="chart-placeholder">
-          <div class="attendance-bars">
-            <div 
-              v-for="(day, index) in personalDailyAttendance" 
-              :key="index"
-              class="attendance-bar"
-              :style="{ height: `${day.percentage}%` }"
-              :title="`${day.date}: ${day.status === 'attended' ? '已出勤 ' + day.hours + '小时' : day.status === 'late' ? '迟到 ' + day.hours + '小时' : '缺勤'}`"
-              :class="day.status"
-            >
-              <span class="bar-value" v-if="day.hours > 0">{{ day.hours }}h</span>
-            </div>
-          </div>
-          <div class="chart-labels">
-            <span v-for="(day, index) in personalDailyAttendance" :key="index" class="label">
-              {{ day.dayName }}
-            </span>
-          </div>
-        </div>
-        
-        <!-- 出勤状态说明 -->
-        <div class="attendance-legend">
-          <div class="legend-item">
-            <div class="legend-color attended"></div>
-            <span>正常出勤</span>
-          </div>
-          <div class="legend-item">
-            <div class="legend-color late"></div>
-            <span>迟到</span>
-          </div>
-          <div class="legend-item">
-            <div class="legend-color absent"></div>
-            <span>缺勤</span>
-          </div>
-        </div>
-      </div>
-    </div>
   </div>
 </template>
 
@@ -154,6 +112,7 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { ElAvatar, ElSkeleton, ElButton } from 'element-plus'
 import api from '../../api'
 import { mockApiRequest } from '../../mock/config'
+import { mockApiResponses } from '../../mock/studyGroupData'
 
 const props = defineProps({
   groupId: {
@@ -675,130 +634,6 @@ watch(() => props.groupId, (newGroupId) => {
   color: #ff4d4f;
 }
 
-.daily-attendance h4 {
-  font-size: 16px;
-  font-weight: 600;
-  color: #333;
-  margin: 0 0 16px 0;
-}
-
-.attendance-chart {
-  background: #f8f9fa;
-  border-radius: 6px;
-  padding: 16px;
-}
-
-.chart-placeholder {
-  height: 120px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
-
-.attendance-bars {
-  display: flex;
-  align-items: end;
-  justify-content: space-between;
-  height: 80px;
-  gap: 8px;
-}
-
-.attendance-bar {
-  flex: 1;
-  border-radius: 4px 4px 0 0;
-  min-height: 20px;
-  position: relative;
-  display: flex;
-  align-items: end;
-  justify-content: center;
-  padding-bottom: 4px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.attendance-bar.attended {
-  background: linear-gradient(to top, #52c41a, #73d13d);
-}
-
-.attendance-bar.attended:hover {
-  background: linear-gradient(to top, #389e0d, #52c41a);
-  transform: scale(1.05);
-}
-
-.attendance-bar.late {
-  background: linear-gradient(to top, #fa8c16, #ffa940);
-}
-
-.attendance-bar.late:hover {
-  background: linear-gradient(to top, #d46b08, #fa8c16);
-  transform: scale(1.05);
-}
-
-.attendance-bar.absent {
-  background: linear-gradient(to top, #f5222d, #ff4d4f);
-  min-height: 10px;
-}
-
-.attendance-bar.absent:hover {
-  background: linear-gradient(to top, #cf1322, #f5222d);
-  transform: scale(1.05);
-}
-
-.bar-value {
-  font-size: 11px;
-  font-weight: 600;
-  color: white;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
-}
-
-.chart-labels {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 8px;
-}
-
-.label {
-  font-size: 12px;
-  color: #666;
-  text-align: center;
-  flex: 1;
-}
-
-.attendance-legend {
-  display: flex;
-  justify-content: center;
-  gap: 20px;
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px solid #e8e8e8;
-}
-
-.legend-item {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  color: #666;
-}
-
-.legend-color {
-  width: 12px;
-  height: 12px;
-  border-radius: 2px;
-}
-
-.legend-color.attended {
-  background: linear-gradient(135deg, #52c41a, #73d13d);
-}
-
-.legend-color.late {
-  background: linear-gradient(135deg, #fa8c16, #ffa940);
-}
-
-.legend-color.absent {
-  background: linear-gradient(135deg, #f5222d, #ff4d4f);
-}
-
 /* 响应式设计 */
 @media (max-width: 768px) {
   .personal-cards {
@@ -814,11 +649,6 @@ watch(() => props.groupId, (newGroupId) => {
   .section-header {
     flex-direction: column;
     align-items: flex-start;
-    gap: 8px;
-  }
-  
-  .attendance-legend {
-    flex-direction: column;
     gap: 8px;
   }
 }

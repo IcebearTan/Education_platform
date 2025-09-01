@@ -273,29 +273,90 @@ export const mockGroupList = [
     {
         ...mockGroupData,
         group_id: 1,
-        group_name: 'JavaScript 进阶学习小组'
+        group_name: 'JavaScript 进阶学习小组',
+        students: mockGroupData.students
     },
     {
         group_id: 2,
         group_name: 'Python 数据分析小组',
         group_type: 'study',
-        description: '专注于Python在数据分析、机器学习领域的应用学习。',
+        description: '专注于Python在数据分析、机器学习领域的应用学习。掌握NumPy、Pandas、Matplotlib等数据处理和可视化工具，完成实际数据分析项目。',
+        course_name: 'Python数据科学',
+        teacher_id: 1002,
         teacher_name: '李老师',
         teacher_avatar: '/src/assets/ChenMinJie.jpg',
-        student_count: 12,
+        student_count: 6,
         create_time: '2024-01-10',
-        status: 'active'
+        status: 'active',
+        students: [
+            { Student_Id: 2001, Student: '李小明', avatar: '/src/assets/ice_bear_avatar.jpg' },
+            { Student_Id: 2009, Student: '张三', avatar: '/src/assets/ChenMinJie.jpg' },
+            { Student_Id: 2010, Student: '李四', avatar: '/src/assets/LuMengXuan.jpg' },
+            { Student_Id: 2011, Student: '王五', avatar: '/src/assets/ジエ_avatar.png' },
+            { Student_Id: 2012, Student: '赵六', avatar: '/src/assets/ice_bear_avatar.jpg' },
+            { Student_Id: 2013, Student: '钱七', avatar: '/src/assets/ChenMinJie.jpg' }
+        ]
     },
     {
         group_id: 3,
         group_name: 'React 实战项目组',
         group_type: 'project',
-        description: '通过实际项目学习React生态系统，包括Redux、Router等。',
+        description: '通过实际项目学习React生态系统，包括Redux、Router、Hooks等现代React开发技术。完成企业级前端项目开发。',
+        course_name: 'React高级开发',
+        teacher_id: 1003,
         teacher_name: '王老师',
         teacher_avatar: '/src/assets/LuMengXuan.jpg',
-        student_count: 6,
+        student_count: 4,
         create_time: '2024-01-20',
-        status: 'active'
+        status: 'active',
+        students: [
+            { Student_Id: 2001, Student: '李小明', avatar: '/src/assets/ice_bear_avatar.jpg' },
+            { Student_Id: 2014, Student: '孙八', avatar: '/src/assets/ChenMinJie.jpg' },
+            { Student_Id: 2015, Student: '周九', avatar: '/src/assets/LuMengXuan.jpg' },
+            { Student_Id: 2016, Student: '吴十', avatar: '/src/assets/ジエ_avatar.png' }
+        ]
+    },
+    {
+        group_id: 4,
+        group_name: 'Vue3 企业级应用开发',
+        group_type: 'project',
+        description: 'Vue3+TypeScript+Vite技术栈的企业级应用开发实战，包含状态管理、路由设计、组件库搭建等内容。',
+        course_name: 'Vue.js高级应用',
+        teacher_id: 1004,
+        teacher_name: '陈老师',
+        teacher_avatar: '/src/assets/ジエ_avatar.png',
+        student_count: 5,
+        create_time: '2024-01-25',
+        status: 'active',
+        students: [
+            { Student_Id: 2001, Student: '李小明', avatar: '/src/assets/ice_bear_avatar.jpg' },
+            { Student_Id: 2017, Student: '郑十一', avatar: '/src/assets/ChenMinJie.jpg' },
+            { Student_Id: 2018, Student: '冯十二', avatar: '/src/assets/LuMengXuan.jpg' },
+            { Student_Id: 2019, Student: '卫十三', avatar: '/src/assets/ジエ_avatar.png' },
+            { Student_Id: 2020, Student: '蒋十四', avatar: '/src/assets/ice_bear_avatar.jpg' }
+        ]
+    },
+    {
+        group_id: 5,
+        group_name: 'Java后端开发学习小组',
+        group_type: 'study',
+        description: 'Java后端技术栈学习，包括Spring Boot、MyBatis、MySQL数据库设计与优化、微服务架构等内容。',
+        course_name: 'Java企业级开发',
+        teacher_id: 1005,
+        teacher_name: '刘老师',
+        teacher_avatar: '/src/assets/Jerry_Scintilla_avatar.jpg',
+        student_count: 7,
+        create_time: '2024-01-12',
+        status: 'active',
+        students: [
+            { Student_Id: 2001, Student: '李小明', avatar: '/src/assets/ice_bear_avatar.jpg' },
+            { Student_Id: 2021, Student: '韩十五', avatar: '/src/assets/ChenMinJie.jpg' },
+            { Student_Id: 2022, Student: '杨十六', avatar: '/src/assets/LuMengXuan.jpg' },
+            { Student_Id: 2023, Student: '朱十七', avatar: '/src/assets/ジエ_avatar.png' },
+            { Student_Id: 2024, Student: '秦十八', avatar: '/src/assets/ice_bear_avatar.jpg' },
+            { Student_Id: 2025, Student: '尤十九', avatar: '/src/assets/ChenMinJie.jpg' },
+            { Student_Id: 2026, Student: '许二十', avatar: '/src/assets/LuMengXuan.jpg' }
+        ]
     }
 ]
 
@@ -305,10 +366,11 @@ export const mockApiResponses = {
     getGroupDetail: (groupId) => {
         return new Promise((resolve) => {
             setTimeout(() => {
+                const group = mockGroupList.find(g => g.group_id == groupId) || mockGroupData
                 resolve({
                     code: 200,
                     message: '获取成功',
-                    data: { ...mockGroupData, group_id: groupId }
+                    data: group
                 })
             }, 300)
         })
@@ -318,10 +380,56 @@ export const mockApiResponses = {
     getGroupTasks: (groupId) => {
         return new Promise((resolve) => {
             setTimeout(() => {
+                // 根据不同小组返回不同的任务数据
+                const tasksByGroup = {
+                    1: mockTasks, // JavaScript小组的任务
+                    2: [ // Python数据分析小组的任务
+                        {
+                            id: 7,
+                            title: 'NumPy基础操作',
+                            description: '掌握NumPy数组创建、索引、切片、运算等基础操作，完成数据处理练习。',
+                            status: 'completed',
+                            deadline: '2024-02-05',
+                            created_at: '2024-01-28',
+                            priority: 'high',
+                            difficulty: '简单',
+                            estimated_hours: 6,
+                            tags: ['Python', 'NumPy', '数据处理']
+                        },
+                        {
+                            id: 8,
+                            title: 'Pandas数据分析实战',
+                            description: '使用Pandas进行数据清洗、分组、聚合分析，完成销售数据分析报告。',
+                            status: 'in_progress',
+                            deadline: '2024-02-12',
+                            created_at: '2024-02-01',
+                            priority: 'high',
+                            difficulty: '中等',
+                            estimated_hours: 10,
+                            tags: ['Python', 'Pandas', '数据分析']
+                        }
+                    ],
+                    3: [ // React项目组的任务
+                        {
+                            id: 9,
+                            title: 'React Hook深入学习',
+                            description: '深入理解useState、useEffect、useContext等Hook的使用场景和最佳实践。',
+                            status: 'pending',
+                            deadline: '2024-02-15',
+                            created_at: '2024-02-03',
+                            priority: 'medium',
+                            difficulty: '中等',
+                            estimated_hours: 8,
+                            tags: ['React', 'Hooks', '组件开发']
+                        }
+                    ]
+                }
+
+                const tasks = tasksByGroup[groupId] || []
                 resolve({
                     code: 200,
                     message: '获取成功',
-                    data: mockTasks
+                    data: tasks
                 })
             }, 200)
         })
@@ -363,6 +471,232 @@ export const mockApiResponses = {
                     data: mockGroupList
                 })
             }, 400)
+        })
+    },
+
+    // 获取请假列表
+    getLeaveList: (groupId) => {
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                const mockLeaveData = {
+                    approved: [
+                        {
+                            id: 1,
+                            student_id: 2001,
+                            student_name: '李小明',
+                            student: '李小明',
+                            title: '病假',
+                            content: '发烧感冒，需要在家休息治疗，医生建议休息2天',
+                            start_time: '2024-02-01 08:00:00',
+                            end_time: '2024-02-02 18:00:00',
+                            status: 1,
+                            create_time: '2024-01-31 20:00:00',
+                            approve_time: '2024-01-31 21:00:00',
+                            approve_comment: '同意请假，注意身体健康，按时吃药，康复后及时返校',
+                            group_id: groupId,
+                            attachments: [
+                                {
+                                    name: '医院诊断书.jpg',
+                                    url: '/files/medical_certificate.jpg',
+                                    size: 245760,
+                                    type: 'image/jpeg'
+                                },
+                                {
+                                    name: '病假条.pdf',
+                                    url: '/files/sick_leave.pdf',
+                                    size: 128000,
+                                    type: 'application/pdf'
+                                }
+                            ]
+                        },
+                        {
+                            id: 3,
+                            student_id: 2003,
+                            student_name: '陈小强',
+                            student: '陈小强',
+                            title: '事假',
+                            content: '参加亲戚婚礼，需要请假半天',
+                            start_time: '2024-02-03 13:00:00',
+                            end_time: '2024-02-03 18:00:00',
+                            status: 1,
+                            create_time: '2024-02-01 10:00:00',
+                            approve_time: '2024-02-01 14:00:00',
+                            approve_comment: '同意请假，祝贺新人！注意安全，及时返校',
+                            group_id: groupId,
+                            attachments: [
+                                {
+                                    name: '婚礼邀请函.jpg',
+                                    url: '/files/wedding_invitation.jpg',
+                                    size: 320000,
+                                    type: 'image/jpeg'
+                                }
+                            ]
+                        }
+                    ],
+                    pending: [
+                        {
+                            id: 2,
+                            student_id: 2002,
+                            student_name: '王小红',
+                            student: '王小红',
+                            title: '事假',
+                            content: '家里有急事需要处理，请假一天',
+                            start_time: '2024-02-05 08:00:00',
+                            end_time: '2024-02-05 18:00:00',
+                            status: 0,
+                            create_time: '2024-02-04 19:00:00',
+                            group_id: groupId,
+                            attachments: []
+                        }
+                    ],
+                    rejected: [
+                        {
+                            id: 4,
+                            student_id: 2004,
+                            student_name: '赵小美',
+                            student: '赵小美',
+                            title: '事假',
+                            content: '想要参加朋友聚会',
+                            start_time: '2024-02-06 08:00:00',
+                            end_time: '2024-02-06 18:00:00',
+                            status: 2,
+                            create_time: '2024-02-04 15:00:00',
+                            approve_time: '2024-02-04 16:00:00',
+                            approve_comment: '理由不够充分，建议将聚会安排在周末或课余时间',
+                            group_id: groupId,
+                            attachments: []
+                        }
+                    ]
+                }
+
+                resolve({
+                    code: 200,
+                    message: '获取成功',
+                    data: mockLeaveData
+                })
+            }, 300)
+        })
+    },
+
+    // 学习进度排行榜
+    getLearningProgressRank: (groupId) => {
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                const mockRankData = [
+                    {
+                        id: 2003,
+                        name: '陈小强',
+                        avatar: '/src/assets/LuMengXuan.jpg',
+                        progress: 91,
+                        completedTasks: 6,
+                        totalTasks: 6,
+                        studyHours: 45,
+                        rank: 1
+                    },
+                    {
+                        id: 2001,
+                        name: '李小明',
+                        avatar: '/src/assets/ice_bear_avatar.jpg',
+                        progress: 85,
+                        completedTasks: 5,
+                        totalTasks: 6,
+                        studyHours: 38,
+                        rank: 2
+                    },
+                    {
+                        id: 2007,
+                        name: '周小丽',
+                        avatar: '/src/assets/LuMengXuan.jpg',
+                        progress: 89,
+                        completedTasks: 5,
+                        totalTasks: 6,
+                        studyHours: 42,
+                        rank: 3
+                    },
+                    {
+                        id: 2006,
+                        name: '杨小龙',
+                        avatar: '/src/assets/ChenMinJie.jpg',
+                        progress: 82,
+                        completedTasks: 5,
+                        totalTasks: 6,
+                        studyHours: 35,
+                        rank: 4
+                    },
+                    {
+                        id: 2005,
+                        name: '刘小华',
+                        avatar: '/src/assets/ice_bear_avatar.jpg',
+                        progress: 78,
+                        completedTasks: 4,
+                        totalTasks: 6,
+                        studyHours: 32,
+                        rank: 5
+                    }
+                ]
+
+                resolve({
+                    code: 200,
+                    message: '获取成功',
+                    data: mockRankData
+                })
+            }, 350)
+        })
+    },
+
+    // 出勤统计数据
+    getAttendanceData: (groupId) => {
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                const mockAttendanceData = [
+                    {
+                        userId: 2001,
+                        username: '李小明',
+                        avatar: '/src/assets/ice_bear_avatar.jpg',
+                        attendanceDays: 18,
+                        onTimeRate: 95,
+                        totalHours: 72
+                    },
+                    {
+                        userId: 2003,
+                        username: '陈小强',
+                        avatar: '/src/assets/LuMengXuan.jpg',
+                        attendanceDays: 20,
+                        onTimeRate: 100,
+                        totalHours: 80
+                    },
+                    {
+                        userId: 2007,
+                        username: '周小丽',
+                        avatar: '/src/assets/LuMengXuan.jpg',
+                        attendanceDays: 19,
+                        onTimeRate: 89,
+                        totalHours: 76
+                    },
+                    {
+                        userId: 2002,
+                        username: '王小红',
+                        avatar: '/src/assets/ChenMinJie.jpg',
+                        attendanceDays: 16,
+                        onTimeRate: 87,
+                        totalHours: 64
+                    },
+                    {
+                        userId: 2005,
+                        username: '刘小华',
+                        avatar: '/src/assets/ice_bear_avatar.jpg',
+                        attendanceDays: 15,
+                        onTimeRate: 80,
+                        totalHours: 60
+                    }
+                ]
+
+                resolve({
+                    code: 200,
+                    message: '获取成功',
+                    data: mockAttendanceData
+                })
+            }, 300)
         })
     }
 }

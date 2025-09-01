@@ -1,5 +1,5 @@
 <template>
-  <div class="study-group-card">
+  <div class="study-group-card" @click="viewDetails">
     <div class="card-header">
       <div class="group-info">
         <h3 class="group-name">{{ group.group_name }}</h3>
@@ -63,40 +63,6 @@
         </div>
       </div>
     </div>
-    
-    <div class="card-actions">
-      <el-button 
-        type="primary" 
-        size="small" 
-        @click="viewDetails"
-        class="action-button"
-      >
-        <i class="el-icon-view"></i>
-        进入小组
-      </el-button>
-      
-      <el-button 
-        v-if="group.role === 'student'"
-        type="default" 
-        size="small" 
-        @click="viewTasks"
-        class="action-button"
-      >
-        <i class="el-icon-document"></i>
-        查看任务
-      </el-button>
-      
-      <el-button 
-        v-if="group.role === 'student'"
-        type="default" 
-        size="small" 
-        @click="viewProgress"
-        class="action-button"
-      >
-        <i class="el-icon-data-line"></i>
-        学习进度
-      </el-button>
-    </div>
   </div>
 </template>
 
@@ -118,22 +84,6 @@ const viewDetails = () => {
     params: { groupId: props.group.group_id || props.group.id }
   })
 }
-
-const viewTasks = () => {
-  router.push({
-    name: 'study-group-details',
-    params: { groupId: props.group.group_id || props.group.id },
-    query: { tab: 'tasks' }
-  })
-}
-
-const viewProgress = () => {
-  router.push({
-    name: 'study-group-details',
-    params: { groupId: props.group.group_id || props.group.id },
-    query: { tab: 'progress' }
-  })
-}
 </script>
 
 <style scoped>
@@ -145,11 +95,13 @@ const viewProgress = () => {
   margin-bottom: 16px;
   transition: all 0.3s ease;
   border: 1px solid #f0f0f0;
+  cursor: pointer;
 }
 
 .study-group-card:hover {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
   transform: translateY(-2px);
+  border-color: #409eff;
 }
 
 .card-header {
@@ -196,10 +148,6 @@ const viewProgress = () => {
 
 .stat-item i {
   color: #409eff;
-}
-
-.card-content {
-  margin-bottom: 16px;
 }
 
 .group-description {
@@ -261,24 +209,6 @@ const viewProgress = () => {
   font-style: italic;
 }
 
-.card-actions {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  border-top: 1px solid #f0f0f0;
-  padding-top: 16px;
-}
-
-.action-button {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.action-button i {
-  font-size: 12px;
-}
-
 /* 响应式设计 */
 @media (max-width: 768px) {
   .study-group-card {
@@ -293,15 +223,6 @@ const viewProgress = () => {
   
   .group-meta {
     flex-wrap: wrap;
-  }
-  
-  .card-actions {
-    flex-direction: column;
-  }
-  
-  .action-button {
-    width: 100%;
-    justify-content: center;
   }
 }
 </style>

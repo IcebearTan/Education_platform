@@ -206,7 +206,7 @@ import { mockApiRequest } from '../../mock/config'
 
 // 导入现有组件
 import StudentGroupTask from './StudentGroupTask.vue'
-import StudentGroupRank from './StudentGroupRank.vue'
+// import StudentGroupRank from './StudentGroupRank.vue'
 import StudentGroupLeave from './StudentGroupLeave.vue'
 // import TaskDetailComponent from './TaskDetailComponent.vue' // 已移除，改用路由跳转
 
